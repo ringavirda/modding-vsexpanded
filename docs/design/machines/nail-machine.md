@@ -9,13 +9,13 @@
 * the state of the drawn asset and what happened to it (exported 2026-08-21).
 
 **Depends on**
-[mp-energy](../mechanics/mp-energy.md) (the run it loads; a crank stroke is a pulsed load, which is why it carries its own flywheel) ·
+[mp-energy](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/mp-energy.md) (the run it loads; a crank stroke is a pulsed load, which is why it carries its own flywheel) ·
 [heading machine](heading-machine.md) (owns the `ItemDie` tooling contract and the BE base this bench shares) ·
 [shear](shear.md) (crops the `rolledrod` and the `nailplate` this bench eats - the mill never hands a product straight over) ·
 [rolling mill](rolling-mill.md) (rolls a rod into nail plate on `flat`) ·
-[multiblock & fillers](../mechanics/multiblock.md) (why 1 × 1 needs none of it, and how a shape may overhang its cell) ·
+[multiblock & fillers](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/multiblock.md) (why 1 × 1 needs none of it, and how a shape may overhang its cell) ·
 [density rule](../mechanics/density-rule.md) (`nailplate` 4 × 1 × 10 = 100 u; nails 25 u each) ·
-[recipes & config](../mechanics/recipes-config.md) · [STATE.md § Fasteners](../../internal/plans/STATE.md)
+[recipes & config](../mechanics/recipes-config.md) · [STATE.md § Fasteners](../../../../docs/plans/STATE.md)
 
 ---
 
@@ -145,7 +145,7 @@ Hard-coded elsewhere, and relevant:
 | nails in the tray | all of them - spawn the contents before `base.OnBlockBroken`, as `BlockEntityRollingMill.cs:395-404` does for its piece and roll set |
 | the fitted die | spawned, not destroyed |
 
-No fillers, so nothing routes through [multiblock](../mechanics/multiblock.md)'s drop rerouting.
+No fillers, so nothing routes through [multiblock](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/multiblock.md)'s drop rerouting.
 
 ---
 
@@ -171,7 +171,7 @@ Where a caller hooks in. To add a bench of this family: `BlockNetworkNode` with 
 ## Gotchas
 
 - ~~**`nailplate` does not exist.**~~ **Stale.** It ships as of B3c (`RolledItemDefinitions`, 2026-08-14), and the `stockForm` half went with B3 on 2026-08-11: `WorkPiece.FromStack` falls back to the collectible attribute when the stack tree carries none, so a fresh piece off the grid is a work piece. And the rod fork landed the same day: a player feeds `game:rod-iron` at the deck, it enters as `iiex:stock-rod`, and the flat 1.0 rung claims `iiex:nailplate` with no crop. **The nail line's input now exists and is obtainable**; what is left is this bench itself.
-- ~~**The `flat` roll set cannot make the plate today.**~~ **Stale.** The set no longer names outputs at all - a stopping point is a stage on the stock's ladder ([process-extension](../mechanics/process-extension.md)) - and its accepted forms are `["shingledbar", "castbillet"]`. Plate is the flat 1.0 crop of either, into vanilla `game:metalplate-iron`.
+- ~~**The `flat` roll set cannot make the plate today.**~~ **Stale.** The set no longer names outputs at all - a stopping point is a stage on the stock's ladder ([process-extension](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/process-extension.md)) - and its accepted forms are `["shingledbar", "castbillet"]`. Plate is the flat 1.0 crop of either, into vanilla `game:metalplate-iron`.
 - **Nails come from PLATE, never from rod.** Rod-nails are the 1870s wire nail - a different machine and far out of period. The rod fork's other branch goes to the rivet bench instead ([heading machine](heading-machine.md), whose premise the 2026-08-15 ruling contests).
 - **No gearing means no ratio.** The mpenergy network has exactly one ratio device, the transmission, and it is a separate block whose ratios are a `switch` on the variant (`BlockEntityTransmission.cs:59-64`). Do not smuggle a ratio into this bench because the drawing has a wheel on a shaft - the drawing has no gear train, which is the distinction from the heading machine's spur gear.
 - **A running clip must repeat.** With no clip active the animator drops the suppressed mesh back to the static shape; the chimney cap documents the trap in-source (`BlockEntityPuddlingChimneyCap.cs:31-33`).

@@ -9,13 +9,13 @@
 * why it is iiex and not smex, and why it is built in banks;
 * the requirement that the natural-draught factor become a function of stack height, and the arithmetic behind it.
 
-**Does not own** - cited only: the `T_process = T_in − T_loss` law, the melt-speed factor, the Idle/Firing/Melting FSM and every `Bf*` / `Cupola*` key ([heat balance](../mechanics/heat-balance.md)) · what blister / shear / crucible steel are ([materials.md](../materials.md)) · the canal a pot pours into ([molten network](../mechanics/molten-network.md)) · the layout DSL ([multiblock](../mechanics/multiblock.md)) · the cupola's own numbers ([cupola](cupola.md)) · the tilting non-ferrous crucible, a different and deferred machine ([STATE.md](../../internal/plans/STATE.md)).
+**Does not own** - cited only: the `T_process = T_in − T_loss` law, the melt-speed factor, the Idle/Firing/Melting FSM and every `Bf*` / `Cupola*` key ([heat balance](../mechanics/heat-balance.md)) · what blister / shear / crucible steel are ([materials.md](../materials.md)) · the canal a pot pours into ([molten network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/molten-network.md)) · the layout DSL ([multiblock](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/multiblock.md)) · the cupola's own numbers ([cupola](cupola.md)) · the tilting non-ferrous crucible, a different and deferred machine ([STATE.md](../../../../docs/plans/STATE.md)).
 
 **Depends on**
-[heat balance](../mechanics/heat-balance.md) · [multiblock & fillers](../mechanics/multiblock.md) ·
-[molten network](../mechanics/molten-network.md) · [recipes & config](../mechanics/recipes-config.md) ·
+[heat balance](../mechanics/heat-balance.md) · [multiblock & fillers](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/multiblock.md) ·
+[molten network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/molten-network.md) · [recipes & config](../mechanics/recipes-config.md) ·
 [materials.md](../materials.md) · [cupola](cupola.md) (the machine it is deliberately not) ·
-[shear](shear.md) (blade sets are one of its consumers) · [STATE.md § D9](../../internal/plans/STATE.md)
+[shear](shear.md) (blade sets are one of its consumers) · [STATE.md § D9](../../../../docs/plans/STATE.md)
 
 ---
 
@@ -295,7 +295,7 @@ The chimney is outside `StructureComplete`, so the furnace completes and runs co
 
 The puddling cap and this furnace's bottom damper are the same mechanic at opposite ends of the flue, top cap versus bottom bypass. One implementation should serve both, so the crucible furnace's `K` door and `BlockPuddlingChimneyCap` share code.
 
-The counted scan is needed because the layout DSL is a fixed cell table - `MultiblockLayout` declares an exact set of offsets and `IncompleteBlockCount` walks exactly those ([multiblock](../mechanics/multiblock.md)) - so "a taller stack" is not expressible as a layout.
+The counted scan is needed because the layout DSL is a fixed cell table - `MultiblockLayout` declares an exact set of offsets and `IncompleteBlockCount` walks exactly those ([multiblock](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/multiblock.md)) - so "a taller stack" is not expressible as a layout.
 
 ---
 
@@ -352,7 +352,7 @@ So: clayformed from `clay-fire`, exactly as vanilla's own crucible is, as a dist
 
 This removes the need for a refractory clay item entirely: vanilla clayforming accepts only `clay-*` in `["blue","fire","red"]`, and refractory brick is a grid recipe (`clay-fire` + crushed quartz/bauxite/olivine/ilmenite), so there is no clayformable refractory to pick a tier of.
 
-The tilting non-ferrous crucible keeps its own argument unchanged: a cast-iron vessel cannot hold molten steel, so that machine stays incapable by construction rather than by rule ([STATE.md](../../internal/plans/STATE.md)).
+The tilting non-ferrous crucible keeps its own argument unchanged: a cast-iron vessel cannot hold molten steel, so that machine stays incapable by construction rather than by rule ([STATE.md](../../../../docs/plans/STATE.md)).
 
 ---
 
@@ -370,7 +370,7 @@ blister steel (+ a carbon/flux trim)  →  pot  →  hole  →  coke fire  →  
 | RMB with tongs / empty hand | a hole with a finished pot | pull it. Vanilla already models this: the crucible carries `onTongTransform` and `tongOpening: "wide"` |
 | RMB the pot | a canal start, a mold, or a barrel | pour. Already supported: `BlockMoltenCanalStart` accepts a `BlockSmeltedContainer` pour (`BlockMoltenCanalStart.cs:77`, help stacks at `:148`), and `BlockMoltenBarrel` caches every `crucible-*` block for the same interaction (`BlockMoltenBarrel.cs:84-91`) |
 
-The player carries the pot; the furnace does not tilt. It costs nothing to build, because the pour interface into the [molten network](../mechanics/molten-network.md) already exists and is used by vanilla crucibles. Tilting was chosen for the non-ferrous machine because that one has no other way to reach the canal.
+The player carries the pot; the furnace does not tilt. It costs nothing to build, because the pour interface into the [molten network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/molten-network.md) already exists and is used by vanilla crucibles. Tilting was chosen for the non-ferrous machine because that one has no other way to reach the canal.
 
 States. The shared `Idle → Firing → Melting` FSM applies unchanged ([heat balance](../mechanics/heat-balance.md)); what differs is that the melt acts on each seated pot rather than on a burden column, the same override the reheat furnace already makes (`BlockEntityHeatingFurnace.SmeltCycle` is deliberately empty, `:107`). It also inherits the reverberatory pattern for the fire: no blast, no tuyeres, nothing to starve (`BlockEntityHeatingFurnace.cs:46-51`).
 
@@ -419,7 +419,7 @@ Against [heat balance](../mechanics/heat-balance.md)'s own terms (the firebox br
 
 To land 1600 °C with a full firebox the natural factor must rise to `(1600 + 430 − 950) / 1125 ≈ 0.96`, natural draught nearly as effective as full blast. With an empty-hearth loss it is ≈ 0.68. Either way the shipped 0.5 cannot do it, so "chimney height sets temperature" is the only term available and the furnace does not work without it.
 
-This is the same ceiling as blocker B8 (the puddling furnace: natural draught caps `T_in` at 1512.5 against an inherited 1482 melt point - [STATE.md](../../internal/plans/STATE.md)). One fix serves both, plus the coke oven: make the natural-draught factor a function of stack height, which retro-fits every natural-draught furnace at once. Draught rises with stack height and with the temperature difference.
+This is the same ceiling as blocker B8 (the puddling furnace: natural draught caps `T_in` at 1512.5 against an inherited 1482 melt point - [STATE.md](../../../../docs/plans/STATE.md)). One fix serves both, plus the coke oven: make the natural-draught factor a function of stack height, which retro-fits every natural-draught furnace at once. Draught rises with stack height and with the temperature difference.
 
 ---
 

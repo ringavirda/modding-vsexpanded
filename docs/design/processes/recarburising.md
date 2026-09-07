@@ -1,6 +1,6 @@
 # Recarburising
 
-**Status** blocked - designed, nothing exists. The step is mandatory under [STATE.md](../../internal/plans/STATE.md) N1
+**Status** blocked - designed, nothing exists. The step is mandatory under [STATE.md](../../../../docs/plans/STATE.md) N1
 and not one piece of it is built: no blown-iron metal, no ladle, no ferroalloy, no powdered coke, and the
 shipped converter still pours a finished tool-capable steel that skips the step entirely.
 **Mods** smex (the blow, the ladle) · iiex (the ferroalloy furnace, the cupola that melts it)
@@ -27,10 +27,10 @@ chill model and its arithmetic ·
 [cupola](../machines/cupola.md) - melting ferroalloys, and why fuel contact makes it the right machine ·
 [blast furnace (cold)](../machines/blast-furnace-cold.md) - ferroalloys as a burden family, the second act ·
 [alloying](alloying.md) - the mixing loop this one is a special case of, D3, and the ferroalloy supply chain ·
-[molten network](../mechanics/molten-network.md) / [molten canal](../machines/molten-canal.md) - how the heat
+[molten network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/molten-network.md) / [molten canal](../machines/molten-canal.md) - how the heat
 moves · [materials.md](../materials.md) - what each metal is and its target composition ·
 [heat balance](../mechanics/heat-balance.md) - the furnace `T_process` law (the ladle has no fire and does not
-use it) · [conventions.md](../conventions.md) - R2, R3, R5, R7 · [STATE.md](../../internal/plans/STATE.md) - N1, D4, D6
+use it) · [conventions.md](../conventions.md) - R2, R3, R5, R7 · [STATE.md](../../../../docs/plans/STATE.md) - N1, D4, D6
 
 **Depends on** [Bessemer](../machines/bessemer.md) · [ladle](../machines/ladle.md) ·
 [open hearth](../machines/open-hearth.md) · [cupola](../machines/cupola.md) ·
@@ -47,7 +47,7 @@ oxygen-saturated. That metal is **blown iron**: not mild steel, not wrought iron
 **Recarburising** is the step that turns it back into a material. A measured addition of a high-carbon
 ferroalloy is dropped into the metal after the blow. It puts the carbon back to the grade wanted, and its
 manganese scavenges the dissolved oxygen. Mushet's 1856 spiegeleisen addition is what made the Bessemer
-process work at all, and the mod treats it that way ([STATE.md](../../internal/plans/STATE.md) N1).
+process work at all, and the mod treats it that way ([STATE.md](../../../../docs/plans/STATE.md) N1).
 
 What the mod abstracts away: real practice recarburised by pouring the whole blow onto a measured
 spiegeleisen charge in the ladle, judged by eye and by the flame, with silicon, sulfur and phosphorus all
@@ -87,9 +87,9 @@ occasionally and idles between, which is why it gets a family of ferroalloys rat
 
 | Bath | Enters the loop? | Why |
 |---|---|---|
-| **Bessemer blown iron** | mandatory | the blow has no stopping point that leaves a usable metal ([STATE.md](../../internal/plans/STATE.md) N1) |
+| **Bessemer blown iron** | mandatory | the blow has no stopping point that leaves a usable metal ([STATE.md](../../../../docs/plans/STATE.md) N1) |
 | **Over-blown ingot iron** | yes | [alloys](../items/alloys.md) already routes it - *"not wrought iron — recarburise or remelt"* |
-| **Arc-furnace ingot iron** | yes, when elex exists | same row; deferred with elex ([STATE.md](../../internal/plans/STATE.md) D8) |
+| **Arc-furnace ingot iron** | yes, when elex exists | same row; deferred with elex ([STATE.md](../../../../docs/plans/STATE.md) D8) |
 | **Open-hearth heat** | no | a long bath can be held and corrected, so it is stopped on the carbon it wants and taps ready ([open hearth](../machines/open-hearth.md)) |
 | **Puddled wrought iron** | never | it is never molten; carbon leaves as a pasty ball, not as a bath ([materials](../materials.md) § Semi-finished forms) |
 

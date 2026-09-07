@@ -16,14 +16,14 @@
 
 **Does not own** - cited only, never restated: burden composition and its flux bands
 ([burden](../items/burden.md)), blower output and pressure ceiling ([blower](../machines/twin-tub-blower.md)), pipe
-capacity and burst ([pipe network](pipe-network.md)), blast preheat source
+capacity and burst ([pipe network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md)), blast preheat source
 ([cowper](../machines/cowper.md)), per-furnace yields, pools, taps and layouts
 ([blast furnace](../machines/blast-furnace-cold.md), [cupola](../machines/cupola.md),
 [puddling furnace](../machines/puddling-furnace.md), [reheat furnace](../machines/reheat-furnace.md)),
 and the extinguish residue payout ([ironmaking](../processes/ironmaking.md)).
 
-**Depends on** [burden](../items/burden.md) · [pipe network](pipe-network.md) ·
-[multiblock](multiblock.md) · [recipes & config](recipes-config.md)
+**Depends on** [burden](../items/burden.md) · [pipe network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md) ·
+[multiblock](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/multiblock.md) · [recipes & config](recipes-config.md)
 
 ---
 
@@ -463,7 +463,7 @@ these is a `virtual` member, so a subclass can override it - but no `/exmod conf
 
 The charge-loss denominator is not a config key at all - it is `ChargeCapacityUnits`, above.
 `TwinTubBlowerOutputPerSecond` / `TwinTubBlowerMaxPressure` and `PlatedPipeBurstPressure` are what the derived
-demand is measured against - see [blower](../machines/twin-tub-blower.md) and [pipe network](pipe-network.md).
+demand is measured against - see [blower](../machines/twin-tub-blower.md) and [pipe network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md).
 `BfIronPerOreUnit` and `BfSlagPerOreUnit` - what a melted burden unit renders - are [blast
 furnace](../machines/blast-furnace-cold.md)'s.
 

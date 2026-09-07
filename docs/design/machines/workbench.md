@@ -25,11 +25,11 @@ the shipped sequences
 | The design table, its window and drafting cost | [design-table](design-table.md) |
 | `MachineTool`, the tier ladder, and why a tool is not a die | [machining-line](../mechanics/machining-line.md) |
 | `ExRecipeDef`, goldens, the cost catalogue | [recipes-config](../mechanics/recipes-config.md) |
-| Schema versioning and the refuse-a-newer-schema rule | [process-extension](../mechanics/process-extension.md) |
+| Schema versioning and the refuse-a-newer-schema rule | [process-extension](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/process-extension.md) |
 
 **Depends on** [diagram-crafting](../mechanics/diagram-crafting.md) ·
 [machining-line](../mechanics/machining-line.md) · [recipes-config](../mechanics/recipes-config.md) ·
-[process-extension](../mechanics/process-extension.md)
+[process-extension](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/process-extension.md)
 
 ---
 
@@ -99,7 +99,7 @@ while a hand animation plays. The shipped example is a fitting — hammer, bare 
 
 | Field | Meaning |
 |---|---|
-| `machine` | The bench this sequence belongs to, so a third party's own station has its own table. Merged by machine exactly as [`ProcessJobRegistry`](../mechanics/process-extension.md) does |
+| `machine` | The bench this sequence belongs to, so a third party's own station has its own table. Merged by machine exactly as [`ProcessJobRegistry`](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/process-extension.md) does |
 | `recipe` | The grid recipe this is the labour for, by its asset name. Keyed on the recipe rather than the output, because two recipes may make one thing |
 | `tool` | Item code the held stack must match, wildcards allowed; `null` means bare hands. A tool carrying a `machinetool` tier is gated on it, reusing `MachineTool` rather than inventing a second hardness idea |
 | `seconds` | How long RMB is held for the step |

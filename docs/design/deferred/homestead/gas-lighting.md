@@ -21,13 +21,13 @@ and its fuel ship together: "Gas lighting lives entirely in this add-on"
 | Coal gas - what makes it, why it is out of scope, the tar chain | [gasworks](gasworks.md) |
 | Producer gas, and the "no gasholder" ruling for that gas | [gas-producer](../../machines/gas-producer.md) |
 | The medium-agnostic storage node and why it cannot be built today | [fluid tank](../../machines/fluid-tank.md) |
-| One medium per run, run capacity, leaks, open connectors | [pipe network](../../mechanics/pipe-network.md) |
+| One medium per run, run capacity, leaks, open connectors | [pipe network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md) |
 | The acids and the sulfur question | [chemistry](chemistry.md) |
 | R1 · R2 · R5 · R7 | [conventions.md](../../conventions.md) |
 | "You buy operating efficiency with build complexity" | [overview.md](../../overview.md) |
 
 **Depends on** [scope.md](../../scope.md) · [gasworks](gasworks.md) ·
-[fluid tank](../../machines/fluid-tank.md) · [pipe network](../../mechanics/pipe-network.md) ·
+[fluid tank](../../machines/fluid-tank.md) · [pipe network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md) ·
 the archived iiex spec (git history)
 
 ---
@@ -150,7 +150,7 @@ lighting is a pure leaf: it consumes coal gas and produces photons, and no recip
 ## Gotchas
 
 * **Every lamp is a network node.** Run capacity is `nodes × LitresPerPipe`
-  ([pipe network](../../mechanics/pipe-network.md)), so a long lighting main is itself a gas holder - the
+  ([pipe network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md)), so a long lighting main is itself a gas holder - the
   same observation [gas-producer](../../machines/gas-producer.md):316-320 makes when it argues "never stored"
   is a decision, not a mechanism. For lighting the accident inverts: the buffering the mains give for free is
   exactly what the holder was for. Do not "fix" it without noticing that.
@@ -159,7 +159,7 @@ lighting is a pure leaf: it consumes coal gas and produces photons, and no recip
   junction merges the pools and relabels by priority (`:118-119`). Lighting is the worst case because the
   mains are long and everywhere, unlike a producer's short lock-step feed.
 * **Coal gas is carbon monoxide, and a leaking run leaks by design.** Open-connector detection and the leak
-  model are live ([pipe network](../../mechanics/pipe-network.md)). A lighting network is the densest,
+  model are live ([pipe network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md)). A lighting network is the densest,
   longest, least-supervised pipework a player would build. R7 ([conventions.md](../../conventions.md)) says
   the leak must be visible, not a silent poison.
 * **A lit/unlit lamp must read at a glance.** R7 again. A lamp that is out is visibly out, but block info

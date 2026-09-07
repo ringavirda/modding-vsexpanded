@@ -13,7 +13,7 @@
 
 **Does not own** - cited only, never restated:
 - The graph, the one-medium-per-run rule, `MaxVolume`, gas vs liquid pressure, `FeedPressure`, leaks,
-  bursts, merge/split and the tick order - [pipe network](../mechanics/pipe-network.md).
+  bursts, merge/split and the tick order - [pipe network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md).
 - Pipe blocks, valves, the pressure valve, joints, the cast tier's 5 atm rating - [cast pipes](cast-pipes.md).
 - The intake, both live pumps, the delivery-pressure formula and the pressure-multiplier fix -
   [pumps](pumps.md).
@@ -22,14 +22,14 @@
 - The scope decision that deferred the gasholder, the sprinkler and the chemical complex to Industrial
   Homestead - `../overview.md` § Scope, restated nowhere else.
 - Code-first defs, RCC stages, the recipe-cost catalogue - [recipes-config](../mechanics/recipes-config.md).
-- Fillers and footprints - [multiblock](../mechanics/multiblock.md). Build-cost masses -
+- Fillers and footprints - [multiblock](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/multiblock.md). Build-cost masses -
   [density rule](../mechanics/density-rule.md). Break-return policy - [recoverability](../mechanics/recoverability.md).
 
 ---
 
 ## Role
 
-A pipe run holds thirty litres per cell and nothing else ([pipe network](../mechanics/pipe-network.md) § 3).
+A pipe run holds thirty litres per cell and nothing else ([pipe network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md) § 3).
 That is enough for moving a medium and not for holding one, so everything on the network today has to be
 simultaneous: the pump must run while the boiler drinks, the blower must turn while the furnace breathes.
 There is no way to fill something now and spend it later.
@@ -107,14 +107,14 @@ keep them separate. A tank is the condenser's chassis with a reservoir instead o
 Route B also gets the medium-agnostic requirement for free: the tank stores a `(MediumType, Volume,
 Temperature)` triple of its own and consults `ExLiquids.Taxonomy` for compatibility exactly as
 `PipeNetwork` does - one medium at a time, claimed by the first thing that fills it
-([pipe network](../mechanics/pipe-network.md) § 2).
+([pipe network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md) § 2).
 
 ### Proposed footprint
 
 | | proposed |
 |---|---|
 | Form | a megablock - a standing riveted cylinder, 2 × 2 × 2 or 2 × 3 × 2 |
-| Principal | bottom-front cell; the rest invisible fillers ([multiblock](../mechanics/multiblock.md)) |
+| Principal | bottom-front cell; the rest invisible fillers ([multiblock](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/multiblock.md)) |
 | Connectors | two, on opposite horizontal faces of the principal - in / out, like the condenser's W↔E water line, so a tank drops into an existing run without re-plumbing |
 | Orientation | `HorizontalOrientable` + `VariantGroupFromProperties("side", …)`, the condenser's and the pumps' convention (`BlockSteamCondenser.cs:37-38`) |
 | Graph role | none. `INetworkConnector` only, `NetworkType => "pipe"` |
@@ -184,7 +184,7 @@ Everything in that loop already exists as a method:
 
 | step | existing call | file:line |
 |---|---|---|
-| resolve a run across a connector face | `be.ConnectedNetwork<PipeNetwork>(face)` | `MachinePorts.cs:15` ([pipe network](../mechanics/pipe-network.md)) |
+| resolve a run across a connector face | `be.ConnectedNetwork<PipeNetwork>(face)` | `MachinePorts.cs:15` ([pipe network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md)) |
 | medium compatibility | `ExLiquids.Taxonomy.Compatible(a, b)` | `ExLiquids.cs:106-116` |
 | draw water / gas | `TryConsumeLiquid` / `TryConsumeGas` | `PipeNetwork.cs:300`, `:200` |
 | push water / gas, measured | `ProduceLiquidMeasured` / `ProduceGasMeasured` | `PipeNetwork.cs:284`, `:175` |
@@ -237,7 +237,7 @@ count follows; do not pick a number and back-fill the art.
 - RCC salvage at `RccBrokenDropsRatio` (0.8 by default, `IiexConfig.cs:116`), like the boiler and engine.
 - The contents are lost. Water and gas are not items, nothing in the suite drops a medium, and the pipe
   network already discards content silently on an incompatible merge
-  ([pipe network](../mechanics/pipe-network.md) Gotcha 14). Under
+  ([pipe network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md) Gotcha 14). Under
   [recoverability](../mechanics/recoverability.md)'s declared recovery this is fine, but it must be
   declared: the block-info line should say so, and the break should at minimum spill particles rather than
   vanishing 4000 L in silence.
@@ -269,7 +269,7 @@ nothing, the pressure valve holds only a gate setting. The tank is the first blo
 a network, so it needs its own `ToTreeAttributes` / `FromTreeAttributes` for
 `(MediumType, Volume, Temperature)`, and it must survive the same trap the valve hit: a cached pool that
 serialises and is restored into a context that cannot hold it
-([pipe network](../mechanics/pipe-network.md) § 7 and Gotcha 9, `BlockEntityValve.cs:162-166`, `:222-225`).
+([pipe network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md) § 7 and Gotcha 9, `BlockEntityValve.cs:162-166`, `:222-225`).
 Clamp the loaded volume to the live capacity on `Initialize`, exactly as the pressure valve clamps its gate
 against a possibly-reconfigured rating (`BlockEntityPressureValve.cs:47-52`).
 

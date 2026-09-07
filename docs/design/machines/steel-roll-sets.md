@@ -27,7 +27,7 @@ cast stock items all stay iiex.
 |---|---|
 | the mill block, its 3 × 3 × 2 footprint, the axle bus, placement/break/drops, the pass lifecycle, `RollingPass` physics (`δ_max = μ²R`, spread, elongation, cooling), the `rollset` spec format and `TryParse`'s rules, the shipped four-set catalogue, `WorkPiece`, `StockForm`, every `Rolling*` key, its blockers and gotchas | [rolling mill](rolling-mill.md) |
 | the hall as a build (N ordinary mills on one shaft), the wide family's shared schema - one gap per item, barrel 16, `MaxWidth` 15 - the four iiex sets, the drawn-gap-is-the-modelled-gap table, the shared-shaft mechanics and the hall's power profile | [wide hall](wide-hall.md) |
-| the energy model, `LoadTorque`, the four node contracts, every `Mp*` key - what a torque number means | [mp-energy](../mechanics/mp-energy.md) |
+| the energy model, `LoadTorque`, the four node contracts, every `Mp*` key - what a torque number means | [mp-energy](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/mp-energy.md) |
 | the drive that turns the stands | [flywheel & shafting](flywheel-and-shafting.md) |
 | every crop in the ladder, and the `Outputs` → stage move | [shear](shear.md) |
 | blanking / stamping the rolled plate | [steam hammer](steam-hammer.md) |
@@ -39,7 +39,7 @@ cast stock items all stay iiex.
 | code-first defs, recipes, the cost catalogue, goldens | [recipes & config](../mechanics/recipes-config.md) |
 
 **Depends on** [rolling mill](rolling-mill.md) · [wide hall](wide-hall.md) ·
-[mp-energy](../mechanics/mp-energy.md) · [shear](shear.md) · [long cell](long-cell.md) ·
+[mp-energy](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/mp-energy.md) · [shear](shear.md) · [long cell](long-cell.md) ·
 [reheat furnace](reheat-furnace.md) · [recipes & config](../mechanics/recipes-config.md) ·
 [rolling](../processes/rolling.md) · `../STATE.md` § Placement rule
 
@@ -196,7 +196,7 @@ The two narrow rows stand, and they are now the whole of this page's build list.
 Caution: the ×2 is a placeholder, not a calibration. The field is unread, so no shipped behaviour depends
 on any value. The only real anchor is the drive side - one bridged waterwheel leaves roughly 0.4 N·m of
 headroom and a hot fresh-bloom pass costs about 0.338 N·m ([rolling mill](rolling-mill.md) § Worked pass,
-[mp-energy](../mechanics/mp-energy.md)). A steel tier that means anything must sit above what one
+[mp-energy](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/mp-energy.md)). A steel tier that means anything must sit above what one
 waterwheel carries and below what a steam engine plus a large flywheel does.
 
 ### Shipped `MinTorque` — the delta this page is the difference from
@@ -299,8 +299,8 @@ any tier: that a set below `MinTorque` is refused.
 | # | Question | Notes |
 |---|---|---|
 | ~~1~~ | ~~Are steel wide sets separate items, or do iiex's four simply gain the cast forms in `accepts`?~~ | **Settled 2026-08-14 (owner): the wide family is ONE item.** Its top roller is movable and the player sets the gap on the stand, so per-gap wide sets are cancelled outright and iiex's `flatwide` gained `castbloom` / `castslab`. ⛔ The cost is exactly what this row warned of - one item, one `MinTorque` - so the wide route carries **no torque gate at all** and cast stock rolls behind the iron-tier 0.5. If the gate must be real on the wide side it needs a mechanism other than a second set |
-| 2 | What `MinTorque` values? | Unanswerable until the field is read and the mp-energy numbers settle. Anchors: hot pass ≈ 0.338 N·m, one bridged waterwheel ≈ 0.4 N·m headroom ([rolling mill](rolling-mill.md), [mp-energy](../mechanics/mp-energy.md)). ★ The **shear** side did get a gate in the meantime: every cast crop row asks `minTier: 2`, the steel blade, which is pinned |
-| 3 | Wire the per-consumer idle draw into the stands. | Settled 2026-08-05 on [mp-energy](../mechanics/mp-energy.md) § Idle draw: every connected consumer contributes a standing torque, with the clutch transmission as the disconnect. The shipped code still charges friction per run, not per node - until that lands, "steel needs a bigger plant" has no mechanism behind it |
+| 2 | What `MinTorque` values? | Unanswerable until the field is read and the mp-energy numbers settle. Anchors: hot pass ≈ 0.338 N·m, one bridged waterwheel ≈ 0.4 N·m headroom ([rolling mill](rolling-mill.md), [mp-energy](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/mp-energy.md)). ★ The **shear** side did get a gate in the meantime: every cast crop row asks `minTier: 2`, the steel blade, which is pinned |
+| 3 | Wire the per-consumer idle draw into the stands. | Settled 2026-08-05 on [mp-energy](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/mp-energy.md) § Idle draw: every connected consumer contributes a standing torque, with the clutch transmission as the disconnect. The shipped code still charges friction per run, not per node - until that lands, "steel needs a bigger plant" has no mechanism behind it |
 | ~~4~~ | ~~Two roll shapes to draw (3.5, 3.0)~~ | Dropped with question 1 - there is no per-gap wide item to draw. Wiring the narrow art already drawn stands |
 | 5 | Recipes, and the cost-catalogue rows | none exist for any set in any tier |
 | 6 | Three `StockForm`s and their long-cell patterns | the cavity redraw is a separate build item |

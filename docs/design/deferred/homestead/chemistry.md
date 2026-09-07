@@ -24,11 +24,11 @@ fractionating still that feeds it)
 | Crude oil, refining, petcoke | [oil](oil.md) |
 | elex's grid, arc furnace, electrolysis cell and electrode mechanic | [electrical grid](../elex/electrical-grid.md) · [arc furnace](../elex/arc-furnace.md) · [electrolysis cell](../elex/electrolysis-cell.md) |
 | The copper add-on (reverberatory, Pierce-Smith, zinc retorts) | [copper reverberatory](../non-ferrous/copper-reverberatory.md) · [Pierce-Smith](../non-ferrous/pierce-smith.md) |
-| One medium per run, capacity, pressure | [pipe network](../../mechanics/pipe-network.md) |
+| One medium per run, capacity, pressure | [pipe network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md) |
 | R1 · R2 · R5 · R7 | [conventions.md](../../conventions.md) |
 
 **Depends on** [scope.md](../../scope.md) · [gasworks](gasworks.md) · [oil](oil.md) ·
-[pipe network](../../mechanics/pipe-network.md) · [conventions.md](../../conventions.md) ·
+[pipe network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md) · [conventions.md](../../conventions.md) ·
 the archived iiex spec (git history) · [electrolysis cell](../elex/electrolysis-cell.md)
 
 ---
@@ -131,7 +131,7 @@ a scope-owned statement, so this page flags it rather than rewriting it; see [Op
 * **The real remaining cost is plumbing, not chemistry.** Vanilla acid is an `ItemLiquidPortion` with
   `waterTightContainerProps` (`acid.json:15-32`, `allowSpill` at `:27`) - it lives in buckets and barrels.
   The suite's fluids live in `PipeNetwork` runs with a `MediumType` from `ExLiquids`
-  ([pipe network](../../mechanics/pipe-network.md)). Nothing bridges the two, in either direction, anywhere in
+  ([pipe network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md)). Nothing bridges the two, in either direction, anywhere in
   `src/`. Any machine that wants to plumb acid needs that bridge built first, and nobody has scoped it.
 * **R1 makes an acid main expensive anyway.** One medium per run, and liquids - unlike gases - only merge
   with themselves (`ExLiquids.cs:115`, *"liquids: same only"*). An acid line is a dedicated line. For a

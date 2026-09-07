@@ -15,7 +15,7 @@
   [heat balance](../mechanics/heat-balance.md), [cold blast furnace](blast-furnace-cold.md),
   [cupola](cupola.md).
 - Fillers, footprints, filler interaction rerouting, the build-outline projection -
-  [multiblock](../mechanics/multiblock.md).
+  [multiblock](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/multiblock.md).
 - Code-first defs, recipes, cost catalogue - [recipes-config](../mechanics/recipes-config.md).
 - Unit mass - [density rule](../mechanics/density-rule.md).
 - Where the burden came from - [burdenmaker](burdenmaker.md).

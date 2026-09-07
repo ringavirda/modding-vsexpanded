@@ -18,12 +18,12 @@
   chimney - and that it is not, itself, variable.
 
 **Does not own** — cited only, never restated:
-[pipe network](../mechanics/pipe-network.md) (the graph substrate, `AddNode`/`RemoveNode`, node registration
+[pipe network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md) (the graph substrate, `AddNode`/`RemoveNode`, node registration
 rules, one-medium pools, `LitresPerPipe`, capacity, pressure, over-pressure burst, leaks, and the separate
 `IPipeVentStrategy` seam) · [hot blast furnace](blast-furnace-hot.md) (the exhaust source, the two outlets,
 `IsChoked` and what choking costs the furnace) · [cowper](cowper.md) (the machine upstream of the stack) ·
 [heat balance](../mechanics/heat-balance.md) (`ExhaustVolumePerTick`, `ProductionTickMs`, the disruption model) ·
-[multiblock](../mechanics/multiblock.md) (the layout DSL, origin-is-negation, structure completion, the build
+[multiblock](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/multiblock.md) (the layout DSL, origin-is-negation, structure completion, the build
 outline) · [recipes & config](../mechanics/recipes-config.md) ·
 [crucible furnace](crucible-furnace.md) (the designed variable stack, and the requirement that natural
 draught become a function of stack height)
@@ -66,7 +66,7 @@ more than a vanilla chimney and vent three times as much.
 
 Anchor: `siex:smokestack-intake-{refractory}-{orientation}`, at the base front of the chimney. Layout authored
 with `Origin(-1, 0)` - the negation of the `I` glyph's (col, row), per
-[multiblock](../mechanics/multiblock.md).
+[multiblock](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/multiblock.md).
 
 | Source | Where |
 |---|---|
@@ -269,8 +269,8 @@ before that release.
 
 | Key / constant | Owner |
 |---|---|
-| `LitresPerPipe` (`ExpandedLib/ExlibConfig.cs:32`) - a main's per-node capacity | [pipe network](../mechanics/pipe-network.md) |
-| `ChimneyGasDrawRate` = 16 L/s (`IiexConfig.cs:237`) - the other venting mechanism | [pipe network](../mechanics/pipe-network.md) |
+| `LitresPerPipe` (`ExpandedLib/ExlibConfig.cs:32`) - a main's per-node capacity | [pipe network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md) |
+| `ChimneyGasDrawRate` = 16 L/s (`IiexConfig.cs:237`) - the other venting mechanism | [pipe network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md) |
 | `ExhaustVolumePerTick`, `ProductionTickMs`, `IsChoked`, the disruption model | [heat balance](../mechanics/heat-balance.md) |
 | `CowperIntakeVolume` = 24 L/s | [cowper](cowper.md) |
 
@@ -322,7 +322,7 @@ is not available either.
 * A second sink - an economiser, a scrubber, a waste-heat boiler - implements `IPipeNode.TryConsume` and is
   placed on the exhaust main. Nothing about the stack is special; the furnace never looks for one.
 * A different vent behaviour on a single block belongs in `IPipeVentStrategy`
-  ([pipe network](../mechanics/pipe-network.md)), not here.
+  ([pipe network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md)), not here.
 * A variable-height stack ([crucible furnace](crucible-furnace.md)) cannot reuse this layout - see Open #1.
 
 ### Tests
@@ -405,7 +405,7 @@ never forced.
    [crucible furnace](crucible-furnace.md) requires that the natural-draught factor become a function of stack
    height, which needs a layout that accepts "N or more identical courses". This machine has nine identical
    courses hard-written as nine `.Layer(...)` calls (`:110-150`) and the DSL has no repetition or
-   open-ended-column construct ([multiblock](../mechanics/multiblock.md)). Whoever builds the crucible furnace
+   open-ended-column construct ([multiblock](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/multiblock.md)). Whoever builds the crucible furnace
    either extends the DSL or counts courses in C# outside the structure check - and if they do the latter, this
    stack should probably adopt it too, so that a taller chimney vents more.
 

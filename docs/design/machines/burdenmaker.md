@@ -20,14 +20,14 @@
 | Why burden is ore + flux and coke is charged separately | [layered-charge](../layered-charge.md) |
 | Burden item identity and what remains of its stamp | [burden](../items/burden.md) |
 | Where burden goes next, and the charging rule | [tall-hopper](tall-hopper.md) · [blast-furnace-cold](blast-furnace-cold.md) |
-| Megablock footprints, fillers, per-cell interaction routing | [multiblock](../mechanics/multiblock.md) |
+| Megablock footprints, fillers, per-cell interaction routing | [multiblock](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/multiblock.md) |
 | Code-first defs, RCC stage machinery, goldens, the cost catalogue | [recipes-config](../mechanics/recipes-config.md) |
 | `1 vx³ = 2.5 u` | [density-rule](../mechanics/density-rule.md) |
 | Where crushed ore comes from | [ore-crusher](ore-crusher.md) · [roasting](../processes/roasting.md) |
 | R2 recoverability | [recoverability](../mechanics/recoverability.md) |
 
 **Depends on** [layered-charge](../layered-charge.md) · [burden](../items/burden.md) ·
-[multiblock](../mechanics/multiblock.md) · [recipes-config](../mechanics/recipes-config.md) ·
+[multiblock](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/multiblock.md) · [recipes-config](../mechanics/recipes-config.md) ·
 [roasting](../processes/roasting.md)
 
 ---

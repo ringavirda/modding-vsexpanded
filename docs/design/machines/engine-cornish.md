@@ -25,15 +25,15 @@
   constant-power torque curve and the fluid pump's `× 3` - [Watt engine](engine-watt.md).
 - The air blower sub-machine and its rate - smex's block (no design page yet).
 - The steam pool, pressure, burst-by-tier, the pressure valve, leaks, the network tick -
-  [pipe network](../mechanics/pipe-network.md).
+  [pipe network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md).
 - The rolled tier this engine's supply main must be made of, its 12 atm rating, its welded joint and its
   missing recipe (B5) - [rolled pipe](rolled-pipe.md).
 - B6 in full (why the pressure valve cannot be fitted) - [cast pipes](cast-pipes.md) § B6.
 - The Lancashire boiler that feeds it, its 12 atm choke and its own arithmetic -
   [Lancashire boiler](boiler-lancashire.md).
-- Fillers, footprints, the layout DSL, per-cell collision - [multiblock](../mechanics/multiblock.md).
+- Fillers, footprints, the layout DSL, per-cell collision - [multiblock](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/multiblock.md).
 - Code-first defs, the RCC builder, the cost catalogue - [recipes & config](../mechanics/recipes-config.md).
-- The `"mpenergy"` network, the flywheel and the vanilla-MP bridge - [mp-energy](../mechanics/mp-energy.md).
+- The `"mpenergy"` network, the flywheel and the vanilla-MP bridge - [mp-energy](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/mp-energy.md).
 
 ---
 
@@ -103,7 +103,7 @@ Authored in the north frame on the principal cell and rotated by `Angle`, not `B
 | Condensate out | EAST | engine → pipe |
 
 Both are machine ports, not `BlockPipe`s, so `AcceptsNeighbour` lets a rolled run bolt straight onto them
-([pipe network](../mechanics/pipe-network.md) § 5). That is the one reason an HP main has anything to connect
+([pipe network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md) § 5). That is the one reason an HP main has anything to connect
 to at all.
 
 ---
@@ -276,7 +276,7 @@ sub-machine, `power = RunPower × demand × frac`. The Cornish overrides only th
 ### Which pipe can supply it
 
 The engine's engage pressure has to be reached inside a pipe run, and a run is capped by its weakest
-burstable segment ([pipe network](../mechanics/pipe-network.md) § 3, § 5). Cross the two tables:
+burstable segment ([pipe network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md) § 3, § 5). Cross the two tables:
 
 | tier | burst | reaches low (5.0)? | normal (6.0)? | high (7.0)? |
 |---|---|---|---|---|
@@ -385,7 +385,7 @@ Constants, not per-setting:
 | `PumpWaterPerSecond` (+ the `× 3`) | 16.67 L/s | [Watt engine](engine-watt.md) |
 | air-blower rate | smex's | `SiexConfig.cs` |
 | Lancashire choke / steam | 12 atm / 48 L/s | [Lancashire boiler](boiler-lancashire.md) |
-| rolled / cast / plated pipe burst | 12 / 5.0 / 2.5 | [rolled pipe](rolled-pipe.md), [cast pipes](cast-pipes.md), [pipe network](../mechanics/pipe-network.md) |
+| rolled / cast / plated pipe burst | 12 / 5.0 / 2.5 | [rolled pipe](rolled-pipe.md), [cast pipes](cast-pipes.md), [pipe network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md) |
 | iiex pressure-valve gate ceiling | 5.0 atm | [cast pipes](cast-pipes.md) § B6 |
 
 ```

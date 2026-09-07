@@ -12,7 +12,7 @@ ladle is iiex's.
 > so every alloying rule in [materials.md](../materials.md) is unreachable: the whole
 > "Ladle mixing rules" section (`materials.md:102-129`), the entire alloy-composition table, hadfield, the
 > bronzes, HSS. The molten network merges nothing today
-> ([molten network](../mechanics/molten-network.md) § 6).
+> ([molten network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/molten-network.md) § 6).
 
 ## Settled rulings
 
@@ -122,7 +122,7 @@ settled beyond that; it is the brief for the design session that scopes the subs
 **Does not own** - cited only, never restated:
 [materials.md](../materials.md) - the alloy catalogue, every target ratio, the waste-alloy recovery routes,
 and the rule that `MetalDef.Alloy` must stay inert ·
-[molten network](../mechanics/molten-network.md) - `IMoltenCell`, `BEBehaviorMoltenCell`, `FlowEdge`, the
+[molten network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/molten-network.md) - `IMoltenCell`, `BEBehaviorMoltenCell`, `FlowEdge`, the
 no-op merge/split, the metal-type refusal, the two cluster drivers ·
 [molten canal](molten-canal.md) - canal cells, the start, the tap, the mold pedestal, seals and valves ·
 [Bessemer](bessemer.md) - the blow, its carbon model, its cold-scrap gate, its capacity ·
@@ -133,9 +133,9 @@ right machine for that ·
 [long cell](long-cell.md) · [casting cell](casting-cell.md) · [casting bed](casting-bed.md) - where the mixed
 metal goes · [heat balance](../mechanics/heat-balance.md) - the furnace `T_process` law the ladle does not
 use (it has no fire) · [recipes & config](../mechanics/recipes-config.md) ·
-[STATE.md](../../internal/plans/STATE.md) - D3, D6, N1, and the ferroalloy rulings
+[STATE.md](../../../../docs/plans/STATE.md) - D3, D6, N1, and the ferroalloy rulings
 
-**Depends on** [molten network](../mechanics/molten-network.md) · [molten canal](molten-canal.md) ·
+**Depends on** [molten network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/molten-network.md) · [molten canal](molten-canal.md) ·
 [materials.md](../materials.md) · [Bessemer](bessemer.md) · [open hearth](open-hearth.md) ·
 [cupola](cupola.md) · [recipes & config](../mechanics/recipes-config.md)
 
@@ -145,7 +145,7 @@ use (it has no fire) · [recipes & config](../mechanics/recipes-config.md) ·
 
 The one place in the suite where two metals become one. Everything else in the molten system refuses to mix:
 `FlowEdge` will not move metal into a cell holding a different code, `PushMetalRaw` refuses the same, and
-graph merge/split are no-ops ([molten network](../mechanics/molten-network.md) § 6). Two metals sit
+graph merge/split are no-ops ([molten network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/molten-network.md) § 6). Two metals sit
 side by side in one canal run and stay two metals. R3 exists so that exactly one block breaks that rule,
 and the ladle is it.
 
@@ -159,7 +159,7 @@ Three jobs, in the order the player meets them:
 
 ### The Bessemer route does not work without it
 
-[STATE.md](../../internal/plans/STATE.md) N1, settled 2026-07-29: the blow burns out all the carbon and the manganese,
+[STATE.md](../../../../docs/plans/STATE.md) N1, settled 2026-07-29: the blow burns out all the carbon and the manganese,
 leaving iron that is oxygen-saturated. Its name is blown iron and it is not a material to build with.
 Mushet's 1856 spiegeleisen addition was not a refinement: without it the Bessemer process did not work at all.
 
@@ -228,7 +228,7 @@ This is the single most important implementation constraint, and the reason the 
 
 * the molten graph's `Merge` / `Split` are no-ops and there is no pooled state to redistribute;
 * `FlowEdge` refuses any transfer where the receiver holds a different metal code
-  ([molten network](../mechanics/molten-network.md) § 6).
+  ([molten network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/molten-network.md) § 6).
 
 So a ladle that joined the graph would be refused its own second input by the network it is supposed to
 merge. The pattern that works already exists in three places: a non-node block that reads adjacent cells
@@ -331,7 +331,7 @@ Waste alloy is recoverable - in the [cupola](cupola.md) as cast iron, as capped 
 
 ### The chill model — the mechanic is temperature, and it gates nothing
 
-Settled 2026-07-29 ([STATE.md](../../internal/plans/STATE.md) § "How ferroalloys are added"): both routes are real, and the
+Settled 2026-07-29 ([STATE.md](../../../../docs/plans/STATE.md) § "How ferroalloys are added"): both routes are real, and the
 quantity decides which one is usable.
 
 | Addition | Route | Why |
@@ -385,7 +385,7 @@ value is how long the player has to work.
 Brass boils its zinc off unless the bath is covered with coke ([materials.md](../materials.md)). That is a
 second use for the same hand-drop port and a second reason the ladle needs a bath state, not just a tally,
 but it is non-ferrous and therefore deferred with everything non-ferrous
-([STATE.md](../../internal/plans/STATE.md) D8).
+([STATE.md](../../../../docs/plans/STATE.md) D8).
 
 ---
 
@@ -395,7 +395,7 @@ All proposed. No config section, no keys, no code. The right-hand column is what
 
 | Key | Proposed | Measured against (file:line) | What it does |
 |---|---|---|---|
-| `LadleCapacity` | 6000 u | settled converter capacity ([STATE.md](../../internal/plans/STATE.md) D4); `CanalDefaultUnitCapacity` 50 (`IiexConfig.cs:86`); `MoldDefaultUnits` 100 (`:92`) | one converter heat = one ladle. but the converter pours 5400 u of steel from a 6000 u charge - see Open #3 |
+| `LadleCapacity` | 6000 u | settled converter capacity ([STATE.md](../../../../docs/plans/STATE.md) D4); `CanalDefaultUnitCapacity` 50 (`IiexConfig.cs:86`); `MoldDefaultUnits` 100 (`:92`) | one converter heat = one ladle. but the converter pours 5400 u of steel from a 6000 u charge - see Open #3 |
 | `LadlePullRate` | 25 u/tick | the casting bed's and cell's hard-coded `PullRatePerTick = 25` (`BlockEntitySandCastingBed.cs:44`, `BlockEntitySandCastingCell.cs:33`) | ship it as config, not a fourth hard-coded copy (D5b) |
 | `LadlePourRate` | 44 u/s | `BessemerPourRate` 44 (`SiexConfig.cs:231`) | match the converter so a ladle never becomes the bottleneck |
 | `LadleCooldownCoefficient` | 0.5 | `BessemerCooldownCoefficient` 0.5 (`SiexConfig.cs:240`), on `IiexValues.MoltenCooldownSpeed` 24 (`IiexConfig.cs:31`) | how long the player has to work a mix |
@@ -473,7 +473,7 @@ The standing gap it must not repeat: no converter test asserts a rate as a numbe
 
 1. **A ladle that joins the molten graph cannot do its job.** `FlowEdge` refuses a transfer into a cell
    holding a different metal, and merge/split are no-ops
-   ([molten network](../mechanics/molten-network.md) § 6). It must pull by code, not by graph. This is the one
+   ([molten network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/molten-network.md) § 6). It must pull by code, not by graph. This is the one
    mistake that would take the whole feature back to the start.
 
 2. **R3 is a reservation, not a description.** `conventions.md:38-40` states the ladle is the only merge
@@ -499,7 +499,7 @@ The standing gap it must not repeat: no converter test asserts a rate as a numbe
    12.5 % Mn while silently missing its ~1.2 % C target ([materials.md](../materials.md)).
 
 7. **The pour destination decides the product, and there are three of them** - canal start, mold pedestal,
-   long cell - each with a different capacity and a different rate. [STATE.md](../../internal/plans/STATE.md) D5b wants one
+   long cell - each with a different capacity and a different rate. [STATE.md](../../../../docs/plans/STATE.md) D5b wants one
    number (50 u/s) for the whole molten network; two of the four current rates are hard-coded.
 
 8. **Zinc's coke cover is non-ferrous and deferred**, but it is the one addition whose absence destroys
@@ -534,7 +534,7 @@ The standing gap it must not repeat: no converter test asserts a rate as a numbe
 
 4. **Where do the alloy windows live?** A JSON catalogue beside `config/metals/` is the obvious answer and
    matches how metals already load - but the targets currently live in `materials.md`, which
-   [STATE.md](../../internal/plans/STATE.md) says should become generated. The two must not both be canonical.
+   [STATE.md](../../../../docs/plans/STATE.md) says should become generated. The two must not both be canonical.
 
 5. **Is the static ladle enough?** Historically a ladle is carried by crane from converter to casting
    floor; the settled static block means the canal has to reach every casting station, and the

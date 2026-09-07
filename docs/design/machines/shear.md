@@ -13,10 +13,10 @@ line is still creative-only for a reason that is not this machine's: no roll set
 * that a crop keys on stage rather than on gap, so a half-step is a legal product point. ⛔ The
   relocation of `Outputs` / `OutputAt` off `RollSetSpec` landed on **`MillSchedule`**, not here: a stage
   whose whole piece converts belongs to the mill's ladder and a stage that yields several pieces is a crop,
-  which is the split [process-extension](../mechanics/process-extension.md) owns;
+  which is the split [process-extension](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/process-extension.md) owns;
 * the crop-not-convert rule: a crop takes one product's worth of metal and leaves the remainder on the deck as
   stock - settled 2026-08-12, and generalised into the staged-crops / whole-item-converts split that
-  [process-extension](../mechanics/process-extension.md) now owns;
+  [process-extension](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/process-extension.md) now owns;
 * the shear-cuts-across / die-cuts-out verb split, and why the steam hammer never shears;
 * the cold-cut torque gate - that cold shearing is decided by `MinTorque` against network drive, not by tier
   and not by a thickness constant, and that this is `MinTorque`'s first and only consumer;
@@ -24,16 +24,16 @@ line is still creative-only for a reason that is not this machine's: no roll set
 * the shear's own footprint, drive contract, tooling (blade sets) and drops.
 
 **Depends on**
-[mp-energy](../mechanics/mp-energy.md) (the run it loads, `IMpEnergyConsumer`, the flywheel that carries a
+[mp-energy](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/mp-energy.md) (the run it loads, `IMpEnergyConsumer`, the flywheel that carries a
 pulsed bite) ·
 [recoverability](../mechanics/recoverability.md) (the ≤ 32 / ≤ 48 invariant, the two mandatory crop points,
 and why cold shear is not a third escape) ·
-[multiblock & fillers](../mechanics/multiblock.md) (the footprint machinery a 3 × 1 × 2 megablock does need) ·
+[multiblock & fillers](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/multiblock.md) (the footprint machinery a 3 × 1 × 2 megablock does need) ·
 [density rule](../mechanics/density-rule.md) (why every crop divides exactly) ·
 [recipes & config](../mechanics/recipes-config.md) (the code-first def, the cost catalogue, goldens) ·
 [rolling mill](rolling-mill.md) (the stock it crops and the stage it arrives at) ·
 [reheat furnace](reheat-furnace.md) (the alternative to a cold cut) ·
-[rolling](../processes/rolling.md) · [STATE.md § placement rule](../../internal/plans/STATE.md)
+[rolling](../processes/rolling.md) · [STATE.md § placement rule](../../../../docs/plans/STATE.md)
 
 ---
 
@@ -69,7 +69,7 @@ away from the line.
 
 ⛔⛔ **3 × 1 × 2, not 1 × 1 × 1** *(corrected 2026-08-13 against the drawn shape, below)*. The art settles
 this: the machine measures 47 × 26 × 16 voxels, so it is a megablock and the
-[multiblock](../mechanics/multiblock.md) footprint machinery does apply after all. Three cells along the
+[multiblock](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/multiblock.md) footprint machinery does apply after all. Three cells along the
 blade, one deep, two high - the mill's 3 × 3 × 2 without the second feed deck. The one thing still worth
 copying from the mill is that a shape may overhang its cell as long as the block is `SolidNonOpaque`
 (`BlockRollingMill.cs:62-63`).
@@ -136,7 +136,7 @@ The `cycle` clip (60 frames, `onAnimationEnd: Repeat`) turns `Shaft` **720°** a
 so the gearing is **2:1** and one revolution of the slow shaft is **one stroke**. `CutterMass` swings from
 its −15° rest to closed at **frame 44** and eases back, so the cut lands about three-quarters of the way
 through the clip rather than on frame 0 - the phase-lock the mill already needs applies here too
-([mp-energy](../mechanics/mp-energy.md)). An `idle` clip holds `Shaft` at zero.
+([mp-energy](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/mp-energy.md)). An `idle` clip holds `Shaft` at zero.
 
 ★★ **Two open items close on this.** The blades are 14 voxels of edge, which takes the widest plate the
 forming line makes (`flatwide`'s `MaxWidth` 15), so **the wide shear is this block** - not a second machine
@@ -149,7 +149,7 @@ shears measure 96 vx³ = 240 u and want **100 vx³ = 250 u** to divide off the r
 
 *Swept 2026-08-12, across `workbench/shapes/items/`.* The convention holds everywhere: an element drawn
 off the shared origin is **not a stage**, it is another machine's output, and it belongs in that machine's
-registry ([process-extension](../mechanics/process-extension.md)).
+registry ([process-extension](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/process-extension.md)).
 
 | Shape file | Stage elements (the mill's ladder) | Off-origin — **this** registry's |
 |---|---|---|
@@ -253,7 +253,7 @@ Hard-coded values that will bite:
 |---|---|---|---|
 | network tick | 1000 ms | `BlockNetworkModSystem.cs:42-45` | the run's `dt`; a stroke faster than this reads a stale ω |
 | mill pass tick | 250 ms | `BlockEntityRollingMill.cs:41` | `private const int PassTickMs` - not config |
-| `MpMaxSpeed` | 2.0 rad/s | `ExlibConfig.cs:98` | capacity scales with its square; owned by [mp-energy](../mechanics/mp-energy.md) |
+| `MpMaxSpeed` | 2.0 rad/s | `ExlibConfig.cs:98` | capacity scales with its square; owned by [mp-energy](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/mp-energy.md) |
 
 The crop points, stage lengths and product masses are not this page's: they belong to
 [recoverability](../mechanics/recoverability.md) (the two mandatory crops), [density
@@ -270,7 +270,7 @@ table).
 | the fitted blade set | spawned at the block, not destroyed - copy `BlockEntityRollingMill.OnBlockBroken` (`:374-383`), which spawns both the jammed piece and the roll set before calling base |
 | a piece in the throat | handed back unchanged - a crop is committed only on completion |
 
-⛔ The footprint has fillers - two full cells and three slabs - so [multiblock](../mechanics/multiblock.md)'s drop-rerouting does apply, and it is why `OnBlockBroken` on the principal is the only place that can spawn the blades and the piece. Breaking any cell of the machine reroutes there.
+⛔ The footprint has fillers - two full cells and three slabs - so [multiblock](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/multiblock.md)'s drop-rerouting does apply, and it is why `OnBlockBroken` on the principal is the only place that can spawn the blades and the piece. Breaking any cell of the machine reroutes there.
 
 ---
 
@@ -361,7 +361,7 @@ the same tooling-owns-the-data idiom as `RollSetSpec` (`RollSetSpec.cs:9-24`) an
   `count` in the built `ProcessJob` is the piece's total yield, so recoverability's "into 6" is that yield
   and crop-not-convert is how it leaves. ⛔ The mandatory crops therefore stop being a special operation - a
   player crops until the piece seats. See
-  [process-extension § What a count means](../mechanics/process-extension.md).
+  [process-extension § What a count means](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/process-extension.md).
 - ~~The wide shear.~~ **Closed 2026-08-13 by the art.** The drawn blades are **14 voxels of edge**, which
   takes `flatwide`'s `MaxWidth` 15 - the widest plate the forming line makes. There is no second cutting
   station: this block covers the whole range, which is also what the verb split wanted (a die would have

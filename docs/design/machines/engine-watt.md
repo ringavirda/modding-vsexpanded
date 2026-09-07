@@ -15,10 +15,10 @@
 
 **Does not own** - cited only, never restated:
 - The steam pool, pressure, one-medium rule, burst-by-tier, the pressure valve, leaks, the network tick -
-  [pipe network](../mechanics/pipe-network.md).
+  [pipe network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md).
 - The `"mpenergy"` network, `E = ½Iω²`, the flywheel, its hub bridge, `BEBehaviorMPFillerPort`, transmissions
-  and every `Mp*` / `Flywheel*` key in iiex's config - [mp-energy](../mechanics/mp-energy.md).
-- Fillers, footprints, the layout DSL, per-cell collision - [multiblock](../mechanics/multiblock.md).
+  and every `Mp*` / `Flywheel*` key in iiex's config - [mp-energy](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/mp-energy.md).
+- Fillers, footprints, the layout DSL, per-cell collision - [multiblock](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/multiblock.md).
 - Code-first defs, the RCC builder, `brokenDropsRatio` resolution, the cost catalogue -
   [recipes-config](../mechanics/recipes-config.md).
 - The boiler that feeds it, its choke ceiling and why the pressure valve between them is mandatory -
@@ -39,7 +39,7 @@ ran on wagon and haystack boilers, though mid-19th-century practice did retrofit
 low-pressure beam engines.
 
 Its place in the progression is not "more power". At iron tier a vanilla waterwheel or windmill is bridged
-into mpenergy through the flywheel's hub ([mp-energy](../mechanics/mp-energy.md) § the vanilla-MP bridge);
+into mpenergy through the flywheel's hub ([mp-energy](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/mp-energy.md) § the vanilla-MP bridge);
 in iiex the player replaces the vanilla producer with a steam engine + MP generator, and the flywheel,
 shafts, transmissions and every consumer are untouched. Steam's advantage is siting and reliability: water
 needs a river, wind needs weather, steam runs anywhere any time.
@@ -443,9 +443,9 @@ Cornish engine overrides them.
 |---|---|---|---|
 | Cornish boiler choke ceiling | `5.0 atm` | [Cornish boiler](boiler-cornish.md) | `IiexConfig.cs:1072` |
 | Cornish boiler steam output | `64 L/s` | [Cornish boiler](boiler-cornish.md) | `:1068` |
-| cast (iiex) pipe burst | `5.0 atm` | [pipe network](../mechanics/pipe-network.md) | `:50` |
-| pressure-valve gate step / ceiling | `0.25 atm` / block burst rating | [pipe network](../mechanics/pipe-network.md) | `BlockEntityPressureValve.cs:31`, `:41-42` |
-| `MpMaxSpeed`, `MpFrictionCoeff`, flywheel inertia, the bridge torque | iiex's | [mp-energy](../mechanics/mp-energy.md) | `ExlibConfig.cs:86-98`, `IiexConfig.cs:451-477` |
+| cast (iiex) pipe burst | `5.0 atm` | [pipe network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md) | `:50` |
+| pressure-valve gate step / ceiling | `0.25 atm` / block burst rating | [pipe network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md) | `BlockEntityPressureValve.cs:31`, `:41-42` |
+| `MpMaxSpeed`, `MpFrictionCoeff`, flywheel inertia, the bridge torque | iiex's | [mp-energy](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/mp-energy.md) | `ExlibConfig.cs:86-98`, `IiexConfig.cs:451-477` |
 | air-blower output rate | smex's | smex | `SiexConfig.cs:113` |
 
 ```
@@ -559,7 +559,7 @@ boiler's explosion salvage path.
   generator returns 0 while overstressed). Override `OnCycleStroke` for per-stroke effects.
 - Driving mpenergy from steam: do not wire this generator into `"mpenergy"`. Put the vanilla axle it
   produces onto the flywheel's hub port and let the existing bridge convert it
-  ([mp-energy](../mechanics/mp-energy.md) § the vanilla-MP bridge) - the
+  ([mp-energy](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/mp-energy.md) § the vanilla-MP bridge) - the
   "swap the waterwheel for an engine" progression.
 
 ### Tests — `mods/iiex/tests/Blocks/Engine/`
@@ -596,7 +596,7 @@ without a sub-machine demanding power.
    torque source with no inertia, no stored energy and no `"mpenergy"` membership, and is easy to
    mislabel a flywheel. iiex's `iiex:mpenergy-flywheel` is a
    real `IMpEnergyStorage` disc on the `"mpenergy"` network with `I = 10` (normal) / `150` (large) and the
-   vanilla bridge in its hub ([mp-energy](../mechanics/mp-energy.md)). They are different blocks in
+   vanilla bridge in its hub ([mp-energy](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/mp-energy.md)). They are different blocks in
    different networks. Calling the iiex generator a flywheel implies it buffers, which is the
    property it does not have.
 
@@ -673,7 +673,7 @@ without a sub-machine demanding power.
   [boring-machine](boring-machine.md) hold the designs).
 - The MP generator is the swap-in for the waterwheel, and nothing documents the swap. The player has to
   work out that the generator's vanilla axle feeds the flywheel's hub port, not the mpenergy graph
-  directly. See [mp-energy](../mechanics/mp-energy.md) § the vanilla-MP bridge.
+  directly. See [mp-energy](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/mp-energy.md) § the vanilla-MP bridge.
 - `0.2625` is a number nobody wrote down: neither the config comment nor the handbook states the actual
   MP load, and it has never been playtested against vanilla machine resistances.
 - Fix the `× 3` one way or the other. Either fold it into the config defaults (`PumpWaterPerSecond` 50,

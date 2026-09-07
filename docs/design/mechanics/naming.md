@@ -15,12 +15,12 @@ burdenmaker; the iiex/hpex/smex machine folders remain
 * the rule that bounds the wave - migrate only what shipped - and where the shipped set is recorded.
 
 **Does not own** - cited only: the orientation tokens themselves and how they rotate
-([orientation-schemes](orientation-schemes.md)) · where a def, a recipe provider or an asset tree lives
+([orientation-schemes](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/orientation-schemes.md)) · where a def, a recipe provider or an asset tree lives
 ([conventions.md](../conventions.md) § the per-mod project skeleton) · the cost catalogue's contents
 ([recipes & config](recipes-config.md)) · the layout DSL that consumes these codes
 ([layouts](../../../workbench/layouts.md)).
 
-**Depends on** [orientation-schemes](orientation-schemes.md) - N4 is its who-decides-the-orientation table,
+**Depends on** [orientation-schemes](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/orientation-schemes.md) - N4 is its who-decides-the-orientation table,
 narrowed to a spelling question.
 **Depended on by** block renames & codegen
 · [layouts](../../../workbench/layouts.md) - a layout pins codes, so it can only be authored once the codes are final.

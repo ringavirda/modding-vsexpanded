@@ -11,7 +11,7 @@ namespace IronIndustryExpanded.BlockStructures.Crafting.Gui;
 /// <summary>
 /// The design table's drafting window: the medium/parchment input slots and the drafted output, a picker
 /// over every loaded diagram, an info panel describing the selected plan, and a Draw button that asks the
-/// block entity to draft it. See <c>docs/design/diagram-crafting.md</c>.
+/// block entity to draft it. See <c>docs/design/mechanics/diagram-crafting.md</c>.
 /// <para>
 /// Client-side only; the block entity applies slot moves and the draft through the open/close/draft packet
 /// handshake (see <see cref="BlockEntities.BlockEntityDesignTable"/>). The picker enumerates the loaded

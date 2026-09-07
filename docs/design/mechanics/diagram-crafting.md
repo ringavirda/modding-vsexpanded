@@ -19,7 +19,7 @@ smex contribute variants when their phases land
 |---|---|
 | The design table (block, window, craft recipe, draft cost) | [design-table](../machines/design-table.md) |
 | The boring machine (footprint, jobs, tooling) | [boring-machine](../machines/boring-machine.md) |
-| Pipe tiers and pressure numbers | [pipe-network](pipe-network.md) |
+| Pipe tiers and pressure numbers | [pipe-network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md) |
 | The pattern → cavity → cast-part chain | [casting-cell](../machines/casting-cell.md) · [long-cell](../machines/long-cell.md) |
 | `ExRecipeDef`, goldens, the cost catalogue | [recipes-config](recipes-config.md) |
 
@@ -117,7 +117,7 @@ have items, textures and (mostly) lang text but nothing consumes them yet.
 
 **Shared plans.** The pipe diagrams are one plan for every pipe tier: the diagram picks the shape; each
 tier's own recipe and material pick the tier. A shared plan lives in the lowest mod that uses it (iiex),
-which the higher mods depend on. Tiers and their numbers: [pipe-network](pipe-network.md).
+which the higher mods depend on. Tiers and their numbers: [pipe-network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md).
 
 ---
 

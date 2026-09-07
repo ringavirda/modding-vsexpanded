@@ -16,7 +16,7 @@ process temperature (B8, closed 2026-08-21).
 [heat balance](../mechanics/heat-balance.md) - owns `T_process = T_in − T_loss`, the coke/air/preheat and
 loss terms, the Idle → Firing → Melting FSM and its timers, and every `Bf*` / `Cupola*` tunable value ·
 [firebox](firebox.md) - owns the shared fuel-bed block, its pool and the ignition arithmetic ·
-[multiblock & filler structures](../mechanics/multiblock.md) - owns the layout DSL, origin-is-the-negation,
+[multiblock & filler structures](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/multiblock.md) - owns the layout DSL, origin-is-the-negation,
 oriented parts, invisible fillers and the completion walk ·
 [definitions, recipes & config](../mechanics/recipes-config.md) - owns code-first defs, goldens and the
 config file layout · [density rule](../mechanics/density-rule.md) - owns `1 vx³ = 2.5 u` and every mass
@@ -49,7 +49,7 @@ Puddling is a batch: nine pigs at a time, worked through a door with hand tools.
 Anchor `iiex:puddlingfurnacecore-{tier}-{side}`. Layout authored at
 `BlockPuddlingFurnaceCore.cs:67-175`; the shipped form is the golden at
 `mods/iiex/tests/goldens/iiex/blocktypes/furnace/puddlingcore.json`. Layout grammar,
-origin rule and filler semantics: [multiblock](../mechanics/multiblock.md).
+origin rule and filler semantics: [multiblock](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/multiblock.md).
 
 **Footprint** 8 wide (X) × 3 deep (Z) × 8 tall (Y), 91 declared cells. `Origin(-6, -1)` - the negation
 of the core glyph's `(col 6, row 1)`, so `C` lands on the placed block.

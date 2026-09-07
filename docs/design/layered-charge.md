@@ -115,5 +115,5 @@ recovery ladder of [roasting](processes/roasting.md) and [ironmaking](processes/
 | the cupola's unit scale and charge | [cupola](machines/cupola.md) |
 | pig, the 375 u item | [pig](items/pig.md) |
 | process chain, blow-in, recovery ladder | [ironmaking](processes/ironmaking.md) |
-| molten cells, canals, chisel-out | [molten-network](mechanics/molten-network.md) |
-| layout DSL, roles, oriented parts | [multiblock](mechanics/multiblock.md) |
+| molten cells, canals, chisel-out | [molten-network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/molten-network.md) |
+| layout DSL, roles, oriented parts | [multiblock](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/multiblock.md) |

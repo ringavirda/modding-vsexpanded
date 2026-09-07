@@ -29,17 +29,17 @@ runtime shape. A repo-wide grep for `hammer` in `src/` returns only vanilla tool
 | the puddling heat, the wrought ball, and the shingled-stock ladder's masses | [puddling](../processes/puddling.md), [shingling](../processes/shingling.md) |
 | `1 vx³ = 2.5 u` and every mass derived from it | [density rule](../mechanics/density-rule.md) |
 | the wide stock the stamping die eats, and the train that rolls it | [wide hall](wide-hall.md), [rolling mill](rolling-mill.md) |
-| where LP steam comes from, its pressure band, burst, `LitresPerPipe`, valves | [pipe network](../mechanics/pipe-network.md) |
-| the filler footprint system, behaviour-capable filler cells, interaction rerouting | [multiblock & fillers](../mechanics/multiblock.md) |
+| where LP steam comes from, its pressure band, burst, `LitresPerPipe`, valves | [pipe network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md) |
+| the filler footprint system, behaviour-capable filler cells, interaction rerouting | [multiblock & fillers](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/multiblock.md) |
 | code-first defs, RCC construction stages, the recipe-cost catalogue, goldens | [recipes & config](../mechanics/recipes-config.md) |
 | the ≤ 32 / ≤ 48 handling limits and the soft-lock definition | [recoverability](../mechanics/recoverability.md) |
-| the placement rule and the fastener split that put this machine in iiex | [STATE.md](../../internal/plans/STATE.md) |
+| the placement rule and the fastener split that put this machine in iiex | [STATE.md](../../../../docs/plans/STATE.md) |
 | the cast-vs-forged rule that makes dies forged and the frame cast | [casting](../processes/casting.md) |
 
-**Depends on** [pipe network](../mechanics/pipe-network.md) · [multiblock & fillers](../mechanics/multiblock.md) ·
+**Depends on** [pipe network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md) · [multiblock & fillers](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/multiblock.md) ·
 [recipes & config](../mechanics/recipes-config.md) · [density rule](../mechanics/density-rule.md) ·
 [shear](shear.md) · [wide hall](wide-hall.md) · [rolling mill](rolling-mill.md) ·
-[reheat furnace](reheat-furnace.md) · [STATE.md § placement rule](../../internal/plans/STATE.md)
+[reheat furnace](reheat-furnace.md) · [STATE.md § placement rule](../../../../docs/plans/STATE.md)
 
 ---
 
@@ -57,7 +57,7 @@ Nasmyth built the hammer in 1839 to forge a paddle shaft, so shingling is its pe
 It is iiex because of what it feeds, not what it is made of: its frame is cast iron and its dies are
 wrought/steel, both iiex materials, but its products are the shingled slab and the stamped plate, the wide
 route's inputs and outputs. The placement rule sends a machine to the mod that consumes it
-([STATE.md](../../internal/plans/STATE.md), row *steam hammer + stamping dies → iiex*).
+([STATE.md](../../../../docs/plans/STATE.md), row *steam hammer + stamping dies → iiex*).
 
 ### The hammer never shears
 
@@ -72,7 +72,7 @@ no shear operation may ever be listed on it.
 
 A sparse megablock: 3 cells wide × 3 cells tall, with a full 3 × 3 base course. Standard megablock +
 invisible-filler pattern - the fillers give per-cell collision, the top-centre block owns every behaviour
-([multiblock & fillers](../mechanics/multiblock.md)).
+([multiblock & fillers](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/multiblock.md)).
 
 | Layer | Cells | Note |
 |---|---|---|
@@ -278,7 +278,7 @@ underlying masses by the [density rule](../mechanics/density-rule.md).
 | Quantity | Status |
 |---|---|
 | steam draw (L/s) at the inlet | not chosen. The hammer is a pipe consumer, not an engine sub-machine, so it needs its own draw - compare the Watt engine's fixed 30 L/s ([engine-watt](engine-watt.md)) |
-| minimum inlet pressure to raise the ram | not chosen. Must sit under the Cornish boiler's 5 atm choke and above whatever a valve gates ([boiler-cornish](boiler-cornish.md), [pipe network](../mechanics/pipe-network.md)) |
+| minimum inlet pressure to raise the ram | not chosen. Must sit under the Cornish boiler's 5 atm choke and above whatever a valve gates ([boiler-cornish](boiler-cornish.md), [pipe network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md)) |
 | blow interval (s) and steam per blow | not chosen |
 | exhaust vent rate | not chosen |
 | shingling blows per form | not chosen - the reference behaviour is a vanilla smithing recipe |
@@ -293,7 +293,7 @@ Not designed. What the pattern demands, by analogy with machines that already do
 | Broken | Should return |
 |---|---|
 | the principal | the hammer, plus the fitted die-set, plus anything piled on the anvil |
-| a filler (incl. the lever cell) | routes to the principal - [multiblock & fillers](../mechanics/multiblock.md) |
+| a filler (incl. the lever cell) | routes to the principal - [multiblock & fillers](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/multiblock.md) |
 | the docked anvil | itself, carrying its installed die out with it - the mold-carries-its-contents idiom |
 
 Nothing may be destroyed on break. Compare the rolling mill, which returns the stuck piece and the fitted
@@ -308,14 +308,14 @@ Nothing exists. Every row below is a plan, anchored to the class it must copy.
 | To build | Copy from | file:line |
 |---|---|---|
 | the block | any pipe-network megablock principal; the shape wants the pipe-consumer idiom | `IronIndustryExpanded/BlockNetworkPipe/…` |
-| the two network faces | machine ports are `INetworkConnector`s reading the adjacent cell | [pipe network](../mechanics/pipe-network.md) |
+| the two network faces | machine ports are `INetworkConnector`s reading the adjacent cell | [pipe network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md) |
 | the footprint | ASCII layout DSL + `FillerOffsets`, as the mill does | `BlockRollingMill.cs:74-94` |
-| the lever cell | a behaviour-capable filler forwarding the held interaction | [multiblock & fillers](../mechanics/multiblock.md) |
+| the lever cell | a behaviour-capable filler forwarding the held interaction | [multiblock & fillers](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/multiblock.md) |
 | tooling fitted from the hand | `TryFitRollSet` / `FitRollSet` - the exact gesture and its refusal path | `BlockRollingMill.cs:293-320`, `BlockEntityRollingMill.cs:144-154` |
 | the die spec record | `RollSetSpec` is the template; the die contract itself is the [heading machine](heading-machine.md)'s `ItemDie` | `RollSetSpec.cs:31`, `:108-201` |
 | a load-time validity sweep for dies | `RollSetValidation.Validate` on `AssetsFinalize` | `RollSetValidation.cs:20-32` |
 | the animator | `.EntityBehavior("Animatable")` + a toggle animator, as the flywheel and transmission do | [flywheel & shafting](flywheel-and-shafting.md) |
-| the staged work-item renderer | `MoltenRenderer`, the barrel content mesh, the held-mold surface | [molten network](../mechanics/molten-network.md) |
+| the staged work-item renderer | `MoltenRenderer`, the barrel content mesh, the held-mold surface | [molten network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/molten-network.md) |
 | the code-first def + RCC stages | `ExBlockDef` / `ConstructionStages` | [recipes & config](../mechanics/recipes-config.md) |
 
 **Build order when scheduled:**
@@ -326,7 +326,7 @@ Nothing exists. Every row below is a plan, anchored to the class it must copy.
 4. pile-reads-form shingling (≥ 6 balls → slab);
 5. the stamping die (`boilerplate` → 3 × `game:metalplate`), in the `rollset` / `pattern` tooling idiom;
 6. the rivet die - iiex's one entry in the [heading machine](heading-machine.md)'s die catalogue. The
-   rivet die goes on the heading machine, not on this one ([STATE.md](../../internal/plans/STATE.md)).
+   rivet die goes on the heading machine, not on this one ([STATE.md](../../../../docs/plans/STATE.md)).
 
 ---
 

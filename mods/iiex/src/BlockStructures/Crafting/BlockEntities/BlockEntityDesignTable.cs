@@ -13,7 +13,7 @@ namespace IronIndustryExpanded.BlockStructures.Crafting.BlockEntities;
 /// The design table's block entity. Holds the drafting inventory (drawing medium, parchment, output) and the
 /// draft logic: draw a chosen diagram onto parchment, consuming one medium and one parchment. Right-click
 /// opens <see cref="GuiDialogDesignTable"/>, where the player picks a diagram and presses Draw, which sends
-/// the draft packet handled here. See <c>docs/design/diagram-crafting.md</c>.
+/// the draft packet handled here. See <c>docs/design/mechanics/diagram-crafting.md</c>.
 /// <para>
 /// The window, its packet handshake and its disposal come from
 /// <see cref="BlockEntityMachineStation"/>; only the slot rules and the draft belong to this table.

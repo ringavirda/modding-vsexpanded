@@ -34,7 +34,7 @@ iiex (the wide roll sets and the four-stand hall) · smex (cast stock, two more 
 | the hearth, its seatings, the reheat rate law and the `V/A` table | [reheat furnace](../machines/reheat-furnace.md), [heat balance](../mechanics/heat-balance.md) |
 | the ≤ 32 / ≤ 48 invariant, its two escapes, the definition of a soft-lock and the two mandatory crop points | [recoverability](../mechanics/recoverability.md) |
 | `1 vx³ = 2.5 u` and the measured mass of every shipped item | [density rule](../mechanics/density-rule.md) |
-| the energy model, `LoadTorque`, every `Mp*` key, the flywheel | [mp-energy](../mechanics/mp-energy.md), [flywheel & shafting](../machines/flywheel-and-shafting.md) |
+| the energy model, `LoadTorque`, every `Mp*` key, the flywheel | [mp-energy](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/mp-energy.md), [flywheel & shafting](../machines/flywheel-and-shafting.md) |
 | where the wrought stock comes from | [puddling furnace](../machines/puddling-furnace.md), [steam hammer](../machines/steam-hammer.md) |
 | where the cast stock comes from | [long cell](../machines/long-cell.md), [casting cell](../machines/casting-cell.md) |
 | what happens to the plate afterwards | [stamping](stamping.md), [bending](bending.md), [fabrication](fabrication.md) |
@@ -44,7 +44,7 @@ iiex (the wide roll sets and the four-stand hall) · smex (cast stock, two more 
 **Depends on** [rolling mill](../machines/rolling-mill.md) · [wide hall](../machines/wide-hall.md) ·
 [steel roll sets](../machines/steel-roll-sets.md) · [shear](../machines/shear.md) ·
 [reheat furnace](../machines/reheat-furnace.md) · [recoverability](../mechanics/recoverability.md) ·
-[density rule](../mechanics/density-rule.md) · [mp-energy](../mechanics/mp-energy.md) ·
+[density rule](../mechanics/density-rule.md) · [mp-energy](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/mp-energy.md) ·
 [stamping](stamping.md) · [bending](bending.md)
 
 ---
@@ -327,7 +327,7 @@ demands.
 | reheat and cooling both on `k·A/V`; no ×2 furnace multiplier | — | [reheat furnace](../machines/reheat-furnace.md) |
 | ≤ 32 lengthwise (3 slots) / ≤ 48 crosswise (2 slots, LIFO) | — | [recoverability](../mechanics/recoverability.md) |
 | `MaxWidth` 15 on the wide sets, and why 15 beats 16 | — | [wide hall](../machines/wide-hall.md) |
-| drive headroom one bridged waterwheel leaves ≈ 0.4 N·m; a hot fresh-bloom pass ≈ 0.338 N·m | `ExlibConfig.cs:86`, `:92`, `:98` | [mp-energy](../mechanics/mp-energy.md) |
+| drive headroom one bridged waterwheel leaves ≈ 0.4 N·m; a hot fresh-bloom pass ≈ 0.338 N·m | `ExlibConfig.cs:86`, `:92`, `:98` | [mp-energy](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/mp-energy.md) |
 
 ---
 

@@ -12,8 +12,8 @@
 
 **Depends on** - cited, never restated here:
 [diagram crafting](../mechanics/diagram-crafting.md) owns the station idiom, Model A, the `diagram-{type}` item, the schematic-is-reusable rule and the exlib station-window plan ·
-[mp-energy](../mechanics/mp-energy.md) owns the `"mpenergy"` run and the four node contracts ·
-[multiblock & fillers](../mechanics/multiblock.md) owns the filler footprint system, behaviour-capable filler cells and the rule for when a filler cell is a graph node ·
+[mp-energy](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/mp-energy.md) owns the `"mpenergy"` run and the four node contracts ·
+[multiblock & fillers](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/multiblock.md) owns the filler footprint system, behaviour-capable filler cells and the rule for when a filler cell is a graph node ·
 [recipes & config](../mechanics/recipes-config.md) owns `ExBlockDef` / `ExRecipeDef`, the RCC stage builder, the cost catalogue and the golden harness ·
 [density rule](../mechanics/density-rule.md) owns every mass, including `blank` @ 200 u ·
 [casting cell](casting-cell.md) owns the pattern → cavity → cast-part chain that feeds this machine ·
@@ -21,8 +21,8 @@
 [rolling mill](rolling-mill.md) owns the mill and its pass model, the other source of `blank` ·
 [shear](shear.md) owns the crop verb · [steam hammer](steam-hammer.md) owns blanking/stamping ·
 [gears](gears.md) owns the gear items this machine cuts ·
-[pipe network](../mechanics/pipe-network.md) owns the pipe tiers · [cast-parts](../items/cast-parts.md) owns the cast-part catalogue and the machine bills ·
-[conventions.md](../conventions.md) · [STATE.md](../../internal/plans/STATE.md)
+[pipe network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md) owns the pipe tiers · [cast-parts](../items/cast-parts.md) owns the cast-part catalogue and the machine bills ·
+[conventions.md](../conventions.md) · [STATE.md](../../../../docs/plans/STATE.md)
 
 ---
 
@@ -41,10 +41,10 @@ The finishing station: the machine that turns a rough-formed piece into a part w
 Three reasons it exists, all downstream:
 
 1. A cast cylinder is not an engine cylinder. Sand casts a rough cored blank; the bore has to be cut true or the piston does not seal. The historical precedent is Wilkinson's water-powered boring mill (1774), which made Watt's engine possible.
-2. The cast pipe tier has no other route. Cast pipe is assembled from cast pipe-parts finished on the boring machine ([conventions.md § pipe tiers](../conventions.md), [pipe network](../mechanics/pipe-network.md)), so with the machine unbuilt, iiex's own pipe tier has no survival source.
+2. The cast pipe tier has no other route. Cast pipe is assembled from cast pipe-parts finished on the boring machine ([conventions.md § pipe tiers](../conventions.md), [pipe network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md)), so with the machine unbuilt, iiex's own pipe tier has no survival source.
 3. Gears are cut from blanks, not cast to shape. A coarse mill gear could be cast; a gear that must mesh is cut from a disc on a gear-cutting machine, the boring mill's close cousin ([cast-parts](../items/cast-parts.md)). The `gear12` / `gear24` / `gearbevel` diagrams are therefore cutting schematics, not mold patterns.
 
-Placement: a machine lives with the content it feeds ([STATE.md](../../internal/plans/STATE.md)). The cylinder, the cast pipe-parts and the machine gears are all steam-tier parts, so the machine is iiex's; the cast blanks it eats are iiex's. iiex casts rough, iiex machines to spec.
+Placement: a machine lives with the content it feeds ([STATE.md](../../../../docs/plans/STATE.md)). The cylinder, the cast pipe-parts and the machine gears are all steam-tier parts, so the machine is iiex's; the cast blanks it eats are iiex's. iiex casts rough, iiex machines to spec.
 
 The drive rides "MP (waterwheel)" at iron tier: per the settled power progression the run is the same at both tiers and only the prime mover changes - vanilla waterwheel at iron, steam engine at low-pressure.
 
@@ -76,8 +76,8 @@ Measured bounding boxes from `workbench/shapes/machine-mp-megablock-boringmachin
 Consequences the builder must honour:
 
 - The model overhangs its own cell (−3 on X and Z, −2 on Y). That is legal - copy `SolidNonOpaque` from the mill (`BlockRollingMill.cs:62-63`) - but the overhang is downward and sideways, so the placement rule and collision boxes need care.
-- A filler cell can be a graph node when it declares a `BEBehaviorNetworkMember` ([multiblock](../mechanics/multiblock.md)), so the top cell may join the `"mpenergy"` run directly and the principal no longer has to be the `BlockNetworkNode`. If the machine takes vanilla MP instead, the filler carries the port directly, as the twin-tub blower and the flywheel do with `exlib.BEBehaviorMPFillerPort`. Which of the two is undecided - see Open.
-- The head-swap gesture lives on the top cell, so the filler must be interaction-routing (`AllowAttach` / behaviour-capable, [multiblock](../mechanics/multiblock.md)), not a plain collision filler.
+- A filler cell can be a graph node when it declares a `BEBehaviorNetworkMember` ([multiblock](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/multiblock.md)), so the top cell may join the `"mpenergy"` run directly and the principal no longer has to be the `BlockNetworkNode`. If the machine takes vanilla MP instead, the filler carries the port directly, as the twin-tub blower and the flywheel do with `exlib.BEBehaviorMPFillerPort`. Which of the two is undecided - see Open.
+- The head-swap gesture lives on the top cell, so the filler must be interaction-routing (`AllowAttach` / behaviour-capable, [multiblock](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/multiblock.md)), not a plain collision filler.
 
 ---
 
@@ -155,7 +155,7 @@ Jobs. Each row is one schematic; the schematic is an item output and is never co
 | Input | Schematic | Output | Feeds |
 |---|---|---|---|
 | cylinder blank (cast, cored) | `diag-item-cylinder` | bored cylinder | Watt engine · pumps · steam hammer ([cast-parts](../items/cast-parts.md)) |
-| cylinder blank | *(pipe-part schematic)* | cast pipe-parts | the whole cast pipe tier - faster to assemble and higher burst than plated ([pipe network](../mechanics/pipe-network.md)) |
+| cylinder blank | *(pipe-part schematic)* | cast pipe-parts | the whole cast pipe tier - faster to assemble and higher burst than plated ([pipe network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md)) |
 | `blank` @ 200 u (8 × 2 × 5) | `diag-item-gear12` / `gear24` / `gearbevel` | machine gears | [gears](gears.md), transmissions, cranks |
 | small / large cast gear blank | same three | 12-tooth pinion · 24-tooth spur · bevel | one large disc serves both spur and bevel ([cast-parts](../items/cast-parts.md)) |
 
@@ -191,7 +191,7 @@ Everything in this section is proposed. The machine has no config section and no
 | `BoringTickMs` | 1000 ms | state `ProductionTickMs` on the hosted process - `BEBehaviorProductionMachine.cs:25` (`protected virtual`, default 1000) | job tick |
 | `BoringSecondsPerItem` | ≈ 2 s | - | "a craft takes a couple of seconds" ([diagram crafting](../mechanics/diagram-crafting.md)); a stack multiplies it |
 | `BoringPortResistance` | 0.5 | `BEBehaviorMPFillerPort.DefaultResistance = 0.5f` - `BEBehaviorMPFillerPort.cs:30` | vanilla-MP load, if the vanilla route is chosen |
-| bit tier ladder | cast iron → quench-hardened steel → HSS | [STATE.md § D9](../../internal/plans/STATE.md) (crucible steel's consumers include "boring-machine bits") | bit material gates the hardest metal the machine will cut |
+| bit tier ladder | cast iron → quench-hardened steel → HSS | [STATE.md § D9](../../../../docs/plans/STATE.md) (crucible steel's consumers include "boring-machine bits") | bit material gates the hardest metal the machine will cut |
 | bit durability | - | model on `WoodenPatternDurability = 24` (`PatternItemDefinitions.cs:109`) | a bit is a wear part, like the pattern |
 | cost key | `boringmachine-grid` | `IiexRecipeConfig.cs:59-86` | rescales with `RecipeLevel` (`IiexConfig.cs:224`) |
 
@@ -202,7 +202,7 @@ Hard-coded values that will bite:
 | `ProductionTickMs` | 1000 ms | `BEBehaviorProductionMachine.cs:25` | hard-coded virtual default, not config |
 | `MaxCatchupTickMultiple` | 2f | `BEBehaviorProductionMachine.cs:77` | hard-coded `private const`; clamps one catch-up `dt` (`:146`), so the bound is twice **this machine's** interval |
 | `DefaultResistance` | 0.5f | `BEBehaviorMPFillerPort.cs:30` | hard-coded; overridable per-declaration via a `resistance` property (`:68`) |
-| `MpMaxSpeed` | 2f | `ExlibConfig.cs:98` | owned by [mp-energy](../mechanics/mp-energy.md) |
+| `MpMaxSpeed` | 2f | `ExlibConfig.cs:98` | owned by [mp-energy](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/mp-energy.md) |
 | window packet ids | 1000 / 1001 / 1002 | `BlockEntityDesignTable.cs:40`, `:41`, `:44`; `GuiDialogDesignTable.cs:27` | hard-coded literals; 1000/1001 are the vanilla container open/close protocol - a second station must use the same two and pick its own ≥ 1002 |
 
 Masses (`blank` 200 u, cylinder cavity 297, gear-blank cavities 235 / 255) belong to [density rule](../mechanics/density-rule.md), [casting cell](casting-cell.md) and [cast-parts](../items/cast-parts.md).
@@ -219,7 +219,7 @@ Proposed, since nothing is built.
 | the fitted bit | spawned at the block, not destroyed - copy `BlockEntityRollingMill.OnBlockBroken` (`:374-383`), which spawns the jammed piece and the roll set before calling base |
 | the window inventory | dropped - `BlockEntityContainer` does this for free, as the design table gets it (`BlockEntityDesignTable.cs:27`) |
 | a part mid-job | handed back unchanged; a cut is committed only on completion |
-| the top filler | routes to the principal - [multiblock](../mechanics/multiblock.md) owns break rerouting |
+| the top filler | routes to the principal - [multiblock](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/multiblock.md) owns break rerouting |
 
 If it is built as a RightClickConstructable instead, `NoDrops()` + an RCC scatter is the other established shape (`BlockTransmission.cs:52`, `:220-225`).
 
@@ -251,14 +251,14 @@ Caller-side contract for anyone adding a job: declare it on the schematic item, 
 
 - `overview.md:70` lists the boring machine as shipped iiex content. It is not built - [diagram crafting](../mechanics/diagram-crafting.md) records that correctly. The other two overview mentions (`:127` "in scope and simply not built yet", `:160` build order) are consistent with planned and need no change; line 70 does.
 - `overview.md:70` also still calls iiex "Pipes & Power Expanded". The mod's display name is Low Pressure Expanded (`mods/iiex/src/modinfo.json`).
-- ~~The timed job and the window inventory are two bases.~~ Retired: the production tick is a behaviour (`BEBehaviorProductionMachine`), so the base slot goes to `BlockEntityContainer` for the inventory - the shape `BlockEntityDesignTable` already has (`:27`) - and the machine adds the process in its constructor and publishes its gate through `IProductionReadiness`. [framework composition](../mechanics/framework-composition.md) owns the rule; `BlockEntityRollingMill` is the shipped host.
+- ~~The timed job and the window inventory are two bases.~~ Retired: the production tick is a behaviour (`BEBehaviorProductionMachine`), so the base slot goes to `BlockEntityContainer` for the inventory - the shape `BlockEntityDesignTable` already has (`:27`) - and the machine adds the process in its constructor and publishes its gate through `IProductionReadiness`. [framework composition](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/framework-composition.md) owns the rule; `BlockEntityRollingMill` is the shipped host.
 - A custom GUI over a container desyncs without packet routing. `BlockEntityContainer` does not route the window's packets; the recorded scar is the hopper. `BlockEntityDesignTable.OnReceivedClientPacket` (`:103-144`) is the reference implementation, including the claim-access audit.
 - The drill clip does not repeat. All four clips are `onAnimationEnd: EaseOut`. Re-author `drill` and `base-move` to `Repeat` or the mesh blinks back to static.
 - The shape's textures are not shippable. One absolute Windows path and four undomained `block/…` paths - see Assets.
-- ~~A filler cannot be a graph node.~~ Retired: a footprint cell that declares a `BEBehaviorNetworkMember` is a node, so the `"mpenergy"` port may live on the top cell after all. [multiblock](../mechanics/multiblock.md) owns the rule. What was the design's biggest structural constraint is no longer one.
+- ~~A filler cannot be a graph node.~~ Retired: a footprint cell that declares a `BEBehaviorNetworkMember` is a node, so the `"mpenergy"` port may live on the top cell after all. [multiblock](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/multiblock.md) owns the rule. What was the design's biggest structural constraint is no longer one.
 - The schematic is never consumed; the diagram sometimes is. The boring machine's schematics are reusable tooling ([diagram crafting](../mechanics/diagram-crafting.md)), while a structure-core diagram is a consumed grid ingredient. Both are decided by the `.Tool()` flag, not by machine code.
 - The machine's whole input chain is unbuilt. `blank`, `castframe`, the cylinder blank, the gear blanks and the cutting schematics do not exist as items; only `castplate-heavy` and `cast-barrel` do (`CastPartItemDefinitions.cs:28-29`).
-- This machine gates the cast pipe tier. Until it exists, `iiex:pipe-*` has no cast-pipe-part route and the tier is reachable only through the recipes that currently accept the plain plated iiex segment (`MachineRecipeDefinitions.cs`'s `StraightPipe`, which is deliberately `iiex:pipe-plated-straight-*`). The dead cost key `pipe-straight-grid` (`IiexRecipeConfig.cs:72`) costs a grid recipe that does not exist ([STATE.md](../../internal/plans/STATE.md)).
+- This machine gates the cast pipe tier. Until it exists, `iiex:pipe-*` has no cast-pipe-part route and the tier is reachable only through the recipes that currently accept the plain plated iiex segment (`MachineRecipeDefinitions.cs`'s `StraightPipe`, which is deliberately `iiex:pipe-plated-straight-*`). The dead cost key `pipe-straight-grid` (`IiexRecipeConfig.cs:72`) costs a grid recipe that does not exist ([STATE.md](../../../../docs/plans/STATE.md)).
 
 ---
 

@@ -25,8 +25,8 @@ the charge-column model, the tuyere / tap / tall-hopper part blocks and the tap 
 [heat balance](../mechanics/heat-balance.md) - the `T_process` law, the raceway rate model, blast demand,
 and `CupolaCastIronMeltingPoint` / `CupolaTuyereIntakeVolume` ·
 [charge-pile](charge-pile.md) - the pile block and the band scale ·
-[molten network](../mechanics/molten-network.md) · [pipe network](../mechanics/pipe-network.md) ·
-[multiblock](../mechanics/multiblock.md) · [recipes & config](../mechanics/recipes-config.md) ·
+[molten network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/molten-network.md) · [pipe network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md) ·
+[multiblock](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/multiblock.md) · [recipes & config](../mechanics/recipes-config.md) ·
 [fuels](../items/fuels.md) · [ironmaking](../processes/ironmaking.md) (residue payout) ·
 [twin-tub-blower](twin-tub-blower.md) · [ladle](ladle.md) · [crucible furnace](crucible-furnace.md)
 
@@ -36,7 +36,7 @@ and `CupolaCastIronMeltingPoint` / `CupolaTuyereIntakeVolume` ·
 
 The iron tier's recycler and parts foundry. It melts metal that is already metal - pig, pig chunks, pig bits,
 iron and steel scrap - into **cast iron**, and hands it to the
-[molten network](../mechanics/molten-network.md) for casting into machine parts. It is the only route to cast
+[molten network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/molten-network.md) for casting into machine parts. It is the only route to cast
 iron in the suite. Scrap has somewhere to go, and a player who needs one `castframe` does not have to fire
 the 160-cell [blast furnace](blast-furnace-cold.md) and reduce ore to get it.
 

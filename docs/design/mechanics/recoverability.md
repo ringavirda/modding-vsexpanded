@@ -2,7 +2,7 @@
 **Status** designed - the lengthwise half is live, the crosswise half is unbuilt, and nothing enforces a
 length anywhere in code today   **Mod** iiex (`IronIndustryExpanded`)
 **Owns** the invariant itself and its exactly two escapes (≤ 32 lengthwise, ≤ 48 crosswise), their slot counts and access ordering, the definition of a soft-lock, why cold shear is not a third escape, the two known soft-locks and their crop points, and the distinction between the mill's 48-voxel refusal and the 32-voxel seating-mode switch.
-**Depends on** [density rule](density-rule.md) (every length here is a drawn shape's voxel count) · [rolling mill](../machines/rolling-mill.md) (the pass model that grows a piece past the limit, and the refusal that must enforce this) · [multiblock & filler structures](multiblock.md) (the hearth's 3 × 2 filler footprint, from which both limits derive) · [stock](../items/stock.md) · [rolling](../processes/rolling.md) (the stock ladder and its crop table)
+**Depends on** [density rule](density-rule.md) (every length here is a drawn shape's voxel count) · [rolling mill](../machines/rolling-mill.md) (the pass model that grows a piece past the limit, and the refusal that must enforce this) · [multiblock & filler structures](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/multiblock.md) (the hearth's 3 × 2 filler footprint, from which both limits derive) · [stock](../items/stock.md) · [rolling](../processes/rolling.md) (the stock ladder and its crop table)
 
 ## Role
 

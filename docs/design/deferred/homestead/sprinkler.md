@@ -21,7 +21,7 @@
 
 [scope.md](../../scope.md) - the cut and the rule · the archived iiex spec (git history) ·
 [fluid tank](../../machines/fluid-tank.md) - the block it shared a table with and which was carved back in ·
-[pipe network](../../mechanics/pipe-network.md) - R1, run pressure, the connector-reciprocity rule ·
+[pipe network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md) - R1, run pressure, the connector-reciprocity rule ·
 [pumps](../../machines/pumps.md) - what would fill the tank that feeds it.
 
 ---
@@ -163,7 +163,7 @@ product feeds nothing; the sprinkler unblocks nothing because it is an end-user 
 
 2. Ceiling mounting is not free, because the network has no head model. A tank delivers at a fixed
    1 atm gravity head and does not raise pressure ([fluid tank](../../machines/fluid-tank.md):199-208);
-   the pipe network has no notion of elevation ([pipe network](../../mechanics/pipe-network.md)). A floor
+   the pipe network has no notion of elevation ([pipe network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md)). A floor
    sprinkler fed from a tank above it is physically sensible and mechanically free; a ceiling sprinkler fed
    from a cistern at ground level is pumping uphill for nothing, and the model would not notice. The
    archived row allows both. Pick one, or accept that the physics is decorative.
@@ -174,7 +174,7 @@ product feeds nothing; the sprinkler unblocks nothing because it is an end-user 
    refused whenever that line is doing its other job.
 
 4. Connector reciprocity. A sprinkler adjacent to a pipe is not plumbed in unless the pipe presents a
-   connector back ([pipe network](../../mechanics/pipe-network.md)) - the rule every iiex machine port
+   connector back ([pipe network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md)) - the rule every iiex machine port
    already lives by, and a likely first bug for a block whose "in" face is not obviously the business end.
 
 5. Moisture is a vanilla BE field, so the mod is writing into vanilla farming state. That is a smaller

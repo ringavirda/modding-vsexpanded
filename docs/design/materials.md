@@ -17,7 +17,7 @@ follows.
 | a mass, section or crop point | the owning **item** page - [pig](items/pig.md) · [stock](items/stock.md) · [rolled-parts](items/rolled-parts.md) · [cast-parts](items/cast-parts.md) · [fasteners](items/fasteners.md) · [alloys](items/alloys.md) |
 | which metal is for what, what it guarantees, and its target ratio | [alloys](items/alloys.md) |
 | mixing by held proportion, off-spec → waste, recarburisation - the ladle mechanic | [ladle](machines/ladle.md) |
-| what is live vs designed vs blocked | [STATE.md](../internal/plans/STATE.md) |
+| what is live vs designed vs blocked | [STATE.md](../../../docs/plans/STATE.md) |
 
 ---
 

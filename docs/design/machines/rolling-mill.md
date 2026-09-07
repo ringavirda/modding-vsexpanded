@@ -22,16 +22,16 @@ and no schedule can be finished, because the [shear](shear.md) that ends one doe
 * every bug and stale comment listed under [Gotchas](#gotchas).
 
 **Does not own - cited only, never restated**: the mechanical-energy model, the consumer contract, the
-`Mp*` constants and the mill's pass-tick interval ([mp-energy](../mechanics/mp-energy.md)); the drive that
+`Mp*` constants and the mill's pass-tick interval ([mp-energy](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/mp-energy.md)); the drive that
 feeds it ([flywheel & shafting](flywheel-and-shafting.md)); the filler footprint system and the
-no-filler-graph-node rule ([multiblock](../mechanics/multiblock.md)); the 32 / 48 handling limits and the
+no-filler-graph-node rule ([multiblock](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/multiblock.md)); the 32 / 48 handling limits and the
 soft-locks ([recoverability](../mechanics/recoverability.md)); the product ladder, crop points and cut
 arithmetic ([rolling](../processes/rolling.md)); stock item masses and lengths ([stock](../items/stock.md));
 the reheat that keeps stock hot ([reheat furnace](reheat-furnace.md), [heat balance](../mechanics/heat-balance.md));
 the 1 vx³ = 2.5 u rule ([density rule](../mechanics/density-rule.md)); code-first defs, RCC and goldens
 ([recipes & config](../mechanics/recipes-config.md)).
 
-**Depends on** [mp-energy](../mechanics/mp-energy.md) · [multiblock](../mechanics/multiblock.md) ·
+**Depends on** [mp-energy](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/mp-energy.md) · [multiblock](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/multiblock.md) ·
 [recoverability](../mechanics/recoverability.md) · [flywheel & shafting](flywheel-and-shafting.md) ·
 [recipes & config](../mechanics/recipes-config.md) · [rolling](../processes/rolling.md)
 
@@ -83,13 +83,13 @@ A 3 × 3 × 2 megablock (three cells along the barrel, three across the line, tw
 
 Nine fillers, two axle nodes, one principal - twelve cells (`BlockRollingMill.cs:74-94`, `:99`). The
 footprint is authored with the ASCII layout DSL and rotated on placement; see
-[multiblock](../mechanics/multiblock.md).
+[multiblock](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/multiblock.md).
 
 The axle cells are not fillers. The network BFS used to traverse `BlockNetworkNode` cells only, so a filler
 could never bridge the drive line and the mill would connect on one shaft end only. Two dedicated invisible
 node blocks make the three-cell line one connected bus, drivable from either end and chainable into a train
 of stands on a shared shaft (`BlockRollingMillAxle.cs:11-18`). That constraint is retired - a footprint cell
-declaring a `passThrough` membership does the same job ([multiblock](../mechanics/multiblock.md) § A filler
+declaring a `passThrough` membership does the same job ([multiblock](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/multiblock.md) § A filler
 cell is a graph node when it declares one) - but the block stays, because removing a placed block needs a
 migration.
 
@@ -102,7 +102,7 @@ Placement refuses unless the whole volume is clear - both the filler cells and t
 The stand only turns one way, so a two-high mill can only be fed from one side. Which side follows the drive:
 `InputDeck` = `Deck(DriveReversed)`, `OutputDeck` always the opposite (`BlockEntityRollingMill.cs:264-281`).
 Reversing the run reverses the feed side. Direction enters the network only at the bridge; see
-[mp-energy](../mechanics/mp-energy.md).
+[mp-energy](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/mp-energy.md).
 
 Caution: `Deck()` returns one cell - the `z = ±1` cell at `x = 0`, directly beside the principal - and that
 is the cell a finished piece *lands* on. The deck the player *feeds* from is the whole three-cell row
@@ -324,7 +324,7 @@ was the wrong shape for this dial.
 less friction at ω_max (0.05·2 + 0.5 = 0.6) leaves **0.4 N·m** of headroom, and 0.34 takes 85 % of it -
 the *"about 15 % to spare"* the design always claimed. Retuning `MpFrictionCoeff`, `MpIdleTorque`,
 `MpMaxSpeed` or `FlywheelBridgeChargePower` moves the mill's balance with it; see
-[mp-energy](../mechanics/mp-energy.md). Nothing about the stock moves it except heat, which is the point.
+[mp-energy](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/mp-energy.md). Nothing about the stock moves it except heat, which is the point.
 
 Caution: the reheat furnace's `MeltingPoint` is bound to `IiexValues.RollingTempC`
 (`BlockEntityHeatingFurnace.cs:61`) - the mill's hot/cold line doubles as the reheat furnace's target.
@@ -365,7 +365,7 @@ surviving one would hand the player an item they never had, which is the rule
 ### Shipped process routes — `StockItemDefinitions.cs`
 
 Declared on the stock items under `attributes.processroute`, merged into `ProcessRouteRegistry` at
-`AssetsFinalize` ([process-extension](../mechanics/process-extension.md)). No rung names a `code` yet:
+`AssetsFinalize` ([process-extension](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/process-extension.md)). No rung names a `code` yet:
 every shipped stage is a shear crop, so the mill ejects the piece it drew through.
 
 | Family | Rung | Accepted by |
@@ -426,12 +426,12 @@ silently changed the mill's whole balance against the drive.
 ### Cited — owned elsewhere
 
 The mill's pass-tick interval (`BlockEntityRollingMill.cs:42`) and the network tick it samples belong
-to [mp-energy](../mechanics/mp-energy.md); the clock that carries it belongs to
-[framework composition](../mechanics/framework-composition.md). The stock items' `materialUnits`, `MaterialDensity`,
+to [mp-energy](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/mp-energy.md); the clock that carries it belongs to
+[framework composition](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/framework-composition.md). The stock items' `materialUnits`, `MaterialDensity`,
 `combustibleProps.meltingPoint` and `temperatureDamage` (`StockItemDefinitions.cs:23-27`, `:43`, `:48-56`)
 belong to [stock](../items/stock.md), and are at their settled figures (400 / 1200) since 2026-08-12. The
 bevel-gear item and every `Mp*` / `Flywheel*` / `ShaftInertia`
-key belong to [mp-energy](../mechanics/mp-energy.md). The 32 / 48 handling limits and the crop points
+key belong to [mp-energy](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/mp-energy.md). The 32 / 48 handling limits and the crop points
 belong to [recoverability](../mechanics/recoverability.md).
 
 ---
@@ -442,7 +442,7 @@ belong to [recoverability](../mechanics/recoverability.md).
 |---|---|
 | the principal | the mill itself (default `BlockNetworkNode` drop, `stackSize 1`), plus any piece stuck in the rolls, plus the fitted roll set - both spawned at the principal / output deck by `BlockEntityRollingMill.OnBlockBroken` (`:374-383`) |
 | an axle cell | routes to the principal and breaks the whole machine (`BlockRollingMillAxle.cs:65-88`); the axle itself is `NoDrops()` (`:43`) and `OnPickBlock` yields the mill (`:100-107`) |
-| a filler | routes to the principal, per the shared filler system ([multiblock](../mechanics/multiblock.md)) |
+| a filler | routes to the principal, per the shared filler system ([multiblock](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/multiblock.md)) |
 
 Nothing is lost on break. The one path that does destroy a piece is `CancelPass` - see
 [Gotchas](#gotchas).
@@ -562,7 +562,7 @@ gauge the player stopped at. See [shear](shear.md).
   `rollset` attribute exists (`:293-294`).
 - ~~`RollSetSpec.Outputs` is a `Dictionary<float, string>` compared with `==`.~~ **Fixed 2026-08-12.**
   `Outputs` and `Gaps` are gone; the states are the stock's process route
-  ([process-extension](../mechanics/process-extension.md)) and `MillSchedule.OutputAt` matches on the
+  ([process-extension](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/process-extension.md)) and `MillSchedule.OutputAt` matches on the
   ladder's own tolerance. The set no longer names a product at all.
 - `RollSetSpec.MinTorque` is parsed, stored, validated and never read. No production call site; the
   only reference is `RollSetItemDefinitions.cs:13`'s prose. The settled design makes it the

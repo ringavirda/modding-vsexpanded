@@ -22,7 +22,7 @@ rule it applies. The specification survives from the archived iiex spec (git his
 [scope.md](../../scope.md) - the cut, the carve-outs, the rule · [conventions.md](../../conventions.md)
 - the phase-change/distillation model that stays, and R1/R7 · the archived iiex spec (git history) ·
 [heat balance](../../mechanics/heat-balance.md) - the furnace-scale twin of the room balance ·
-[pipe network](../../mechanics/pipe-network.md) - one medium per run, uniform run temperature, where phase
+[pipe network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md) - one medium per run, uniform run temperature, where phase
 change is allowed · [Cornish boiler](../../machines/boiler-cornish.md):233-236, `:493-494` - the live consumer
 of the phase-change model · [fluid tank](../../machines/fluid-tank.md) - the other block that came out of the
 same archived section and was carved back in.
@@ -173,7 +173,7 @@ Splitting them again re-creates the cross-add-on dependency that merge removed.
 ## Gotchas
 
 1. **A refrigeration loop needs two temperatures; a pipe run has one.** The pipe network keeps a single
-   network-wide temperature with no spatial gradient ([pipe network](../../mechanics/pipe-network.md)), and
+   network-wide temperature with no spatial gradient ([pipe network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md)), and
    an absorption cycle is defined by the difference between its evaporator and its condenser. The fix is the
    shipped idiom, not a model change: the loop is two runs bridged by a connector, exactly as the steam
    condenser bridges a steam line and a water line without joining them

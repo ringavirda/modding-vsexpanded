@@ -31,7 +31,7 @@ short pour, the launder-face intake rule, and the green-sand craft ·
 build order ·
 [molten canal](../machines/molten-canal.md) - the runs that feed every station, the tap and the pedestal,
 the large/small mold split and the clay heat gate ·
-[molten network](../mechanics/molten-network.md) - `IMoltenCell`, `BEBehaviorMoltenCell`, the flow driver,
+[molten network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/molten-network.md) - `IMoltenCell`, `BEBehaviorMoltenCell`, the flow driver,
 pull rates, the solidify/hardened model ·
 [density rule](../mechanics/density-rule.md) - 1 vx³ = 2.5 u and the measured mass of every shipped item ·
 [recoverability](../mechanics/recoverability.md) - the ≤ 32 / ≤ 48 handling invariant ·

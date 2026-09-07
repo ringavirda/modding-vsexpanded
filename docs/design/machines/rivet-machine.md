@@ -7,7 +7,7 @@ Not walked in game.   **Mod** iiex (`IronIndustryExpanded`)
 * the rivet item's mass and the yield that makes the rivet route worth walking.
 
 **Depends on**
-[mp-energy](../mechanics/mp-energy.md) (the run it loads) ·
+[mp-energy](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/mp-energy.md) (the run it loads) ·
 [machining line](../mechanics/machining-line.md) (the station family it belongs to, and the die contract) ·
 [fasteners](../items/fasteners.md) (where rivets are spent, and the substitution rule) ·
 [shear](shear.md) (which cuts the rivet rod it eats) ·

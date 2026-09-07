@@ -14,7 +14,7 @@
 - Green sand as the cell's one accepted molding material.
 
 **Does not own - cited only**
-- [molten network](../mechanics/molten-network.md) - `BEBehaviorMoltenCell`, `SetCapacity`/`ClearCapacity`,
+- [molten network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/molten-network.md) - `BEBehaviorMoltenCell`, `SetCapacity`/`ClearCapacity`,
   the hard-coded `PullRatePerTick = 25`, `IsHardened`/`Solidified`, `MoltenChisel.BuildRecovery`, and the
   throughput question.
 - [density rule](../mechanics/density-rule.md) - 1 vx³ = 2.5 u and the check of these cavities' capacities
@@ -195,7 +195,7 @@ Then: contents cleared, pattern capacity dropped, pattern code cleared, sand bac
 
 | key | value | file:line | what it does |
 |---|---|---|---|
-| `PullRatePerTick` | *(see [molten network](../mechanics/molten-network.md) § Hard-coded)* | `:33` | hard-coded here; the value and the throughput conflict are that page's |
+| `PullRatePerTick` | *(see [molten network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/molten-network.md) § Hard-coded)* | `:33` | hard-coded here; the value and the throughput conflict are that page's |
 | server / client tick | `1000 ms` | `:109`, `:113` | pull+cool / refresh the surface |
 | save keys | `cc_sand` (int), `cc_pattern` (string), `cc_filltemp` (float, only once the cavity has filled) | `:443-445` | `cc_sandcode` is no longer read (`:453-454`); a cell saved without `cc_filltemp` shakes out as a clean cast |
 

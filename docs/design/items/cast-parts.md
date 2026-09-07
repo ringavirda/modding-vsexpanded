@@ -22,10 +22,10 @@
 | 1 vx³ = 2.5 u, the audit of every shipped mass, and the four different implicit cavity densities | [density rule](../mechanics/density-rule.md) |
 | the cell, the `mold` attribute schema, ram-up / pour / shake-out, the shipped pattern catalogue, misrun & short pour | [casting cell](../machines/casting-cell.md) |
 | the 1 × 2 station, its seven drawn fillings and the `castframe` cavity measurement | [long cell](../machines/long-cell.md) |
-| the molten pool, `BEBehaviorMoltenCell`, `MoltenChisel.BuildRecovery` | [molten network](../mechanics/molten-network.md) |
+| the molten pool, `BEBehaviorMoltenCell`, `MoltenChisel.BuildRecovery` | [molten network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/molten-network.md) |
 | what the cupola remelts and what may be charged | [cupola](../machines/cupola.md) · [burden](burden.md) |
 | bending, and the machine that makes shells, barrels and rims | [bending roller](../machines/bending-roller.md) |
-| the D2 / N3 decision itself (cast ↔ fabricated substitution) | [STATE.md](../../internal/plans/STATE.md) |
+| the D2 / N3 decision itself (cast ↔ fabricated substitution) | [STATE.md](../../../../docs/plans/STATE.md) |
 | the bevel gear as a shafting component; the `gear` / `largegear` items | [flywheel & shafting](../machines/flywheel-and-shafting.md) · [gears](../machines/gears.md) |
 | boring, turning, gear-cutting - everything that finishes a cast blank | [boring machine](../machines/boring-machine.md) |
 | rolled masses (`beam`, `boilerplate`, rolled plate) | [rolled parts](rolled-parts.md) |
@@ -36,7 +36,7 @@
 **Depends on** [density rule](../mechanics/density-rule.md) · [casting cell](../machines/casting-cell.md) ·
 [long cell](../machines/long-cell.md) · [cupola](../machines/cupola.md) ·
 [bending roller](../machines/bending-roller.md) · [fasteners](fasteners.md) ·
-[rolled parts](rolled-parts.md) · [STATE.md](../../internal/plans/STATE.md)
+[rolled parts](rolled-parts.md) · [STATE.md](../../../../docs/plans/STATE.md)
 
 ---
 
@@ -49,7 +49,7 @@ blanks a 19th-century machine shop got from the foundry rather than the smith.
 
 Its second job is to be replaced. Cast iron is strong in compression and weak in tension; the fabricated
 answer is riveted plate steel, and the two are a player choice rather than a tech-tree step - cast with a
-cupola, fabricate with a mill ([STATE.md § D2](../../internal/plans/STATE.md)). That is what gives cheap Bessemer
+cupola, fabricate with a mill ([STATE.md § D2](../../../../docs/plans/STATE.md)). That is what gives cheap Bessemer
 steel its main job, and what turns `beam`, `plate` and `rivet` into the ingredients of every machine frame
 in the game.
 
@@ -115,7 +115,7 @@ because crucible steel has to be poured into something.
 
 The rule: every cast-iron structural part gets a rolled/fabricated steel equivalent, reached through an RCC
 dual path (wildcard/OR ingredient) so the two routes are alternatives rather than tiers. The decision is
-[STATE.md § D2 / § N3](../../internal/plans/STATE.md)'s; the bending verb and the machine are
+[STATE.md § D2 / § N3](../../../../docs/plans/STATE.md)'s; the bending verb and the machine are
 [bending roller](../machines/bending-roller.md)'s. This page owns the per-part mapping.
 
 | Cast part | Fabricated equivalent is built from | Operation | Where | Shipped? |
@@ -128,7 +128,7 @@ dual path (wildcard/OR ingredient) so the two routes are alternatives rather tha
 | cylinder blank · gear blanks · axle · `bevelgear` | — | — | — | no substitute by design: these are machined parts, not structural ones. N3 does not list them |
 
 Rivets are the ingredient, so there is no riveting machine. The joining is abstracted into the recipe; a
-fabricated frame costs rivets ([STATE.md § N3](../../internal/plans/STATE.md)). Rivets do not exist yet - see
+fabricated frame costs rivets ([STATE.md § N3](../../../../docs/plans/STATE.md)). Rivets do not exist yet - see
 [fasteners](fasteners.md) - so not one substitute in the table is buildable today.
 
 ### `moltenbarrel` is the pattern, already live

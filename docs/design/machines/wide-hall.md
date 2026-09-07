@@ -23,7 +23,7 @@ whatever the shared-shaft drive needs; three of the six roll shapes are already 
 | Fact | Owner |
 |---|---|
 | everything about the mill itself - its 3 × 3 × 2 footprint, the axle-bus cells, placement/break/drops, the pass lifecycle, `RollingPass`'s physics (`δ_max = μ²R`, spread, elongation, cooling), the `rollset` spec format, `WorkPiece`, `StockForm`, every `Rolling*` config key, its blockers and its gotchas | [rolling mill](rolling-mill.md) |
-| the energy model, the four node contracts, merge/split, the vanilla-MP bridge, the direction flag, every `Mp*` key | [mp-energy](../mechanics/mp-energy.md) |
+| the energy model, the four node contracts, merge/split, the vanilla-MP bridge, the direction flag, every `Mp*` key | [mp-energy](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/mp-energy.md) |
 | the shafts, bevels, transmission and flywheel that make up the run | [flywheel & shafting](flywheel-and-shafting.md) |
 | the stock ladder, crop points, cut arithmetic, and every product mass | [rolling](../processes/rolling.md), [density rule](../mechanics/density-rule.md) |
 | the ≤ 32 / ≤ 48 handling invariant and the soft-locks | [recoverability](../mechanics/recoverability.md) |
@@ -32,14 +32,14 @@ whatever the shared-shaft drive needs; three of the six roll shapes are already 
 | blanking `boilerplate` into plate | [steam hammer](steam-hammer.md) |
 | what shingles the slab the hall eats | [steam hammer](steam-hammer.md), [puddling furnace](puddling-furnace.md) |
 | what casts the steel stock the extended hall eats | [long cell](long-cell.md), [casting cell](casting-cell.md) |
-| the filler footprint system and the no-filler-graph-node rule | [multiblock & fillers](../mechanics/multiblock.md) |
+| the filler footprint system and the no-filler-graph-node rule | [multiblock & fillers](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/multiblock.md) |
 | code-first defs, recipes, cost catalogue, goldens | [recipes & config](../mechanics/recipes-config.md) |
 
-**Depends on** [rolling mill](rolling-mill.md) · [mp-energy](../mechanics/mp-energy.md) ·
+**Depends on** [rolling mill](rolling-mill.md) · [mp-energy](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/mp-energy.md) ·
 [flywheel & shafting](flywheel-and-shafting.md) · [reheat furnace](reheat-furnace.md) · [shear](shear.md) ·
 [steam hammer](steam-hammer.md) · [recoverability](../mechanics/recoverability.md) ·
 [recipes & config](../mechanics/recipes-config.md) · [rolling](../processes/rolling.md) ·
-[STATE.md § placement rule](../../internal/plans/STATE.md)
+[STATE.md § placement rule](../../../../docs/plans/STATE.md)
 
 ---
 
@@ -81,8 +81,8 @@ There is no hall block, no hall footprint and no hall block entity. A hall is a 
 |---|---|---|
 | each stand | one `BlockRollingMill` - 3 × 3 × 2, principal + two axle-bus nodes + nine fillers | [rolling mill](rolling-mill.md) |
 | the drive line | the mills' own axle cells, butted end to end, optionally extended by `BlockCastIronShaft` / `BlockCastIronBevel` | [flywheel & shafting](flywheel-and-shafting.md) |
-| the reservoir | one flywheel on the run | [mp-energy](../mechanics/mp-energy.md) |
-| the prime mover | vanilla waterwheel at iron tier, replaced by a steam engine in iiex | [STATE.md](../../internal/plans/STATE.md) |
+| the reservoir | one flywheel on the run | [mp-energy](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/mp-energy.md) |
+| the prime mover | vanilla waterwheel at iron tier, replaced by a steam engine in iiex | [STATE.md](../../../../docs/plans/STATE.md) |
 
 ### The stands chain on their own axle bus
 
@@ -179,7 +179,7 @@ has exactly one gap, so the click position along the deck carries no information
 
 The mill's live reachability blocker - B17, only the middle deck cell is an input, so a click can only ever
 land in the last third of the barrel and two of four gap bands are unreachable
-(`BlockEntityRollingMill.cs:250-260` vs `MillFeed.cs:78-89`; [STATE.md](../../internal/plans/STATE.md)) - therefore
+(`BlockEntityRollingMill.cs:250-260` vs `MillFeed.cs:78-89`; [STATE.md](../../../../docs/plans/STATE.md)) - therefore
 cannot bite a hall stand. The wide route is the only route that is not blocked by it.
 
 B17 still blocks the narrow `flat` set and must still be fixed
@@ -275,7 +275,7 @@ and the fitted roll set; an axle cell routes to its own principal and takes that
 Nothing routes between stands. Breaking stand 3 leaves stands 1–2 and 4–6 standing, and the run fractures at
 that cell - the shared graph substrate's BFS fracture detection splits the network and `OnSplitFragment`
 divides the reservoir proportionally (`MpEnergyNetwork.cs:133-155`;
-[pipe network](../mechanics/pipe-network.md) owns the substrate). The half without the flywheel loses its
+[pipe network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md) owns the substrate). The half without the flywheel loses its
 inertia entirely and is dropped (`MpEnergyNetwork.cs:81-89`). A hall wants its flywheel where a broken stand
 cannot orphan the rest, which is build guidance, not a code rule.
 
@@ -291,7 +291,7 @@ cannot orphan the rest, which is build guidance, not a code rule.
 | draw gaps 2.5 (iiex), 3.0 / 3.5 (smex) | `workbench/shapes/` | |
 | a recipe for the mill and for each roll set | `IronIndustryExpanded/Recipes/` and iiex's | the hall is four purchases; nothing costs anything yet |
 | decide the hall layout axis | — | see [Open](#open) |
-| wire the per-consumer idle draw | `IMpEnergyConsumer.LoadTorque` | settled 2026-08-05, owned by [mp-energy](../mechanics/mp-energy.md) § Idle draw - see [Gotchas](#gotchas) |
+| wire the per-consumer idle draw | `IMpEnergyConsumer.LoadTorque` | settled 2026-08-05, owned by [mp-energy](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/mp-energy.md) § Idle draw - see [Gotchas](#gotchas) |
 
 There is no new block, no new block entity and no new footprint.
 
@@ -300,7 +300,7 @@ There is no new block, no new block entity and no new footprint.
 ## Gotchas
 
 * An idling stand is meant to cost torque; the shipped code charges none. Settled 2026-08-05, owned by
-  [mp-energy § Idle draw](../mechanics/mp-energy.md): every connected consumer contributes a standing
+  [mp-energy § Idle draw](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/mp-energy.md): every connected consumer contributes a standing
   torque, so six stands idling on one shaft are a real, sustained draw. The disconnect is a block, not a
   flag: put the branch behind the clutch transmission (shipped: 2 × 2, lever cell, persisted `_engaged`) and
   it stops drawing - a main shaft, branches, and fast-and-loose pulleys to throw an idle machine off the
@@ -313,9 +313,9 @@ There is no new block, no new block entity and no new footprint.
 * Direction is last-writer-wins across the network walk (`MpEnergyNetwork.cs:75-77`). Two bridges turning
   opposite ways on one run produce an arbitrary `Reversed` - which on a hall silently flips every stand's
   feed deck at once, not just one. Not detected, not reported
-  ([mp-energy](../mechanics/mp-energy.md)).
+  ([mp-energy](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/mp-energy.md)).
 * A hall is one network, so one wrong bevel re-gears the whole line. The transmission couples two networks
-  and is not a node ([mp-energy](../mechanics/mp-energy.md)); a hall on one side of a transmission is one
+  and is not a node ([mp-energy](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/mp-energy.md)); a hall on one side of a transmission is one
   run.
 * Each stand cools its own piece the whole time it holds it, moving or not
   (`BlockEntityRollingMill.cs:341-346`). A hall does not remove the heat budget - it shortens the walk. The
@@ -337,7 +337,7 @@ There is no new block, no new block entity and no new footprint.
 | # | Question | Notes |
 |---|---|---|
 | 1 | Which axis is the hall laid on? Stands chained on their own axle bus (zero extra parts, zig-zag walk) vs stands in a row along the feed axis fed through bevels off a parallel line shaft (straight walk, one bevel + shaft run per stand) | The second is what the reference photograph shows and what "walk down the line" describes. It costs [flywheel & shafting](flywheel-and-shafting.md) parts per stand, which is the only thing that makes the hall cost more power hardware than one mill |
-| 2 | Wire the per-consumer idle draw (settled 2026-08-05, [mp-energy](../mechanics/mp-energy.md) § Idle draw) | The shipped code still charges friction per run and zero idle load per stand, so the hall's power cost has no mechanism until it lands |
+| 2 | Wire the per-consumer idle draw (settled 2026-08-05, [mp-energy](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/mp-energy.md) § Idle draw) | The shipped code still charges friction per run and zero idle load per stand, so the hall's power cost has no mechanism until it lands |
 | 3 | What does a mill cost, and is 4 × that sane at iiex tier? | The open half of forming build item 15 ([rolling mill](rolling-mill.md) § Open); nothing has a recipe |
 | 4 | Three roll shapes to draw (2.5 / 3.0 / 3.5) and four to wire | |
 | 5 | Does `flatwide5` (0.5) get deleted or kept for a later re-add? | The art exists; the schedule drops it; `game:metalsheet` is the casualty |

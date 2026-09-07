@@ -32,10 +32,10 @@ rule, and the chill model and its arithmetic, the pull-don't-join-the-graph cons
 the fuel-against-throughput trade · [Bessemer](../machines/bessemer.md) - the blow, its carbon model, capacity ·
 [recarburising](recarburising.md) - the mandatory post-blow step and its own addition arithmetic ·
 [materials.md](../materials.md) - every alloy's target composition and the waste-alloy recovery routes ·
-[molten network](../mechanics/molten-network.md) - merge/split are no-ops, `FlowEdge`'s metal-code refusal ·
-[bearings](../machines/bearings.md) - chrome steel's consumer · [pipe network](../mechanics/pipe-network.md) ·
+[molten network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/molten-network.md) - merge/split are no-ops, `FlowEdge`'s metal-code refusal ·
+[bearings](../machines/bearings.md) - chrome steel's consumer · [pipe network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md) ·
 [heat balance](../mechanics/heat-balance.md) · [conventions.md](../conventions.md) - R2, R3, R5, R7 ·
-[STATE.md](../../internal/plans/STATE.md) - D3, D6, D8, N2
+[STATE.md](../../../../docs/plans/STATE.md) - D3, D6, D8, N2
 
 **Depends on** [ladle](../machines/ladle.md) · [open hearth](../machines/open-hearth.md) ·
 [cupola](../machines/cupola.md) · [blast furnace (cold)](../machines/blast-furnace-cold.md) ·
@@ -105,7 +105,7 @@ D6 settles that the bath is primary and the ladle is the second option
 | open-hearth steel | primary - a long heat is a bath that can be held and corrected | available |
 | Bessemer steel | impossible - see below | the only route |
 | cast iron | no - the cupola has no holdable bath either | available (and waste recovery is a remelt, not an alloying run) |
-| copper / bronze | no | available - deferred with all non-ferrous ([STATE.md](../../internal/plans/STATE.md) D8) |
+| copper / bronze | no | available - deferred with all non-ferrous ([STATE.md](../../../../docs/plans/STATE.md) D8) |
 
 The converter cannot be a mixing site, and the shipped code says so twice.
 
@@ -247,7 +247,7 @@ base + both additions (≈ 6800 u), or a hadfield heat is mixed in two goes.
 
 ### D3 has no code surface - pressure is a property of the mod, not the metal
 
-> D3 ([STATE.md](../../internal/plans/STATE.md)): alloys inherit their base's properties as a continuous penalty, not
+> D3 ([STATE.md](../../../../docs/plans/STATE.md)): alloys inherit their base's properties as a continuous penalty, not
 > a lockout - critical machinery built from lesser steel gets a lower max pressure.
 
 Every pressure ceiling that exists in the suite:
@@ -279,7 +279,7 @@ fallback. `BlockPipe.RegisterBurst` (`BlockPipe.cs:185`) is already an indirecti
 |---|---|---|---|---|
 | hadfield | mild steel | ~12.5 % Mn | ferromanganese - cold blast furnace | yes - it is hpex's material gate |
 | chrome steel | per D3 - any steel base, graded | ~1 % C, ~1.5 % Cr (defined 2026-08-07) | ferrochrome - cold blast furnace; one route, via the [ladle](../machines/ladle.md) | yes ([bearings](../machines/bearings.md), N2) - its identity row is [alloys § Pinned identities](../items/alloys.md) |
-| HSS | open-hearth | ~18 % W + ~4 % Cr | tungsten has no source anywhere - the ferroalloy family is FeMn / FeCr / FeSi ([STATE.md](../../internal/plans/STATE.md)) | no - elex, deferred (D8) |
+| HSS | open-hearth | ~18 % W + ~4 % Cr | tungsten has no source anywhere - the ferroalloy family is FeMn / FeCr / FeSi ([STATE.md](../../../../docs/plans/STATE.md)) | no - elex, deferred (D8) |
 | tin bronze / brass / bismuth / black bronze | copper | Sn / Zn / Bi / Au+Ag | tilting crucible (designed) | no - non-ferrous, deferred (D8) |
 
 Inside the current release target, alloying has exactly two customers: hadfield and chrome steel, both
@@ -327,7 +327,7 @@ waiting on it.
 
 2. A ladle that joins the molten graph cannot alloy. Merge and split are no-ops and `FlowEdge` refuses a
    transfer into a cell holding a different metal code
-   ([molten network](../mechanics/molten-network.md)), so a graph-joined ladle would be refused its own
+   ([molten network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/molten-network.md)), so a graph-joined ladle would be refused its own
    second input by the network it exists to merge. It must pull from neighbours by code. This is
    [ladle](../machines/ladle.md)'s constraint and it is the one mistake that takes the feature back to zero.
 

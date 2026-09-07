@@ -16,7 +16,7 @@
 **Does not own** - cited only, never restated:
 - The graph substrate, the one-medium pool, capacity, pressure formulas, leaks, vents, bursts, the tick
   order, the plain-valve sever semantics and the pressure-valve overflow arithmetic, and every exlib
-  constant behind them - [pipe network](../mechanics/pipe-network.md), canonical for the
+  constant behind them - [pipe network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md), canonical for the
   burst-by-tier table and the joint-family rule. This page states only iiex's rows of it and the
   consequences specific to iiex blocks.
 - Pumps, the fluid intake, the water chain - [pumps](pumps.md).
@@ -43,7 +43,7 @@ the burst rating, the throughput and the joint family (`BlockPipe.cs:252-255`, `
 material per tier, one model per tier - unchanged; what moved is where the tier is written down.
 
 Until 2026-08-14 this read *"the tier is the mod, not a variant axis"*, with the domain as the key. **M4
-supersedes it** ([STATE.md](../../internal/plans/STATE.md)): the merge puts this tier and the plated one in a
+supersedes it** ([STATE.md](../../../../docs/plans/STATE.md)): the merge puts this tier and the plated one in a
 single domain, so the domain can no longer name a tier without collapsing the two - which M3 forbids.
 
 ★ **The two valves are cast-tier too** (`BlockValve.cs:39`, `BlockPressureValve.cs:39`). That is where the
@@ -110,13 +110,13 @@ both segments and valves are `SideSolid(false)`.
 (`BlockNetworkNode.cs:768-769`). The outlet overrides to a single face -
 `Orientation.EndsWith(face.Code[0])` (`BlockPipeOutlet.cs:67-68`) - because its orientation string is one
 character. Everything else about how connectors are read (the DIM overloads, reciprocity, the port rule)
-is [pipe network](../mechanics/pipe-network.md)'s.
+is [pipe network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md)'s.
 
 The pressure valve is a network endpoint. `IsNetworkEndPoint => true` (`BlockPressureValve.cs:55`) keeps its
 two sides apart: `GetConnectedNeighbors` bails at an endpoint (`BlockNetworkModSystem.cs:389-390`) and
 `IsValidNetworkNeighbour` refuses one as a neighbour (`:444-445`). A pressure valve is always its own
 one-node network and the runs on either side never merge - the mechanism behind "its two networks must be
-genuinely separate" that [pipe network](../mechanics/pipe-network.md) Gotcha 10 states.
+genuinely separate" that [pipe network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md) Gotcha 10 states.
 
 ---
 
@@ -224,7 +224,7 @@ flanges (`:61`), so an iron-tier main and a cast main interconnect and a line up
 
 Toggled by an empty-handed right-click (`BlockValve.cs:55-84`; a held item defers, `:67-68`), server-side
 only, with a door-open sound. The sever semantics, the `RemoveNode`+`AddNode` re-walk and the stale-pool
-discard are [pipe network](../mechanics/pipe-network.md) § 7's. The block's own side: `Lockable` behaviour,
+discard are [pipe network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md) § 7's. The block's own side: `Lockable` behaviour,
 `MaxStackSize(1)`, and the `iiex:blockhelp-valve-toggle` interaction line appended to the base help
 (`BlockValve.cs:86-102`).
 
@@ -243,7 +243,7 @@ Right-click raises the gate, sneak + right-click lowers it (`BlockPressureValve.
 `GatePressureStep` increments, with a switch sound on an actual change. The inherited toggle help line is
 filtered out and two of its own are appended (`:90-112`). The overflow arithmetic - gas downhill-only,
 equalise cap, leaking-output trickle, vent-to-atmosphere, liquid spill - is
-[pipe network](../mechanics/pipe-network.md) § 8's.
+[pipe network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md) § 8's.
 
 This page owns the ceiling:
 
@@ -304,7 +304,7 @@ rating 12) resolves both halves at once, because both the joint and the ceiling 
 
 That is the whole of iiex's pipe config. Everything else the fittings use - `LitresPerPipe`, `GasLeakRate`,
 `LiquidLeakRate`, `EvaporationLitresPerDay`, `PipeOverpressureSeconds` - is exlib's, and `ChimneyGasDrawRate`
-is iiex's; all six are tabulated by [pipe network](../mechanics/pipe-network.md) § Numbers
+is iiex's; all six are tabulated by [pipe network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md) § Numbers
 (`IiexConfig.cs:43-46`).
 
 ### Hard-coded — not config
@@ -327,9 +327,9 @@ is iiex's; all six are tabulated by [pipe network](../mechanics/pipe-network.md)
 
 | tier | domain | burst | joint | owner |
 |---|---|---|---|---|
-| plated | iiex | 2.5 | flanged | [pipe network](../mechanics/pipe-network.md) |
+| plated | iiex | 2.5 | flanged | [pipe network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md) |
 | cast | iiex | 5.0 | flanged | this page (`IiexConfig.cs:50`) |
-| rolled | hpex | 12 | welded | [pipe network](../mechanics/pipe-network.md) |
+| rolled | hpex | 12 | welded | [pipe network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md) |
 
 The rating doubles as the buffer size - a run holds `burst × pipes × LitresPerPipe`
 (`PipeNetwork.cs:337-341`) - so a cast run is both stronger and twice the reservoir of a plated one at the
@@ -344,7 +344,7 @@ same node count. That is the tier's whole mechanical benefit; there is no throug
 | Watt engine break | 4.0 atm | `IiexConfig.cs:166` ([Watt engine](engine-watt.md)) |
 | Cornish boiler choke | 5.0 atm | `IiexConfig.cs:156` ([Cornish boiler](boiler-cornish.md)) |
 | cast pipe burst | 5.0 atm | this page |
-| plated pipe burst | 2.5 atm | [pipe network](../mechanics/pipe-network.md) |
+| plated pipe burst | 2.5 atm | [pipe network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md) |
 
 The boiler chokes exactly at the pipe's rating, so a cast steam main can carry a maxed Cornish boiler and sit
 permanently at burst-comparison distance - `TickOverpressureAndBurst` compares with a `0.001` epsilon
@@ -369,7 +369,7 @@ the classes overrides `GetDrops`.
 Salvage is 1:1 and lossless - none of these is a right-click construction, so `RccBrokenDropsRatio`
 (`IiexConfig.cs:116`) does not apply. A burst segment is the exception: it drops its items, puffs steam and
 is replaced with air by the network's burst pass (`PipeNetwork.cs:888-916`,
-[pipe network](../mechanics/pipe-network.md) § 5).
+[pipe network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md) § 5).
 
 ---
 
@@ -435,13 +435,13 @@ paths are tested; neither transfer path is.
    nothing would surface the loss. The plated and rolled tiers do not have this problem.
 
 3. A refused joint does not leak, despite what the source says. `BlockNetworkNode.cs:751-754` and
-   [pipe network](../mechanics/pipe-network.md) § 5 both state that a refused joint "reads as an open end,
+   [pipe network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md) § 5 both state that a refused joint "reads as an open end,
    so the run leaks rather than silently merging". `ClassifyOpenings` only counts an open face as a leak
    when the neighbour block is air - `if (neighbour.FirstCodePart() == "air")`, `PipeNetwork.cs:632`.
    A welded segment butted against a cast one is not air, so `TotalLeaks` stays 0, `IsLeaking` stays false,
    and the two runs simply do not connect, silently. The intended feedback does not fire. (Reported here
    because the joint rule is what makes B6 invisible in play; the rule itself is
-   [pipe network](../mechanics/pipe-network.md)'s to correct.)
+   [pipe network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md)'s to correct.)
 
 4. The passthrough's "seals against a wall" works, but not the way it says it does.
    `BlockPipePassthrough.cs:13-15` credits the seal to a connector against a solid neighbour not being

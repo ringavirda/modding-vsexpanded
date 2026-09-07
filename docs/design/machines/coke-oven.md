@@ -14,7 +14,7 @@ brick and vanilla `game:coke`, the deliberate refusal to use `game:cokeovendoor`
 does not fire inside the chambers), and the list of what has to be built.
 
 **Depends on**
-[multiblock & filler structures](../mechanics/multiblock.md) — owns the layout DSL, origin-is-the-negation,
+[multiblock & filler structures](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/multiblock.md) — owns the layout DSL, origin-is-the-negation,
 oriented parts and the trapdoor caveat, and the invisible-filler footprint system ·
 [definitions, recipes & config](../mechanics/recipes-config.md) — owns code-first defs, goldens, RCC stages ·
 [heat balance](../mechanics/heat-balance.md) — owns the furnace core the oven rides ·
@@ -150,7 +150,7 @@ are `style` / `material` / `age` - no facing in the code at all - and it carries
 `entityBehaviors: [{ name: "TrapDoor" }]`, so the hinge lives in the block entity
 (`.game/1.20/assets/survival/blocktypes/metal/trapdoor.json:11-22`). A layout can only require
 `trapdoor-plate-iron-1`, and the player may hinge it any way with the structure still completing. That is
-the blind spot of the oriented-parts feature ([multiblock](../mechanics/multiblock.md)).
+the blind spot of the oriented-parts feature ([multiblock](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/multiblock.md)).
 
 `hopper-tall` is already the charging block of the [blast furnace](blast-furnace-cold.md) and the
 [cupola](cupola.md), so the player has learned it before they build an oven; it also carries

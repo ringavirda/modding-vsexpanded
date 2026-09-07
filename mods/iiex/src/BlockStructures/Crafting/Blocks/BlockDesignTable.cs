@@ -13,7 +13,7 @@ namespace IronIndustryExpanded.BlockStructures.Crafting.Blocks;
 /// The design table: a candle-lit, two-wide draughting desk where diagrams are drawn and builds are
 /// planned. Right-click opens the drafting dialog (<see cref="BlockEntityDesignTable"/>) to pick a
 /// diagram and draw it onto parchment. Currently a single cell whose model overhangs into the next;
-/// the second cell has no filler yet. See <c>docs/design/diagram-crafting.md</c>.
+/// the second cell has no filler yet. See <c>docs/design/mechanics/diagram-crafting.md</c>.
 /// </summary>
 [BlockRegister]
 public partial class BlockDesignTable : Block, IExBlockDefProvider {

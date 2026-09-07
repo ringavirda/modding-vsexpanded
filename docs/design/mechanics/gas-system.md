@@ -18,7 +18,7 @@
 |---|---|
 | The gas producer machine, its bed chemistry, its config | [gas-producer](../machines/gas-producer.md) |
 | Cowper stoves, the dust catcher, stove count and size | [cowper](../machines/cowper.md) |
-| Pipe media, pressure, merge/split, `Compatible` | [pipe-network](pipe-network.md) |
+| Pipe media, pressure, merge/split, `Compatible` | [pipe-network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md) |
 | The open hearth and its regenerators | [open-hearth](../machines/open-hearth.md) |
 | The closed top that makes capture possible | [blast-furnace-hot](../machines/blast-furnace-hot.md) |
 | Boiler internals | [boiler-cornish](../machines/boiler-cornish.md) · [boiler-lancashire](../machines/boiler-lancashire.md) |

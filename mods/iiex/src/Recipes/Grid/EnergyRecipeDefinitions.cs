@@ -53,7 +53,7 @@ public class EnergyRecipeDefinitions : IExRecipeDefProvider {
   /// Both grids are diagram-led, so each is the plan plus a flat bill of materials - one cell per distinct
   /// ingredient carrying its quantity, not a picture of the product laid out in the grid. The diagram is
   /// <c>.Tool()</c>, drafted once at the design table and reused, and each size has its own.
-  /// See <c>docs/design/diagram-crafting.md</c>.
+  /// See <c>docs/design/mechanics/diagram-crafting.md</c>.
   /// </para>
   /// </summary>
   private static ExRecipeDef Flywheels(string domain) =>

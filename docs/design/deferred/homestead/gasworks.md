@@ -23,7 +23,7 @@ criterion that separates it from the gas producer). Do not re-argue either here.
 | The metalworking-only cut, its carve-outs, the release target | [scope.md](../../scope.md) |
 | The gas producer as a machine - its inputs, numbers, medium requirement, the "no gasholder" ruling, and the producer-gas ↔ coal-gas comparison table | [gas-producer](../../machines/gas-producer.md) |
 | Why the beehive oven recovers nothing | [coke oven](../../machines/coke-oven.md):33-38 |
-| One medium per run, capacity, pressure, leaks, merge/split, bursts | [pipe network](../../mechanics/pipe-network.md) |
+| One medium per run, capacity, pressure, leaks, merge/split, bursts | [pipe network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md) |
 | The phase-change / distillation model | [conventions.md](../../conventions.md) § Distillation & phase change |
 | The gasholder-as-storage-node problem, and why it cannot be built today | [fluid tank](../../machines/fluid-tank.md) |
 | Petcoke, the other graphite ingredient | [oil](oil.md) |
@@ -32,7 +32,7 @@ criterion that separates it from the gas producer). Do not re-argue either here.
 | R1 single medium · R2 declared recovery · R5 gate efficiency · R7 nothing hidden | [conventions.md](../../conventions.md) |
 
 **Depends on** [scope.md](../../scope.md) · [gas-producer](../../machines/gas-producer.md) ·
-[coke oven](../../machines/coke-oven.md) · [pipe network](../../mechanics/pipe-network.md) ·
+[coke oven](../../machines/coke-oven.md) · [pipe network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md) ·
 [fluid tank](../../machines/fluid-tank.md) · [chemistry](chemistry.md) · [oil](oil.md) ·
 [gas lighting](gas-lighting.md) · the archived iiex spec (git history) · [arc furnace](../elex/arc-furnace.md)
 
@@ -128,7 +128,7 @@ Two design notes travel with it:
 
 | # | Knot | Where | Why it bites |
 |---|---|---|---|
-| 1 | R1 vs. a three-output machine | [conventions.md](../../conventions.md); owned by [pipe network](../../mechanics/pipe-network.md) | a run carries one medium. A gasworks emits gas, tar and liquor simultaneously. It therefore needs three separate ports onto three separate runs - or the liquids come off as items and sidestep the network entirely. The archived spec implies the first ("a gas main dropping tar/liquor"), but never says which |
+| 1 | R1 vs. a three-output machine | [conventions.md](../../conventions.md); owned by [pipe network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md) | a run carries one medium. A gasworks emits gas, tar and liquor simultaneously. It therefore needs three separate ports onto three separate runs - or the liquids come off as items and sidestep the network entirely. The archived spec implies the first ("a gas main dropping tar/liquor"), but never says which |
 | 2 | Two gases always mix, silently | `ExLiquids.cs:106-115`, comment at `:114` - "two gases always mix (Air/Steam/Exhaust family)"; the merged run takes the higher-priority label (`:118-119`) | join a coal-gas main to a steam or air main and you get one pool, relabelled, with no warning and no refusal. [gas-producer](../../machines/gas-producer.md):309-315 already logs this for producer gas - a town-gas main is worse, because lighting mains are distributed around a settlement and will pass near the works' own air and exhaust runs |
 | 3 | No media to declare | `mods/exlib/assets/exlib/config/liquids.json`; loader at `ExLiquids.Load` (`ExLiquids.cs:74-97`) | Homestead ships them as its own `config/liquids.json` and the loader overlays it with no code, so this is cheap. But the priorities have to be chosen against the shipped ladder (Air 0 `ExLiquids.cs:46`, Steam 10 `:52`, Exhaust 20 `:58`) and against `ProducerGas`, which [gas-producer](../../machines/gas-producer.md):240 proposes at 30 |
 | 4 | The gasholder is the fluid tank | the archived spec calls it "the core-iiex medium-agnostic storage node holding coal gas (telescoping bell cosmetic)" | so it is one block with two skins, and its blocking problem - capacity is per-node and uniform - is already written up at [fluid tank](../../machines/fluid-tank.md). Do not design a second storage node. `fluid-tank.md:56-58` cites the archived gasholder as one of two reasons the tank must stay medium-agnostic |

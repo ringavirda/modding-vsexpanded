@@ -18,7 +18,7 @@ Still open: the Lancashire boiler's internal firebox.
   cutover.
 
 **Does not own** - cited only: the Shaft/Firebox class split ([conventions](../conventions.md)); the cell-role
-mechanism and the layout DSL ([multiblock](../mechanics/multiblock.md)); the heat model and the reverberatory
+mechanism and the layout DSL ([multiblock](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/multiblock.md)); the heat model and the reverberatory
 transfer loss ([heat balance](../mechanics/heat-balance.md), [crucible-furnace](crucible-furnace.md)); the
 charge column, which is the shaft equivalent and deliberately a different model
 ([layered-charge](../layered-charge.md)).
@@ -168,7 +168,7 @@ off the block instead of a tooltip.
 A boiler hosts a firebox internally - its own shape carries one, rather than a separate `F` cell in a
 layout - so the fuel pool is a composable behaviour that either a standalone `iiex:furnace-firebox` block
 or a machine's own block entity can host. The mod already had the pattern: `BEBehaviorMoltenCell` is
-composable and any block can carry it ([molten-network](../mechanics/molten-network.md)).
+composable and any block can carry it ([molten-network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/molten-network.md)).
 
 **The host contract**, in full - what a machine that is not a firebox block has to do:
 

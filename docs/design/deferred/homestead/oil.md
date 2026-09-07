@@ -20,7 +20,7 @@ iiex spec (git history) and is restated below.
 [scope.md](../../scope.md) - the cut, the carve-outs, elex's three dependency severities ·
 [conventions.md](../../conventions.md) - the phase-change/distillation model that stays, and R1 ·
 the archived iiex spec (git history) · [arc furnace](../elex/arc-furnace.md) - the electrode mechanic and
-its carbon fallback · [pipe network](../../mechanics/pipe-network.md) - media, one-medium-per-run, burst and
+its carbon fallback · [pipe network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md) - media, one-medium-per-run, burst and
 joints · [pumps](../../machines/pumps.md) - the lift device a derrick would reuse ·
 [fuels](../../items/fuels.md) - what the spine actually burns.
 

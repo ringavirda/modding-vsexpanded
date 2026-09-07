@@ -32,14 +32,14 @@ see [The cross-mod emit question](#the-cross-mod-emit-question).
 | `Outputs` / `OutputAt` moving off the spec onto a **stage** table, every crop, and `MinTorque`'s first real consumer (the cold cut) | [shear](../machines/shear.md) |
 | `1 vx³ = 2.5 u`, `materialUnits` being dead data, and the audit of shipped masses | [density rule](../mechanics/density-rule.md) |
 | the code-first def builders, `attributesByType` mechanics, the goldens harness, the cost catalogue | [recipes & config](../mechanics/recipes-config.md) |
-| the energy model and what a torque number means | [mp-energy](../mechanics/mp-energy.md) |
+| the energy model and what a torque number means | [mp-energy](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/mp-energy.md) |
 | the `ItemDie` field contract and the four-die catalogue | [heading machine](../machines/heading-machine.md), [dies](dies.md) |
 | the `mold` field contract and the shipped pattern catalogue | [casting cell](../machines/casting-cell.md), [patterns](patterns.md) |
 
 **Depends on** [rolling mill](../machines/rolling-mill.md) · [wide hall](../machines/wide-hall.md) ·
 [steel roll sets](../machines/steel-roll-sets.md) · [shear](../machines/shear.md) ·
 [recipes & config](../mechanics/recipes-config.md) · [density rule](../mechanics/density-rule.md) ·
-[patterns](patterns.md) · [dies](dies.md) · [STATE.md § placement rule](../../internal/plans/STATE.md)
+[patterns](patterns.md) · [dies](dies.md) · [STATE.md § placement rule](../../../../docs/plans/STATE.md)
 
 ---
 
@@ -122,7 +122,7 @@ items
 Bending is not a roll-set job. The [bending roller](../machines/bending-roller.md) walks curvature up in
 passes while the mill walks thickness down in gaps; `WorkPiece` has no curvature axis, so expressing a bend as
 a `gaps` array would mean an array that silently means something else
-([STATE.md § Bending is a separate machine](../../internal/plans/STATE.md)). Blade sets for the
+([STATE.md § Bending is a separate machine](../../../../docs/plans/STATE.md)). Blade sets for the
 [shear](../machines/shear.md) and die sets for the [steam hammer](../machines/steam-hammer.md) are separate
 tooling families with their own attribute keys, not roll-set variants - see [dies](dies.md).
 
@@ -159,7 +159,7 @@ knows what an entry must contain and where to read the rule.
 
 *Re-cut 2026-08-12. `gaps` and `outputs` are gone: a set declares only what the tooling itself knows, and
 the states the metal passes through are the stock's process route
-([process-extension](../mechanics/process-extension.md)).*
+([process-extension](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/process-extension.md)).*
 
 | JSON key | C# member | Required? |
 |---|---|---|

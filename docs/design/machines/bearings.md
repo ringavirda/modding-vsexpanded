@@ -32,20 +32,20 @@ route and the [bending roller](bending-roller.md) - are themselves designed-not-
 | bending as a verb, the three-rolls-in-a-triangle argument, the roller's tooling catalogue | [bending roller](bending-roller.md) |
 | `grooved` schedules, `δ_max = μ²R`, `RollSetSpec`, `WorkPiece`, every `Rolling*` key | [rolling mill](rolling-mill.md) |
 | the crop that turns `rolledrod` into 25 u rod, and the cold-cut `MinTorque` gate | [shear](shear.md) |
-| the cold blast furnace's ferroalloy second act - burden family, coke cost, the fuel-against-throughput trade | [cold blast furnace](blast-furnace-cold.md), [STATE.md § the ferroalloy furnace](../../internal/plans/STATE.md) |
+| the cold blast furnace's ferroalloy second act - burden family, coke cost, the fuel-against-throughput trade | [cold blast furnace](blast-furnace-cold.md), [STATE.md § the ferroalloy furnace](../../../../docs/plans/STATE.md) |
 | melting a ferroalloy for the ladle | [cupola](cupola.md) |
-| alloying in the bath vs in the ladle (D6) | [STATE.md § D6](../../internal/plans/STATE.md) |
+| alloying in the bath vs in the ladle (D6) | [STATE.md § D6](../../../../docs/plans/STATE.md) |
 | `1 vx³ = 2.5 u` and every stock mass | [density rule](../mechanics/density-rule.md) |
-| the mpenergy run a bench loads and the flywheel that carries a pulsed blow | [mp-energy](../mechanics/mp-energy.md) |
+| the mpenergy run a bench loads and the flywheel that carries a pulsed blow | [mp-energy](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/mp-energy.md) |
 | what hadfield, HSS and the industrial steels are | [materials.md](../materials.md) |
 | code-first item defs, `ExRecipeCosts`, goldens | [recipes & config](../mechanics/recipes-config.md) |
-| the HP machines that consume bearings | [hp hammer](hp-hammer.md), [STATE.md](../../internal/plans/STATE.md) |
+| the HP machines that consume bearings | [hp hammer](hp-hammer.md), [STATE.md](../../../../docs/plans/STATE.md) |
 
 **Depends on** [heading machine](heading-machine.md) · [bending roller](bending-roller.md) ·
 [rolling mill](rolling-mill.md) · [shear](shear.md) · [cold blast furnace](blast-furnace-cold.md) ·
 [cupola](cupola.md) · [density rule](../mechanics/density-rule.md) ·
 [recipes & config](../mechanics/recipes-config.md) · [materials.md](../materials.md) ·
-[STATE.md § N2](../../internal/plans/STATE.md)
+[STATE.md § N2](../../../../docs/plans/STATE.md)
 
 ---
 
@@ -58,7 +58,7 @@ is round to a tolerance, and no recipe in this suite can currently express that.
 
 Friedrich Fischer's 1883 ball-grinding machine is the invention that created the ball-bearing industry:
 before it, balls could not be made round enough for the bearing to matter
-([STATE.md:477-479](../../internal/plans/STATE.md)).
+([STATE.md:477-479](../../../../docs/plans/STATE.md)).
 
 Ruling: bearings are not forged and assembled. A grid recipe of the form `steel + steel → bearing` would make
 the most process-dependent object in the game the cheapest one to obtain.
@@ -66,7 +66,7 @@ the most process-dependent object in the game the cheapest one to obtain.
 ### But it needs no new machine: the ball die
 
 Heading a ball from a short length of chrome-steel rod is the same verb the bench already performs for rivets
-and nails ([STATE.md:481-484](../../internal/plans/STATE.md)). The die is the whole difference, the same argument that
+and nails ([STATE.md:481-484](../../../../docs/plans/STATE.md)). The die is the whole difference, the same argument that
 made the [heading machine](heading-machine.md) one block instead of two.
 
 | Reason a die beats a grinding machine | |
@@ -76,7 +76,7 @@ made the [heading machine](heading-machine.md) one block instead of two.
 | The accuracy story is told by infrastructure | to get a bearing the player must have built the mill, the shear and the bench, and be running them off a flywheel |
 | It respects one-machine-more-tooling | a different verb earns its own block ([bending roller](bending-roller.md) exists because bending is not reduction); heading a ball is not a different verb from heading a rivet |
 
-Naming. [STATE.md:481](../../internal/plans/STATE.md) says *"give the cutter bench a ball die"*, which is ambiguous
+Naming. [STATE.md:481](../../../../docs/plans/STATE.md) says *"give the cutter bench a ball die"*, which is ambiguous
 between the two die-fed benches. [heading machine:32](heading-machine.md) resolves it to the header: the ball
 die's feedstock is rod, and rod is what the header eats - the [nail machine](nail-machine.md) eats
 `nailplate`.
@@ -85,7 +85,7 @@ die's feedstock is rod, and rod is what the header eats - the [nail machine](nai
 
 Bearings are an hpex-tier item only. Earlier machinery ran on plain journal bearings, left abstracted into a
 machine's build cost - no existing recipe changes, no existing machine gains a requirement, and no save is
-invalidated ([STATE.md:486-488](../../internal/plans/STATE.md)). Line shafting, mill stands and beam engines ran on
+invalidated ([STATE.md:486-488](../../../../docs/plans/STATE.md)). Line shafting, mill stands and beam engines ran on
 babbitt and bronze journals for a century, and tin bronze is already listed in the mod's material table as
 *"bearings, fittings, cocks"* ([materials.md:73](../materials.md)).
 
@@ -100,11 +100,11 @@ A bearing is an item, so "structure" is its bill of parts and where each part is
 
 | Part | Form | Made on | Owner of that machine |
 |---|---|---|---|
-| **balls** | chrome-steel rod @ 25 u → *n* balls | [heading machine](heading-machine.md) + the ball die | iiex ships the bench, hpex ships the die ([STATE.md:583](../../internal/plans/STATE.md)) |
+| **balls** | chrome-steel rod @ 25 u → *n* balls | [heading machine](heading-machine.md) + the ball die | iiex ships the bench, hpex ships the die ([STATE.md:583](../../../../docs/plans/STATE.md)) |
 | **race** | a rolled ring | [bending roller](bending-roller.md) | iiex |
 | assembly | balls + race → bearing | a grid recipe | hpex |
 
-Both parts are products the forming line already makes ([STATE.md:483-484](../../internal/plans/STATE.md)). No new
+Both parts are products the forming line already makes ([STATE.md:483-484](../../../../docs/plans/STATE.md)). No new
 machine, no new mechanism, two new items and one die.
 
 ### The race gap
@@ -125,7 +125,7 @@ Or it is not rolled at all. Two alternatives, both cheaper to build and both wor
 | bore a race out of a `blank` on the [boring machine](boring-machine.md) | a bore makes a hole, not a raceway groove; and it wastes the metal a ring saves |
 | forge it on the [hp hammer](hp-hammer.md) with a die | this would be a real ≥ 2-voxel die and would fill that machine's empty catalogue - but it makes the bearing require a machine that itself requires bearings. See [the bootstrap invariant](#the-bootstrap-invariant) |
 
-[STATE.md:483-484](../../internal/plans/STATE.md) settles it as rolled, and this page follows that. The open work is
+[STATE.md:483-484](../../../../docs/plans/STATE.md) settles it as rolled, and this page follows that. The open work is
 which tool.
 
 ---
@@ -180,7 +180,7 @@ balls + race  ──grid recipe──▶  BEARING                   [no recipe]
 
 Ferrochrome is a blast-furnace product, one member of the ferroalloy family - ferromanganese, ferrochrome,
 later ferrosilicon - that gives the cold furnace its permanent second act
-([STATE.md:322-324](../../internal/plans/STATE.md), [cold blast furnace § second act](blast-furnace-cold.md)). The
+([STATE.md:322-324](../../../../docs/plans/STATE.md), [cold blast furnace § second act](blast-furnace-cold.md)). The
 mechanism is a new burden family on an existing block, exactly as the [cupola](cupola.md) is a data override;
 the cost is a very high-coke burden the cold furnace can just barely reach. This page adds nothing to that
 model; it is the second customer for it.
@@ -229,7 +229,7 @@ The invariant is therefore: the HP ore crusher is a throughput machine, never th
 Vanilla's route must stay open. The crusher's point is bulk comminution against hand-pulverizing; implemented
 as an exclusive gate it makes the tier unenterable.
 
-Break 2 - the requirement stops at the Corliss. [STATE.md:467](../../internal/plans/STATE.md) requires bearings for
+Break 2 - the requirement stops at the Corliss. [STATE.md:467](../../../../docs/plans/STATE.md) requires bearings for
 *"HP machines (Corliss)"*, and the Corliss is planned, not live. The two machines a player builds first in
 hpex - the Lancashire boiler and the Cornish engine, both live - are beam-and-crank machines running at
 engine speeds a journal bearing handles, and must stay unrequiring.
@@ -357,7 +357,7 @@ chrome-steel rod and a ball fit the same `Accepts` / `Output` / `Count` shape, w
 * Never require a bearing on the Lancashire boiler, the Cornish engine or anything upstream of chrome steel.
   Those are the machines a player builds to reach hpex.
 * Do not retrofit. No existing recipe gains a bearing. Journal bearings are abstracted into build cost
-  ([STATE.md:486-488](../../internal/plans/STATE.md)); adding one to an iiex machine would invalidate saves.
+  ([STATE.md:486-488](../../../../docs/plans/STATE.md)); adding one to an iiex machine would invalidate saves.
 * The ball die must accept chrome-steel rod only. A wildcard `Accepts` deletes the whole chain.
 * A bearing must not be craftable from an anvil or a grid alone. That is the ruling in [Role](#role); a
   `steel + steel → bearing` recipe defeats the entire design.
@@ -371,7 +371,7 @@ chrome-steel rod and a ball fit the same `Accepts` / `Output` / `Count` shape, w
 * `ResolveBlockOrItem` after `GetItemstack`. A stack read off a tree carries no resolved collectible
   (`BlockEntityRollingMill.cs:440-442`) - the bench's tooling slot has the same trap.
 * The rod route is blocked upstream (B4). `grooved`'s first gap is 1.0 against 3.0 stock, a 2.0 draft against
-  `δ_max` 1.0, so no rod can be made at all today ([STATE.md:51](../../internal/plans/STATE.md),
+  `δ_max` 1.0, so no rod can be made at all today ([STATE.md:51](../../../../docs/plans/STATE.md),
   `RollSetItemDefinitions.cs:86-93`, `RollingPass.cs:43`). Bearings sit directly downstream of it.
 
 ---
@@ -382,7 +382,7 @@ chrome-steel rod and a ball fit the same `Accepts` / `Output` / `Count` shape, w
 |---|---|---|
 | 1 | Balls per bearing, and balls per rod. 10 per rod and 8 per bearing do not divide; the ladder's rule is that every crop divides exactly. One rod = one bearing is the clean answer | yes |
 | 2 | Which tool rolls the race - a fifth (small-radius ring) entry on the [bending roller](bending-roller.md), or something else. STATE.md settles that it is rolled; it does not settle how | yes |
-| 3 | One race or two? [STATE.md:483](../../internal/plans/STATE.md) says *"balls + a rolled ring race"*, singular. A real bearing has an inner and an outer. Singular is simpler and is the settled text; two is the honest engineering. Pick and write it down | yes |
+| 3 | One race or two? [STATE.md:483](../../../../docs/plans/STATE.md) says *"balls + a rolled ring race"*, singular. A real bearing has an inner and an outer. Singular is simpler and is the settled text; two is the honest engineering. Pick and write it down | yes |
 | 4 | Chrome steel needs a `materials.md` row, a `MetalRegistry` entry and a grade under D3 | yes |
 | 5 | Ferrochrome needs the ferroalloy burden family, which is the cold furnace's unbuilt second act - no third burden family, no ferroalloy metal, nothing in `src/` ([cold blast furnace § Open](blast-furnace-cold.md)) | yes |
 | 6 | Where `ItemDie` lives. The ball die is the case that forces the iiex-vs-exlib decision ([heading machine § Open](heading-machine.md)) | yes |

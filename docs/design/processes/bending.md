@@ -36,17 +36,17 @@ doing at volume)
 | the schedules that produce the plate and the skelp, and the feed arithmetic | [rolling](rolling.md), [wide hall](../machines/wide-hall.md) |
 | the crop that cuts plate to length before it is bent | [shear](../machines/shear.md) |
 | the rolled pipe tier - its blocktypes, its 12 atm rating, the welded joint family, B5 | [rolled pipe](../machines/rolled-pipe.md) |
-| pipe tiers, burst, joint families, the one-medium rule | [pipe network](../mechanics/pipe-network.md) |
+| pipe tiers, burst, joint families, the one-medium rule | [pipe network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md) |
 | the cast originals this route substitutes for, and the cast-vs-forged rule | [cast parts](../items/cast-parts.md), [casting cell](../machines/casting-cell.md) |
 | the substitution loop the bent parts feed | [fabrication](fabrication.md) |
 | the rivet, and the bench that heads it | [heading machine](../machines/heading-machine.md) |
 | `1 vx³ = 2.5 u` and every mass below | [density rule](../mechanics/density-rule.md) |
-| the energy model and every `Mp*` key | [mp-energy](../mechanics/mp-energy.md) |
+| the energy model and every `Mp*` key | [mp-energy](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/mp-energy.md) |
 | the ≤ 32 / ≤ 48 handling invariant | [recoverability](../mechanics/recoverability.md) |
 
 **Depends on** [bending roller](../machines/bending-roller.md) · [rolling](rolling.md) ·
 [fabrication](fabrication.md) · [rolled pipe](../machines/rolled-pipe.md) ·
-[pipe network](../mechanics/pipe-network.md) · [shear](../machines/shear.md) ·
+[pipe network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md) · [shear](../machines/shear.md) ·
 [density rule](../mechanics/density-rule.md)
 
 ---
@@ -191,9 +191,9 @@ owned elsewhere.
 
 | Anchor | Value | Owner |
 |---|---|---|
-| drive headroom one bridged waterwheel leaves | ≈ 0.4 N·m | [mp-energy](../mechanics/mp-energy.md) |
+| drive headroom one bridged waterwheel leaves | ≈ 0.4 N·m | [mp-energy](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/mp-energy.md) |
 | a hot fresh-bloom mill pass | ≈ 0.338 N·m | [rolling mill](../machines/rolling-mill.md) § Worked pass |
-| network standing resistance | `MpIdleTorque` 0.5 (`ExlibConfig.cs:92`), `MpFrictionCoeff` 0.05 (`:86`), `MpMaxSpeed` 2 rad/s (`:98`) | [mp-energy](../mechanics/mp-energy.md) |
+| network standing resistance | `MpIdleTorque` 0.5 (`ExlibConfig.cs:92`), `MpFrictionCoeff` 0.05 (`:86`), `MpMaxSpeed` 2 rad/s (`:98`) | [mp-energy](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/mp-energy.md) |
 | `RollSetSpec.MinTorque` | declared `RollSetSpec.cs:37`, parsed `:198`, never read | [shear](../machines/shear.md) claims its first use |
 | the Lancashire boiler's requirement | 6 × rolled pipe | [rolled pipe](../machines/rolled-pipe.md) |
 
@@ -236,7 +236,7 @@ that needs a curved plate is a boiler shell.
   merely not-exist, it does not currently fall out of the ladder.
 * Making rolled pipe reachable does not make an HP line buildable. The welded joint family means rolled pipe
   joins only rolled pipe, and hpex ships no fittings at all - no valve, no outlet, no passthrough
-  ([rolled pipe](../machines/rolled-pipe.md), [pipe network](../mechanics/pipe-network.md)). B5 and this
+  ([rolled pipe](../machines/rolled-pipe.md), [pipe network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md)). B5 and this
   process are the same work item; B6 is a different one and is not fixed by it.
 * There is no mill roll set that produces pipe. The mill makes the skelp; the curl is this machine's. The
   machine is the bending roller and it is iiex - not a smex "conical pipe roller", and not a `pipe/skelp` roll

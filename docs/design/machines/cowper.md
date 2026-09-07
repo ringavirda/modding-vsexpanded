@@ -20,8 +20,8 @@ buffering, the surplus loop and the gas-fired blowing engine) ·
 [heat balance](../mechanics/heat-balance.md) (the `T_process` law, `BfPreheatCoefficient`, and what a hot
 blast is worth at a tuyere) · [hot blast furnace](blast-furnace-hot.md) (the closed top, the exhaust source
 and its budget) · [smokestack](smokestack.md) (where burnt gas goes) ·
-[pipe network](../mechanics/pipe-network.md) (the graph, pools, one-medium rule, valves) ·
-[multiblock](../mechanics/multiblock.md) · [recipes & config](../mechanics/recipes-config.md)
+[pipe network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md) (the graph, pools, one-medium rule, valves) ·
+[multiblock](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/multiblock.md) · [recipes & config](../mechanics/recipes-config.md)
 
 ---
 

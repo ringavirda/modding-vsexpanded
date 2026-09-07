@@ -14,9 +14,9 @@ the size gate all ship; pinned by `LongCellTests.cs`   **Mod** iiex
   pattern catalogue, ram / imprint / shake-out, and the launder-face intake rule. The long cell is the
   same station at a different size; every rule there applies unless this page says otherwise.
 - [casting bed](casting-bed.md) - the megablock idiom (filler footprint, `StructureAngle`, RCC stages).
-- [molten network](../mechanics/molten-network.md) - `BEBehaviorMoltenCell`, capacities, flow, the pull rate.
+- [molten network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/molten-network.md) - `BEBehaviorMoltenCell`, capacities, flow, the pull rate.
 - [rolling mill](rolling-mill.md) - the consumer of everything the long cell casts.
-- [multiblock & filler structures](../mechanics/multiblock.md) - the filler footprint system and the
+- [multiblock & filler structures](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/multiblock.md) - the filler footprint system and the
   no-filler-graph-node rule.
 - [density rule](../mechanics/density-rule.md) - 1 vx³ = 2.5 u and the settled cast-stock masses.
 - [recoverability](../mechanics/recoverability.md) - the ≤ 32 / ≤ 48 handling invariant every cast stock

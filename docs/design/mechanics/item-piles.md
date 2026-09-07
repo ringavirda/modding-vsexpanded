@@ -28,7 +28,7 @@ returns nothing   **Mod** exlib (`ExpandedLib`)
 
 **Depends on** [rolling](../processes/rolling.md) (the section class) ·
 [density rule](density-rule.md) · [reheat furnace](../machines/reheat-furnace.md) ·
-[stock rack](../machines/stock-rack.md) · [multiblock & filler structures](multiblock.md)
+[stock rack](../machines/stock-rack.md) · [multiblock & filler structures](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/multiblock.md)
 
 ---
 

@@ -30,20 +30,20 @@ belongs to [steam hammer](steam-hammer.md) and is linked, never restated.
 | the megablock footprint, the docked anvil, the die-set-renders-both-faces rule, the four-state animation machine, the staged work-item renderer, the drawn art, drops, the shingling job, the stamping job | [steam hammer](steam-hammer.md) |
 | the shear-cuts-across / die-cuts-out rule, the crop, the cold-cut `MinTorque` gate | [shear](shear.md) |
 | the `ItemDie` tooling contract, its fields, and who ships each die | [heading machine](heading-machine.md) |
-| pipe tiers, joint families, burst, `LitresPerPipe`, the one-pool pressure model, valves | [pipe network](../mechanics/pipe-network.md) |
+| pipe tiers, joint families, burst, `LitresPerPipe`, the one-pool pressure model, valves | [pipe network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md) |
 | where HP steam comes from and what raises it | [boiler-lancashire](boiler-lancashire.md) |
-| the filler footprint system, behaviour-capable filler cells, interaction rerouting | [multiblock & fillers](../mechanics/multiblock.md) |
+| the filler footprint system, behaviour-capable filler cells, interaction rerouting | [multiblock & fillers](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/multiblock.md) |
 | code-first defs, RCC stages, the cost catalogue, goldens | [recipes & config](../mechanics/recipes-config.md) |
 | `1 vx³ = 2.5 u` and every mass in the stock ladder | [density rule](../mechanics/density-rule.md) |
 | the ≤ 32 / ≤ 48 handling limits | [recoverability](../mechanics/recoverability.md) |
 | what hadfield, crucible steel and HSS are | [materials.md](../materials.md) |
-| the placement rule that assigns machines to mods | [STATE.md § placement rule](../../internal/plans/STATE.md) |
+| the placement rule that assigns machines to mods | [STATE.md § placement rule](../../../../docs/plans/STATE.md) |
 
-**Depends on** [steam hammer](steam-hammer.md) · [pipe network](../mechanics/pipe-network.md) ·
+**Depends on** [steam hammer](steam-hammer.md) · [pipe network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md) ·
 [heading machine](heading-machine.md) · [shear](shear.md) ·
-[multiblock & fillers](../mechanics/multiblock.md) · [recipes & config](../mechanics/recipes-config.md) ·
+[multiblock & fillers](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/multiblock.md) · [recipes & config](../mechanics/recipes-config.md) ·
 [density rule](../mechanics/density-rule.md) · [boiler-cornish](boiler-cornish.md) (the FSM the Lancashire
-inherits) · [materials.md](../materials.md) · [STATE.md](../../internal/plans/STATE.md)
+inherits) · [materials.md](../materials.md) · [STATE.md](../../../../docs/plans/STATE.md)
 
 ---
 
@@ -65,7 +65,7 @@ displaced. Adding `p·A` to the falling weight is the historical fix (Nasmyth 18
 double-acting version followed for heavy closed-die forging).
 
 It is hpex because of what it feeds. Under the placement rule
-([STATE.md § placement rule](../../internal/plans/STATE.md)) a machine lives with the content it makes possible, and
+([STATE.md § placement rule](../../../../docs/plans/STATE.md)) a machine lives with the content it makes possible, and
 the ≥ 2-voxel forgings this machine is for are the heavy rotating parts of the HP engines - a Corliss crank,
 a connecting rod, a piston rod, the [bearings](bearings.md) housings - plus its own hardened die sets. None
 of those exist as items; see [Open](#open).
@@ -86,7 +86,7 @@ filler pattern, the lever cell and the docked anvil are [steam hammer](steam-ham
 | Aspect | Ruling |
 |---|---|
 | Footprint | inherit the sparse 3 × 3 × 3 megablock. A double-acting cylinder is not physically larger - it is the same cylinder with a second port and different valve gear |
-| Network faces | inherit the count: one inlet, one exhaust. Double action changes when steam is admitted inside the cylinder, not how many pipes reach the machine. Do not model the second admission as a second pipe connector - the pipe model is one pool and a second face buys nothing ([pipe network](../mechanics/pipe-network.md)) |
+| Network faces | inherit the count: one inlet, one exhaust. Double action changes when steam is admitted inside the cylinder, not how many pipes reach the machine. Do not model the second admission as a second pipe connector - the pipe model is one pool and a second face buys nothing ([pipe network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md)) |
 | Anvil | inherit the docked-anvil block and the die-set idiom |
 | Lever cell | inherit the behaviour-capable filler |
 
@@ -99,7 +99,7 @@ material in the suite explicitly wrong for reversal ([steam hammer](steam-hammer
 rod snaps on the first stroke"*).
 
 So the HP hammer is the first machine whose frame must be fabricated, and the first place where N3, the
-cast-iron ↔ fabricated-steel substitution ([STATE.md § N3](../../internal/plans/STATE.md)), is mandatory rather than
+cast-iron ↔ fabricated-steel substitution ([STATE.md § N3](../../../../docs/plans/STATE.md)), is mandatory rather than
 optional: `castframe` → beam × N + plate + rivets, assembled by a recipe, with rivets as an ingredient so no
 riveting machine is required.
 
@@ -148,7 +148,7 @@ problems, all live:
 |---|---|
 | Hadfield does not exist in code. Three source mentions, all comments; no metal descriptor, no item, no alloy recipe | `SiexConfig.cs:107`, `SteelIndustryExpandedModSystem.cs:40`, `MachineRecipeDefinitions.cs:59` - the last one says the gate is still waiting on hadfield |
 | The two live hpex machines do not honour it. The HP builds take the plain plated iiex segment, not a hadfield one, and the source comment says tier-gating "waits on … the hadfield material gate" | `MachineRecipeDefinitions.cs:59-61` |
-| A hard material lockout contradicts the settled alloy rule. D3/R5 settled that alloys inherit their base's grade as a continuous penalty, not a lockout - critical machinery built from lesser steel gets a lower max pressure | [STATE.md § D3](../../internal/plans/STATE.md) |
+| A hard material lockout contradicts the settled alloy rule. D3/R5 settled that alloys inherit their base's grade as a continuous penalty, not a lockout - critical machinery built from lesser steel gets a lower max pressure | [STATE.md § D3](../../../../docs/plans/STATE.md) |
 
 The grade penalty has an obvious axis on a hammer: blow energy is a function of admitted pressure, and a
 weaker frame has a lower admissible pressure. Built from Bessemer structural steel it works but cannot be
@@ -331,7 +331,7 @@ ingredient codes, which is why the hadfield gate is still a comment.
 * Stamping is LP work. Stamping a `boilerplate` into three `metalplate` is a 1-voxel output and therefore
   the LP hammer's job by the gate; this machine's side of the catalogue is thick, complex work only.
 * Do not add a second pipe face for the second admission. The pipe network is one live pool
-  ([pipe network](../mechanics/pipe-network.md)); a second inlet face would model nothing and would double
+  ([pipe network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md)); a second inlet face would model nothing and would double
   the connector surface for free.
 * A refused joint does not leak (B18). `ClassifyOpenings` counts an open face as a leak only when the
   neighbour is air (`PipeNetwork.cs:632` vs `BlockNetworkNode.cs:751-754`), so if this machine is given a
@@ -346,7 +346,7 @@ ingredient codes, which is why the hadfield gate is still a comment.
   drawing hard can only lower line pressure, so it does not worsen this, but any headroom argument that
   assumes a margin is wrong.
 * The rolled pipe tier is uncraftable (B5) - four live blocktypes, four shapes, zero recipes
-  ([STATE.md:52](../../internal/plans/STATE.md); `mods/siex/src/Recipes/` contains exactly one file). So an
+  ([STATE.md:52](../../../../docs/plans/STATE.md); `mods/siex/src/Recipes/` contains exactly one file). So an
   HP hammer plumbed in "HP pipe" would be plumbed in a tier the player cannot build.
 * hadfield is a comment, not a material - see [Construction](#construction).
 * The LP hammer's drawn mesh already overhangs its declared footprint (57 voxels tall against 48 for

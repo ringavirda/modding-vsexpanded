@@ -2,7 +2,7 @@
 
 **Status** designed - nothing exists. No metal def, no item, no lang key, no texture, no code path.
 `grep -rn -i "blowniron\|blown iron" src/ assets/` returns zero hits; the term appears only in
-[STATE.md § N1](../../internal/plans/STATE.md), [Bessemer § Open 1](../machines/bessemer.md#open) and
+[STATE.md § N1](../../../../docs/plans/STATE.md), [Bessemer § Open 1](../machines/bessemer.md#open) and
 [ladle § Open 2](../machines/ladle.md#open).   **Mod** smex (`SteelmakingExpanded`)
 
 > Caution: this is a sequencing problem, not a modelling one. Everything it needs already exists except
@@ -30,15 +30,15 @@
 | recarburising as a verb, the chill model, mixing by held proportion, waste alloy, the ladle's numbers | [ladle](../machines/ladle.md) |
 | the metal ladder, D3, `MetalDef` field semantics, the generated family and its presets | [alloys](alloys.md) |
 | where ferromanganese is smelted / melted | [cold blast furnace](../machines/blast-furnace-cold.md), [cupola](../machines/cupola.md) |
-| `IMoltenCell`, `FlowEdge`, the metal-type refusal, push/drain/soak | [molten network](../mechanics/molten-network.md), [molten canal](../machines/molten-canal.md) |
+| `IMoltenCell`, `FlowEdge`, the metal-type refusal, push/drain/soak | [molten network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/molten-network.md), [molten canal](../machines/molten-canal.md) |
 | `T_process = T_in − T_loss` and `HeatBalance.Compute` | [heat balance](../mechanics/heat-balance.md) |
 | melt-back granularity and the declared-recovery rule (R2) | [recoverability](../mechanics/recoverability.md) |
 | code-first item defs, goldens, config | [recipes & config](../mechanics/recipes-config.md) |
-| status of everything, N1, D4 | [STATE.md](../../internal/plans/STATE.md) |
+| status of everything, N1, D4 | [STATE.md](../../../../docs/plans/STATE.md) |
 
 **Depends on** [Bessemer](../machines/bessemer.md) · [ladle](../machines/ladle.md) · [alloys](alloys.md) ·
-[molten network](../mechanics/molten-network.md) · [recoverability](../mechanics/recoverability.md) ·
-[STATE.md § N1](../../internal/plans/STATE.md)
+[molten network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/molten-network.md) · [recoverability](../mechanics/recoverability.md) ·
+[STATE.md § N1](../../../../docs/plans/STATE.md)
 
 ---
 
@@ -51,7 +51,7 @@ The blow burns out the carbon and the manganese together, leaving iron saturated
 red-short, unforgeable, useless as a casting. Bessemer's 1856 process produced unusable metal until
 Mushet's spiegeleisen addition.
 
-The settled chain ([STATE.md § N1](../../internal/plans/STATE.md)):
+The settled chain ([STATE.md § N1](../../../../docs/plans/STATE.md)):
 
 ```
 molten pig ──▶ BESSEMER (blow) ──▶ blown iron ──▶ LADLE (+ FeMn / spiegel) ──▶ steel
@@ -156,8 +156,8 @@ while the converter still believes it is refining. 1482 keeps the ordering the m
 | what a blow yields per 100 u pig | 90 u metal + 6 u slag + 4 u gas | [Bessemer](../machines/bessemer.md#numbers) |
 | carbon at which the bath retypes | `BessemerSteelCarbonTarget` 0.002 | [Bessemer](../machines/bessemer.md#numbers) |
 | the over-blow band and its ~11.7 s window | 0.002 → 0.0005 | [Bessemer](../machines/bessemer.md#gotchas) |
-| product of a settled 6000 u charge | 5400 u | [Bessemer](../machines/bessemer.md#numbers), [STATE.md § D4](../../internal/plans/STATE.md) |
-| recarburiser demanded per heat | ~300 u of FeMn | [STATE.md § the ferroalloy furnace](../../internal/plans/STATE.md) |
+| product of a settled 6000 u charge | 5400 u | [Bessemer](../machines/bessemer.md#numbers), [STATE.md § D4](../../../../docs/plans/STATE.md) |
+| recarburiser demanded per heat | ~300 u of FeMn | [STATE.md § the ferroalloy furnace](../../../../docs/plans/STATE.md) |
 | ladle capacity, chill, additive routing | proposed | [ladle](../machines/ladle.md#numbers) |
 | melt-back at 5 u per bit | shared | [recoverability](../mechanics/recoverability.md) |
 
@@ -238,7 +238,7 @@ items and 8 lang keys from the drift surface, and the content it deletes contrad
    blown iron share a dull texture, a single ingot form and a description shape.
 
 6. The metal-type refusal makes a mistake permanent. `FlowEdge` will not move metal into a cell holding a
-   different code and the graph's merge is a no-op ([molten network](../mechanics/molten-network.md)), so
+   different code and the graph's merge is a no-op ([molten network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/molten-network.md)), so
    blown iron poured into a canal that already carries steel will not go, and a blown-iron run cannot be
    topped up. The ladle must pull it by code, which is
    [ladle § it must not be a molten-graph node](../machines/ladle.md#structure).
@@ -263,7 +263,7 @@ items and 8 lang keys from the drift surface, and the content it deletes contrad
    exist as a metal at all ([alloys § Open 5](alloys.md#open)).
 
 3. How much ferromanganese per heat, and does it change the mass balance? ~300 u is
-   [STATE.md](../../internal/plans/STATE.md)'s estimate against a 5400 u heat (≈ 5.5 %). FeMn is high-carbon by
+   [STATE.md](../../../../docs/plans/STATE.md)'s estimate against a 5400 u heat (≈ 5.5 %). FeMn is high-carbon by
    definition, so the addition moves manganese and carbon together - a single-element model would miss the
    product's carbon target. The arithmetic is the [ladle](../machines/ladle.md#open)'s; the demand is this
    material's, and nothing has been sized.

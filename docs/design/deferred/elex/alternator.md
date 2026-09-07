@@ -1,7 +1,7 @@
 # Alternator (AC generator)
 
 **Status** deferred   **Would live in** elex (Electrical Expanded) - a mod with no project, no asset domain
-and no code   **Deferred by** two independent gates: D8 ([STATE.md](../../../internal/plans/STATE.md)), which puts all
+and no code   **Deferred by** two independent gates: D8 ([STATE.md](../../../../../docs/plans/STATE.md)), which puts all
 of elex outside the release target, and the pure-copper winding requirement, the one elex block with no
 in-scope fallback. Both are recorded in [scope.md](../../scope.md) (§ The release target, § elex, § The shape
 elex would take).
@@ -27,13 +27,13 @@ elex would take).
 | The arc furnace, the electrode consumption rate, the HSS chain | [arc-furnace.md](arc-furnace.md) |
 | Wire, the extruder and D7 | [wire-extruder.md](wire-extruder.md) |
 | The Tandem Corliss and every hpex number | the archived hpex spec (git history); the figures survive on these pages |
-| The live mechanical model, its numbers and its code | [mechanics/mp-energy.md](../../mechanics/mp-energy.md) |
+| The live mechanical model, its numbers and its code | [mechanics/mp-energy.md](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/mp-energy.md) |
 | Hadfield steel, the material-gated power tiers, the alloy compositions | [materials.md](../../materials.md) |
 | Ladle alloying and the ferroalloy family | [processes/alloying.md](../../processes/alloying.md) |
 
 **Depends on** [dynamo.md](dynamo.md) · [electrical-grid.md](electrical-grid.md) ·
 [scope.md](../../scope.md) · the archived elex and hpex specs ·
-[mechanics/mp-energy.md](../../mechanics/mp-energy.md) · [materials.md](../../materials.md)
+[mechanics/mp-energy.md](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/mp-energy.md) · [materials.md](../../materials.md)
 
 ---
 
@@ -172,7 +172,7 @@ that nothing measures core loss yet.
 |---|---|
 | the archived elex spec | both generators *"upgrade the **hpex Tandem Corliss** in place (**only it** can drive them; ~36 kW at the shaft)"* |
 | the archived hpex spec | the Tandem Corliss is *(planned)*, ~36 kW, *"the drive for the elex arc-furnace and alternator banks"* |
-| [mechanics/mp-energy.md](../../mechanics/mp-energy.md) § Role | the prime mover is a vanilla waterwheel or windmill; *"in iiex the player swaps the vanilla producer for a steam engine; the network itself is unchanged"*. The chain stops there - the live mechanical design never mentions hpex or the Corliss |
+| [mechanics/mp-energy.md](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/mp-energy.md) § Role | the prime mover is a vanilla waterwheel or windmill; *"in iiex the player swaps the vanilla producer for a steam engine; the network itself is unchanged"*. The chain stops there - the live mechanical design never mentions hpex or the Corliss |
 
 The entire top of the mechanical chain - a governed HP engine, its 36 kW, and the two machines that hang off
 it - is specified only in the archived elex and hpex specs, in the vocabulary of the model `mpenergy`
@@ -181,14 +181,14 @@ replaced. Three concrete consequences:
 1. "36 kW at the shaft" is not a quantity the live network has. A producer implements
    `IMpEnergyProducer.DriveTorque(ω)` - a torque–speed curve, not a flat power, because a flat power lets an
    under-powered drive buffer its way past any load
-   ([mechanics/mp-energy.md](../../mechanics/mp-energy.md) § Torque governs, not power). The Corliss must be
+   ([mechanics/mp-energy.md](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/mp-energy.md) § Torque governs, not power). The Corliss must be
    specified as a curve before a generator can read anything off it, and no such curve exists.
 2. The scale is off by ~4 orders of magnitude. The live bridge supplies `1 N·m × 2 rad/s = 2 W`
    (`mods/iiex/src/IiexConfig.cs:467`, `mods/exlib/src/ExlibConfig.cs:98`), against elex's 36 kW.
    Worked out on [electrical-grid.md](electrical-grid.md) § How it relates.
 3. Even the iiex engine is not on that network yet. It is still a pure vanilla-MP source (it implements no
    `IMpEnergy*`), reaching this network only indirectly through a vanilla axle into the flywheel hub
-   ([mechanics/mp-energy.md](../../mechanics/mp-energy.md)). The Corliss would be the second engine to need
+   ([mechanics/mp-energy.md](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/mp-energy.md)). The Corliss would be the second engine to need
    that connection, and the first one never got it.
 
 The cheapest resolution is probably that the generator never touches `mpenergy` at all - it reads its engine

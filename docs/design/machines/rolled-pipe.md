@@ -17,14 +17,14 @@
 **Does not own** - cited only:
 - The graph substrate, the one-medium pool, capacity, pressure formulas, leaks, vents, tick order, burst
   mechanics, the burst-by-tier and throughput-by-tier tables, the joint-family rule and every exlib constant
-  behind them - [pipe network](../mechanics/pipe-network.md). This page states hpex's row of those tables and
+  behind them - [pipe network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md). This page states hpex's row of those tables and
   the consequences specific to hpex blocks.
 - Every fitting (valve, pressure valve, outlet, passthrough, passthrough-bend), and B6 in full - why the
   "mandatory" pressure valve cannot be installed on an HP line, in two independent ways, with the numbers on
   both sides - [cast pipes & fittings](cast-pipes.md). hpex ships no fittings, so it has no rows there.
 - The cast tier's own uncraftability, its dead cost keys and its cast → bore → assemble route -
   [cast pipes](cast-pipes.md).
-- The plated tier, the tuyere and the twin-tub blower - [pipe network](../mechanics/pipe-network.md),
+- The plated tier, the tuyere and the twin-tub blower - [pipe network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md),
   [twin-tub blower](twin-tub-blower.md).
 - The skelp → segment → bell-weld chain this tier is made by, the machine that would do it, and every mass
   in it - [bending roller](bending-roller.md), [wide hall](wide-hall.md).
@@ -45,7 +45,7 @@ The tier is a variant axis, and the high-order one: a rolled pipe is `siex:pipe-
 written down.
 
 Until 2026-08-14 this section read *"the tier is the mod, not a variant axis"*, and the domain was the key.
-**M4 supersedes it** ([STATE.md](../../internal/plans/STATE.md)): the merge puts iiex and iiex in one domain, so
+**M4 supersedes it** ([STATE.md](../../../../docs/plans/STATE.md)): the merge puts iiex and iiex in one domain, so
 tier could no longer be `Code.Domain` without collapsing two tiers into one - which M3 forbids. The reasoning the
 old ruling rested on survives intact on the new axis. `BlockPipe.PlatedTier` / `.CastTier` / `.RolledTier`
 (`BlockPipe.cs:31`, `:34`, `:37`) are the three names.
@@ -58,7 +58,7 @@ declared last it would move every code out from under them and the blocks would 
 The joint separates this tier from the other two. Plated and cast are square in section and bolted through flanges,
 so they interconnect and a player upgrades a line segment by segment. Rolled is octagonal and welded, with no
 flange to bolt to, so a rolled run is an island: it joins rolled pipe and machine ports and nothing else in the
-game ([pipe network](../mechanics/pipe-network.md) § 5), tested from both directions. The HP tier therefore needs
+game ([pipe network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md) § 5), tested from both directions. The HP tier therefore needs
 its own fittings before it is usable, and it has neither fittings nor a recipe.
 
 ---
@@ -193,7 +193,7 @@ under D8 ("a player can walk exlib → iiex → iiex → smex → hpex without l
 ## Operation
 
 A rolled segment behaves as any other pipe node - one pool, one medium, uniform temperature, leaks, vents, bursts
-and tick order are all [pipe network](../mechanics/pipe-network.md)'s. Specific to this tier: what it couples to,
+and tick order are all [pipe network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md)'s. Specific to this tier: what it couples to,
 how much it holds, and how fast it passes.
 
 ### What a rolled run connects to
@@ -215,11 +215,11 @@ public override bool AcceptsNeighbour(Block neighbour) =>
 A rolled run is therefore segments plus machine ports and nothing else: no valve to shut it, no outlet to chimney
 it, no passthrough to take it through a wall, no pressure valve to gate it. The source calls this outcome correct
 and deliberate (`BlockPipe.cs:273-282`); the design says the HP tier needs its own fittings ([pipe
-network](../mechanics/pipe-network.md) § Open).
+network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md) § Open).
 
 Two live consequences: B6 ([cast pipes](cast-pipes.md) § B6 - the "mandatory" pressure valve is iiex-domain and its
 gate ceiling is 5.0, below the Cornish engine's normal engage pressure) and B18 ([pipe
-network](../mechanics/pipe-network.md) / [cast pipes](cast-pipes.md) Gotcha 3 - a refused joint does not leak,
+network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md) / [cast pipes](cast-pipes.md) Gotcha 3 - a refused joint does not leak,
 because `ClassifyOpenings` counts an open face only when the neighbour block is `air`, `PipeNetwork.cs:652`).
 Together they mean a player butts a rolled segment against a cast one, sees no leak, no warning and no particle,
 and has two runs that do not talk.
@@ -227,7 +227,7 @@ and has two runs that do not talk.
 ### What a rolled run holds and passes
 
 The rating doubles as the buffer size - a run holds `burst × nodes × LitresPerPipe` (`PipeNetwork.cs`) - and the
-tier also caps the run's flow rate ([pipe network](../mechanics/pipe-network.md) owns the throughput model; plain
+tier also caps the run's flow rate ([pipe network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md) owns the throughput model; plain
 segments limit, fittings and the tuyere are exempt, `BlockPipe.cs:239-242`):
 
 | tier | burst | litres per node at the ceiling | relative buffer | throughput |
@@ -279,7 +279,7 @@ segments getting craft recipes of their own, and on the hadfield material gate
 
 That is the whole of hpex's pipe config. Everything else a rolled run uses - `LitresPerPipe`, `GasLeakRate`,
 `LiquidLeakRate`, `EvaporationLitresPerDay`, `PipeOverpressureSeconds` - is exlib's, and `ChimneyGasDrawRate` is
-iiex's; all are tabulated by [pipe network](../mechanics/pipe-network.md) § Numbers.
+iiex's; all are tabulated by [pipe network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md) § Numbers.
 
 Caution: `SiexConfig.cs`'s doc comment calls this "a rolled (hpex) Hadfield-steel pipe segment" and
 `SteelIndustryExpandedModSystem.cs` calls the tier "rolled (Hadfield steel)", the lang string calls it "rolled
@@ -303,7 +303,7 @@ is a design-doc term that appears in comments and a test fixture.
 
 | tier | domain | burst | throughput | joint | keys | owner of the row |
 |---|---|---|---|---|---|---|
-| plated | iiex | 2.5 | 50 | flanged | `PlatedPipe*` | [pipe network](../mechanics/pipe-network.md) |
+| plated | iiex | 2.5 | 50 | flanged | `PlatedPipe*` | [pipe network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md) |
 | cast | iiex | 5.0 | 120 | flanged | `CastPipe*` | [cast pipes](cast-pipes.md) |
 | rolled | hpex | 12 | 250 | welded | `RolledPipe*` | this page (`SiexConfig.cs:115`, `:121`) |
 
@@ -338,7 +338,7 @@ Plain block drops throughout. None of the four defs sets `NoDrops()`; `BlockPipe
 |---|---|---|
 | `siex:pipe-rolled-straight-*` | itself | stack 16 |
 | `siex:pipe-rolled-bend-*` / `rolled-tjunction-*` / `rolled-xjunction-*` | itself | stack 8 |
-| a burst segment | its items, plus a steam puff and a pop; the cell is set to air and the node removed, fracturing the run | [pipe network](../mechanics/pipe-network.md) § 5 |
+| a burst segment | its items, plus a steam puff and a pop; the cell is set to air and the node removed, fracturing the run | [pipe network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md) § 5 |
 
 Salvage is 1:1 and lossless: none of these is a right-click construction, so `RccBrokenDropsRatio`
 (`SiexConfig.cs`) does not apply to them even though it is registered for the hpex domain.
@@ -413,7 +413,7 @@ it was written to catch. A real assertion needs both ends sealed with `IiexScene
 
 3. **A refused joint does not leak - B18.** `ClassifyOpenings` counts an open face only when the neighbour is
    air (`PipeNetwork.cs:652`), so a welded segment butted against a cast one produces no leak, no warning and
-   no particle. Owned by [pipe network](../mechanics/pipe-network.md) § 5 /
+   no particle. Owned by [pipe network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md) § 5 /
    [cast pipes](cast-pipes.md) Gotcha 3; recorded here because it is what makes B3-through-B6 invisible on an
    HP line, and because the one test that would have caught it does not (see
    [Tests](#tests--testhighpressureexpandedtests)).

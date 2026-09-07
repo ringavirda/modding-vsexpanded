@@ -18,9 +18,9 @@
 **Does not own** - cited only, never restated:
 - The pipe pool, one-medium rule, `LitresPerPipe`, pressure formulas, burst-by-tier, joints, leaks,
   chimney venting, evaporation-per-day, the network tick order -
-  [pipe network](../mechanics/pipe-network.md).
+  [pipe network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md).
 - Fillers, the footprint DSL, `Origin`-is-the-negation, per-cell collision, the declarative filler port
-  and the graph-node-when-it-declares-one rule - [multiblock](../mechanics/multiblock.md).
+  and the graph-node-when-it-declares-one rule - [multiblock](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/multiblock.md).
 - The fuel bed itself - its layer arithmetic, the one-fuel rule, the burn-temperature floor and where the
   metallurgical exclusion lives - [firebox](firebox.md), [fuels](../items/fuels.md).
 - Code-first defs, the RCC `ConstructionStages` builder, the `brokenDropsRatio` resolution chain, the
@@ -30,7 +30,7 @@
 - The Lancashire boiler's own stat table and footprint (same base class, siex's numbers) -
   [Lancashire boiler](boiler-lancashire.md).
 - The pressure valve that must sit between this boiler and a Watt engine - the valve is
-  [pipe network](../mechanics/pipe-network.md)'s; the arithmetic that makes it mandatory is below.
+  [pipe network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md)'s; the arithmetic that makes it mandatory is below.
 
 ---
 
@@ -38,7 +38,7 @@
 
 The entry into steam: the first machine in the suite that turns fuel into a transportable, pressurised
 medium. Iron-tier power comes from a river or the wind, steam-tier power comes from anywhere
-([mp-energy](../mechanics/mp-energy.md) § the vanilla-MP bridge).
+([mp-energy](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/mp-energy.md) § the vanilla-MP bridge).
 
 Declared liberty (2026-08-07): pairing this c. 1812 Cornish boiler with the Watt-era condensing
 [engine](engine-watt.md) is a chronological compression. Such engines were historically fed by wagon and
@@ -62,7 +62,7 @@ Its three failure surfaces are all visible and all local:
 
 A megablock and nothing else. The vessel renders across a reserved volume of invisible fillers, carries
 its own masonry, grate and hatches in its shape, and verifies nothing around itself: finishing the
-construction stages is the only gate on running it ([multiblock](../mechanics/multiblock.md) owns the
+construction stages is the only gate on running it ([multiblock](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/multiblock.md) owns the
 filler system).
 
 | | |
@@ -138,10 +138,10 @@ the footprint, so the face a machine probes across and the face the cell answers
 A port filler is a **connector, not a graph node**: the cell answers `HasConnectorAt` for the principal
 without joining the graph. That is the right arm here because the boiler is the machine on the network
 and the cells are its skin - a membership would put four extra nodes in the steam run with nothing to say
-([multiblock](../mechanics/multiblock.md) § A filler cell is a graph node when it declares one). A
+([multiblock](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/multiblock.md) § A filler cell is a graph node when it declares one). A
 connector cannot be probed from the principal, though, which is what `ConnectedNetworkAt` exists for:
 the reciprocal test has to run from the port cell rather than from the block that owns it
-(`MachinePorts.cs`). See also [pipe network](../mechanics/pipe-network.md) § connectors.
+(`MachinePorts.cs`). See also [pipe network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md) § connectors.
 
 ### The internal firebox
 
@@ -347,7 +347,7 @@ steam   += waterUse × expansion                              // 64 L/s
 
 `expansion` is not a literal: `BoiledMedium` (`:575-589`) asks `ExLiquids.Taxonomy.VaporisationTarget` what
 `"Water"` boils into and by what factor, falling back to `"Steam"` / `SteamExpansionFactor` when the
-catalogue leaves it open. The medium catalogue is [pipe network](../mechanics/pipe-network.md)'s.
+catalogue leaves it open. The medium catalogue is [pipe network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md)'s.
 
 ### Pressure and temperature
 
@@ -527,10 +527,10 @@ One boiler at full rate carries **2.13 Watt engines** (64 / `WattEngineSteamRate
 | Watt engine break pressure | `4.0 atm` | [Watt engine](engine-watt.md) | `:1082` |
 | Watt engine steam draw | `30 L/s` | [Watt engine](engine-watt.md) | `:1088` |
 | Cornish boiler choke | `5.0 atm` | this page | `:1072` |
-| cast (iiex) pipe burst | `5.0 atm` | [pipe network](../mechanics/pipe-network.md) | `:189` |
-| plated (iiex) pipe burst | `2.5 atm` | [pipe network](../mechanics/pipe-network.md) | `:175` |
-| `LitresPerPipe` | `30 L` | [pipe network](../mechanics/pipe-network.md) | `ExlibConfig.cs:52` |
-| `EvaporationLitresPerDay` | `50 L/day` | [pipe network](../mechanics/pipe-network.md) | `ExlibConfig.cs:63` |
+| cast (iiex) pipe burst | `5.0 atm` | [pipe network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md) | `:189` |
+| plated (iiex) pipe burst | `2.5 atm` | [pipe network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md) | `:175` |
+| `LitresPerPipe` | `30 L` | [pipe network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md) | `ExlibConfig.cs:52` |
+| `EvaporationLitresPerDay` | `50 L/day` | [pipe network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md) | `ExlibConfig.cs:63` |
 
 ```
 2.0        <   4.0        <   5.0
@@ -543,7 +543,7 @@ engine begins wearing toward a break, and nothing in the boiler knows about the 
 
 At 5.0 the boiler's ceiling equals the cast pipe's burst rating, so a boiler choking into a cast run holds
 that run exactly at its burst threshold. `TryProduceGas` takes `min(maxOutputPressure, MinBurstPressure)`
-([pipe network](../mechanics/pipe-network.md) § 3), so it is safe by a hair; a plated (iiex, 2.5 atm) segment
+([pipe network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md) § 3), so it is safe by a hair; a plated (iiex, 2.5 atm) segment
 anywhere in the steam run silently halves the usable ceiling.
 
 ### Hard-coded — not config
@@ -687,7 +687,7 @@ the shipped shape). Rigs: `Fixtures/BoilerRig.cs`, `Fixtures/BoilerFakes.cs`, `F
 
 4. The pipe article is still on the retired two-tier model. `mods/iiex/docs/handbook/05-steampower.html:20-22`
    says "an iron pipe bursts above 5 atm while a stronger steel pipe holds up to 10 atm"; the model is
-   plated 2.5 / cast 5.0 / rolled 12 ([pipe network](../mechanics/pipe-network.md)). The boilers page
+   plated 2.5 / cast 5.0 / rolled 12 ([pipe network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md)). The boilers page
    itself is current.
 
 5. An unpiped steam port cannot save an over-pressured boiler. The leak is 16 L/s while the boiler makes
@@ -711,7 +711,7 @@ the shipped shape). Rigs: `Fixtures/BoilerRig.cs`, `Fixtures/BoilerFakes.cs`, `F
 
 10. The burst grace is serialised, the pipe network's is not. `_overpressure.ToTree` (`:1036`) survives a
     reload, so a boiler saved 29 s into its countdown bursts a second after the chunk loads. The pipe
-    network's equivalent timer is transient ([pipe network](../mechanics/pipe-network.md) § 5).
+    network's equivalent timer is transient ([pipe network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md) § 5).
 
 11. `_waterContainerStacks` / `_emptyContainerStacks` are `static` (`BlockBoiler.cs:537`, `:553`) and
     resolved once from `world.Blocks` - shared across every boiler and every world in the process.

@@ -1,5 +1,5 @@
 # Electrolysis cell
-**Status** deferred   **Would live in** `elex` (Electrical Expanded — no project, no asset domain, no code)   **Deferred by** **D8** ([STATE.md](../../../internal/plans/STATE.md), release target = the ferrous line) **and again by D8's non-ferrous half** ([scope](../../scope.md) § Non-ferrous) — this is a *copper* machine
+**Status** deferred   **Would live in** `elex` (Electrical Expanded — no project, no asset domain, no code)   **Deferred by** **D8** ([STATE.md](../../../../../docs/plans/STATE.md), release target = the ferrous line) **and again by D8's non-ferrous half** ([scope](../../scope.md) § Non-ferrous) — this is a *copper* machine
 
 **Owns**
 * the electrolyte-not-reagent rule in mechanical terms — why a bath that recirculates is a one-time charge and never a supply chain;
@@ -15,11 +15,11 @@
 | the DC circuit model and the generator tiers | [electrical grid](electrical-grid.md) · [dynamo](dynamo.md) |
 | what converter copper and pure copper *are* | [materials.md](../../materials.md) |
 | the reverberatory furnace and the Pierce-Smith converter that make the anode | [copper reverberatory](../non-ferrous/copper-reverberatory.md) · [Pierce-Smith](../non-ferrous/pierce-smith.md) |
-| R1 (single medium per pipe network) | [conventions.md](../../conventions.md) · [pipe network](../../mechanics/pipe-network.md) |
+| R1 (single medium per pipe network) | [conventions.md](../../conventions.md) · [pipe network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md) |
 | the medium-agnostic fluid tank | [fluid tank](../../machines/fluid-tank.md) |
 | the DC source that powers it, and the AC machine its output unlocks | [dynamo](dynamo.md) · [alternator](alternator.md) · [electrical grid](electrical-grid.md) |
 
-**Depends on** [scope](../../scope.md) · [dynamo](dynamo.md) (the only thing that can power it at first) · [alternator](alternator.md) (what its output unlocks) · [copper reverberatory](../non-ferrous/copper-reverberatory.md) (its anode) · [arc furnace](arc-furnace.md) (the machine on the far end of the copper it makes) · [wire extruder](wire-extruder.md) (its output's first consumer) · [materials.md](../../materials.md) · [pipe network](../../mechanics/pipe-network.md) · [fluid tank](../../machines/fluid-tank.md)
+**Depends on** [scope](../../scope.md) · [dynamo](dynamo.md) (the only thing that can power it at first) · [alternator](alternator.md) (what its output unlocks) · [copper reverberatory](../non-ferrous/copper-reverberatory.md) (its anode) · [arc furnace](arc-furnace.md) (the machine on the far end of the copper it makes) · [wire extruder](wire-extruder.md) (its output's first consumer) · [materials.md](../../materials.md) · [pipe network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md) · [fluid tank](../../machines/fluid-tank.md)
 
 ---
 
@@ -37,7 +37,7 @@ Two independent deferrals land on it:
 
 | Deferral | Ruling | Effect on this cell |
 |---|---|---|
-| elex is off the release path | D8 ([STATE.md](../../../internal/plans/STATE.md)) - release target is the ferrous line | defers the whole mod, this block included |
+| elex is off the release path | D8 ([STATE.md](../../../../../docs/plans/STATE.md)) - release target is the ferrous line | defers the whole mod, this block included |
 | non-ferrous is deferred later | D8's second half, [scope](../../scope.md) § Non-ferrous | defers its input and its output independently of elex |
 
 Both belong to [scope](../../scope.md). The consequence that is this page's: bringing elex forward would not bring this block forward, because its anode is converter copper and its two upstream machines are on the non-ferrous list. It is the one elex block that needs a different deferral reversed.

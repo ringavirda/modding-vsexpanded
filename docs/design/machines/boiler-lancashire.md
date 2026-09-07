@@ -21,13 +21,13 @@
   choke rule, the burst sequence, `GetBlockInfo`, the drop rules, and every shared `Boiler*` / `Steam*` key -
   [Cornish boiler](boiler-cornish.md), canonical for all of it.
 - The pipe pool, `LitresPerPipe`, pressure formulas, burst-by-tier, joints, leaks, chimney venting, the
-  network tick order - [pipe network](../mechanics/pipe-network.md).
+  network tick order - [pipe network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md).
 - The rolled tier the Lancashire's steam main has to be made of, its 12 atm rating, its welded-joins-only
   rule and its missing recipe (B5) - [rolled pipe](rolled-pipe.md).
 - The iiex fittings the retired layout named (passthrough, passthrough-bend, outlet) and B6 in
   full - [cast pipes & fittings](cast-pipes.md).
 - Fillers, the footprint DSL, `Origin`-is-the-negation, per-cell collision, the declarative filler port -
-  [multiblock](../mechanics/multiblock.md).
+  [multiblock](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/multiblock.md).
 - Code-first defs, the RCC `Construction` builder, the `brokenDropsRatio` chain, the recipe-cost catalogue -
   [recipes & config](../mechanics/recipes-config.md).
 - The Cornish engine this boiler exists to feed - its bands, its throttle, its power
@@ -66,7 +66,7 @@ it, and the device that is supposed to sit between them cannot be fitted
 
 ## Structure
 
-A megablock and nothing else, like the Cornish ([multiblock](../mechanics/multiblock.md) owns the filler
+A megablock and nothing else, like the Cornish ([multiblock](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/multiblock.md) owns the filler
 system; the machinery is [Cornish boiler](boiler-cornish.md) § Structure's).
 
 | | |
@@ -370,12 +370,12 @@ Everything else the boiler needs is `IiexConfig`'s, tabulated by [Cornish boiler
 |---|---|---|
 | rolled (hpex) pipe burst | 12 atm | [rolled pipe](rolled-pipe.md) |
 | cast (iiex) pipe burst | 5.0 atm | [cast pipes](cast-pipes.md) |
-| plated (iiex) pipe burst | 2.5 atm | [pipe network](../mechanics/pipe-network.md) |
+| plated (iiex) pipe burst | 2.5 atm | [pipe network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md) |
 | Cornish engine engage, low / normal / high | 5 / 6 / 7 atm | [Cornish engine](engine-cornish.md) |
 | Cornish engine break | 8 atm | [Cornish engine](engine-cornish.md) |
 | iiex pressure-valve gate ceiling | 5.0 atm | [cast pipes](cast-pipes.md) § B6 |
 | `SteamExpansionFactor` / `BoilerHeatUpSeconds` / `BoilerExhaustPerSecond` / `BoilerOverpressureSeconds` | 16 / 180 s / 16 L/s / 30 s | [Cornish boiler](boiler-cornish.md) |
-| `LitresPerPipe` | 30 L | [pipe network](../mechanics/pipe-network.md) |
+| `LitresPerPipe` | 30 L | [pipe network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md) |
 
 ```
 5      6      7   | 8        9.6          12

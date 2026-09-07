@@ -1,5 +1,5 @@
 # Wire extruder
-**Status** deferred   **Would live in** `elex` (Electrical Expanded — no project, no asset domain, no code)   **Deferred by** **D7** ([STATE.md](../../../internal/plans/STATE.md)) — *"Wire. Exists, in elex."* — and with the mod, by **D8**
+**Status** deferred   **Would live in** `elex` (Electrical Expanded — no project, no asset domain, no code)   **Deferred by** **D7** ([STATE.md](../../../../../docs/plans/STATE.md)) — *"Wire. Exists, in elex."* — and with the mod, by **D8**
 
 **Owns**
 * the D7 placement record — that wire is one machine at one tier, and the two prior rejections D7 reconciles rather than overturns;
@@ -16,11 +16,11 @@
 | the steel-tier roll sets and the rejected `wire` set | [steel roll sets](../../machines/steel-roll-sets.md) |
 | the grooved set's *iron* products and the rivet decision that took its 1.0 gap | [fasteners](../../items/fasteners.md) |
 | copper as a material | [materials.md](../../materials.md) |
-| the MP-energy network the machine would draw on | [mp-energy](../../mechanics/mp-energy.md) |
+| the MP-energy network the machine would draw on | [mp-energy](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/mp-energy.md) |
 | the cable, the circuit solve and what resistance does to a run | [electrical grid](electrical-grid.md) |
 | the windings its pure wire unlocks | [alternator](alternator.md) |
 
-**Depends on** [scope](../../scope.md) · [electrical grid](electrical-grid.md) (its output *is* the grid's conductor) · [alternator](alternator.md) · [electrolysis cell](electrolysis-cell.md) (makes the pure copper it draws) · [arc furnace](arc-furnace.md) (the load at the far end of the cable) · [mp-energy](../../mechanics/mp-energy.md) · [roll sets](../../items/roll-sets.md) · [stock](../../items/stock.md)
+**Depends on** [scope](../../scope.md) · [electrical grid](electrical-grid.md) (its output *is* the grid's conductor) · [alternator](alternator.md) · [electrolysis cell](electrolysis-cell.md) (makes the pure copper it draws) · [arc furnace](arc-furnace.md) (the load at the far end of the cable) · [mp-energy](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/mp-energy.md) · [roll sets](../../items/roll-sets.md) · [stock](../../items/stock.md)
 
 ---
 
@@ -84,7 +84,7 @@ The leftover is baked into a golden (`rollset.json:96`), so removing it is a gol
 
 | Piece it would need | Status | Where |
 |---|---|---|
-| an MP-energy consumer contract | live | `mods/exlib/src/Networks/MpEnergyNodes.cs` (`IMpEnergyConsumer`); the network is live in exlib + iiex ([mp-energy](../../mechanics/mp-energy.md)) |
+| an MP-energy consumer contract | live | `mods/exlib/src/Networks/MpEnergyNodes.cs` (`IMpEnergyConsumer`); the network is live in exlib + iiex ([mp-energy](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/mp-energy.md)) |
 | tooling that carries its own spec (a die series, as roll sets do) | live idiom | `RollSetSpec.cs:9-24`, fitted via `BlockEntityRollingMill.TryFitRollSet` (`BlockEntities/BlockEntityRollingMill.cs:143`) |
 | a stock item family with per-stage meshes | live | `StockItemDefinitions.cs`, `StockMesh.cs` ([stock](../../items/stock.md)) |
 | copper as a material | absent | `grep -rni copper src/ --include=*.cs -l` → 3 files, all vanilla-facing plumbing |
@@ -103,7 +103,7 @@ copper rod/plate ──MP wire machine──▶ wire ──▶ cable / heavy cab
 
 | Question | Answer on record |
 |---|---|
-| Which tier? | elex — **D7** ([STATE.md](../../../internal/plans/STATE.md)) |
+| Which tier? | elex — **D7** ([STATE.md](../../../../../docs/plans/STATE.md)) |
 | Which power? | MP (iiex-tier), never electric |
 | Which feedstock? | copper rod or plate |
 | Two grades? | yes - impure and pure, and the grade is the whole payoff |

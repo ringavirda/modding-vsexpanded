@@ -20,16 +20,16 @@
 
 | Fact | Owner |
 |---|---|
-| Energy in joules, load-driven speed, the governor, pulsed supply and burst | [mp-energy](../mechanics/mp-energy.md) |
+| Energy in joules, load-driven speed, the governor, pulsed supply and burst | [mp-energy](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/mp-energy.md) |
 | The flywheel block, its ½Iω² reservoir and the vanilla-MP bridge | [flywheel-and-shafting](flywheel-and-shafting.md) |
 | The Watt engine and the Cornish boiler that feed the network at iiex | [engine-watt](engine-watt.md) · [boiler-cornish](boiler-cornish.md) |
 | What crushed ore is *for* | [layered-charge](../layered-charge.md) · [ironmaking](../processes/ironmaking.md) |
 | Roasting, the other ore-prep step | [roasting](../processes/roasting.md) |
 | Ferroalloys, and therefore what chromite is *for* | [blast-furnace-cold](blast-furnace-cold.md) § Its second act |
-| Megablock footprints, fillers, MP filler ports | [multiblock](../mechanics/multiblock.md) |
+| Megablock footprints, fillers, MP filler ports | [multiblock](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/multiblock.md) |
 | EM nugget-crushing compat | [recipes-config](../mechanics/recipes-config.md) |
 
-**Depends on** [mp-energy](../mechanics/mp-energy.md) · [flywheel-and-shafting](flywheel-and-shafting.md) ·
+**Depends on** [mp-energy](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/mp-energy.md) · [flywheel-and-shafting](flywheel-and-shafting.md) ·
 [layered-charge](../layered-charge.md) · [roasting](../processes/roasting.md) ·
 [blast-furnace-cold](blast-furnace-cold.md)
 
@@ -74,12 +74,12 @@ flywheels. mp-energy already designs for this shape of load (pulsed supply, gove
 
 > Hook a crusher straight to a waterwheel and it stalls on every rock. Add a flywheel and it runs smooth.
 
-[iiex-bringup](../../internal/plans/iwex-bringup.md) records that mp-energy's weakness is too few consumers for the
+[iiex-bringup](../../../../docs/plans/iwex-bringup.md) records that mp-energy's weakness is too few consumers for the
 flywheel to justify itself. A machine that cannot run well without one teaches the flywheel rather than
 announcing it.
 
 **3. Being MP-driven does not make it iiex's.** The forming-line rule (iiex = MP · iiex = steam · smex =
-extends, [settled 2026-07-29](../../internal/plans/STATE.md)) governs variants of one machine, not which mod owns every
+extends, [settled 2026-07-29](../../../../docs/plans/STATE.md)) governs variants of one machine, not which mod owns every
 MP consumer. There is one crusher and it lives in iiex, because that is where it sits in the player's arc: a
 throughput upgrade bought once a steam plant exists, never required by the iiex loop, with a harder-ore half
 that serves the steel-era ferroalloys. Keeping it out of iiex also protects the rule that nothing before cast
@@ -215,7 +215,7 @@ container to their neighbour:
 
 The principal cell is the discharge, so that side is a plain `BlockEntityContainer` with an output slot. The
 feed cell is a filler and must project its container to the principal, the way the other megablocks route
-per-cell interactions ([multiblock](../mechanics/multiblock.md)). Getting this wrong is silent: the chute
+per-cell interactions ([multiblock](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/multiblock.md)). Getting this wrong is silent: the chute
 simply never pushes.
 
 Two slots is enough, input and output. No GUI is needed for material; a hand-held stack in the input slot is
@@ -228,7 +228,7 @@ crushers chain along one line and the flywheel block stands beside them on the s
 
 | | |
 |---|---|
-| Contract | `IMpEnergyConsumer.LoadTorque(speed)`, per [mp-energy](../mechanics/mp-energy.md) |
+| Contract | `IMpEnergyConsumer.LoadTorque(speed)`, per [mp-energy](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/mp-energy.md) |
 | Base | `BlockEntityMpBench` is the shape to follow: it carries `BEBehaviorNetworkMember`, exposes `Speed` and `AvailableTorque` off the run state, and leaves `LoadTorque` abstract |
 | Reference implementation | `BlockEntityRollingMill.LoadTorque` - zero when the rolls are empty, a config torque when stock is between them |
 | Buffer | none in the crusher; the network's flywheel block does the buffering |
@@ -280,7 +280,7 @@ a chute above pushes ore in, a chute below pulls crushed ore out.
 Everything here is a decision, not a placeholder - none of it blocks the ones already made above.
 
 1. **Output rates and the energy-per-unit table**, including where chromite's threshold sits relative to
-   hematite's. Cannot be set until [mp-energy](../mechanics/mp-energy.md) has live numbers.
+   hematite's. Cannot be set until [mp-energy](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/mp-energy.md) has live numbers.
 2. **Whether it accepts raw ore blocks or only vanilla-crushable items**, and whether it produces the same
    `game:crushed-*` items or its own.
 3. **Chromite does not exist.** The harder-ore half of this machine's purpose is gated behind the ferroalloy

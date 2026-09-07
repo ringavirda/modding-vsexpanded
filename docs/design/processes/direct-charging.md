@@ -24,7 +24,7 @@ build; there is a layout to allow.
 factors, and the pool ceilings ·
 [molten canal](../machines/molten-canal.md) - the canal family, the start, the tap, the pedestal, sealing and
 unsealing, the end-cap rule ·
-[molten network](../mechanics/molten-network.md) - `IMoltenCell`, `FlowEdge`, the distance BFS, every flow
+[molten network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/molten-network.md) - `IMoltenCell`, `FlowEdge`, the distance BFS, every flow
 rate and per-cell capacity, the `Sealed`/`Solidified` latches, `SoakHeat`, and the back-pressure chain ·
 [Bessemer](../machines/bessemer.md) - the converter's four states, its carbon model, its capacity, its blow
 length, its heat balance, and B7 / B19 ·
@@ -57,7 +57,7 @@ a casting bed. Hop by hop:
 |---|---|---|---|
 | 1 | Furnace pool → tap. `min(TapDrainPerTick, pool)` units per tick, stack size `ceil(units × TapIronStackFactor)`, stamped with the furnace's own `_internalTemp` | `BlockEntityShaftFurnace.DrainIronTap` | `BlockEntityShaftFurnace.cs:1288-1325` |
 | 2 | Tap → canal start. Pours to `Pos + side.Opposite`, one down; the tap refuses to open at all unless a `BlockMoltenCanalStart` is there | `BlockEntityFurnaceTap.TryPourMetal` | `BlockEntityFurnaceTap.cs`; the gate at `BlockFurnaceTap.cs` (`iiex:tap-err-nocanal`) |
-| 3 | Start → run. The start is the BFS root; each edge is driven once per network tick | `MoltenNetwork.OnTick` / `FlowEdge` | see [molten network](../mechanics/molten-network.md) |
+| 3 | Start → run. The start is the BFS root; each edge is driven once per network tick | `MoltenNetwork.OnTick` / `FlowEdge` | see [molten network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/molten-network.md) |
 | 4 | Run → the converter's own canal tap. The converter's layout already requires `iiex:moltencanal-tap*` at its local `(1,1,2)`, plus a start and two straights | `BlockConverterControl` layout | see [Bessemer § The layout](../machines/bessemer.md) |
 | 5 | Tap cell → bath. The converter drains it directly, `min(cellAmount, space)` per tick, capturing type and temperature first | `BlockEntityConverterControl.TickFilling` | `:379`, tap-closed guard `:391`, drain `:430`, temperature capture `:428`, applied `:444` |
 | 6 | Bath ← identity check. The vessel accepts one metal at a time and re-seeds carbon by mass average on a pig fill | same | type gate `:412-419`, carbon reseed `:449-457` |
@@ -122,8 +122,8 @@ Every input is cited; the arithmetic is this page's.
 |---|---|---|
 | Furnace pool → tap | ≈ 30 u/s (`TapDrainPerTick` 50 × `TapIronStackFactor` 0.6) | [cold blast furnace](../machines/blast-furnace-cold.md) |
 | Furnace sustained production | ≈ 11.3 u/s at melt-speed factor 1.0 (0.35 carbon/s × 32.3 u/carbon) | [ironmaking](ironmaking.md) § Derived |
-| Canal cell → canal cell | 50 u/s (`MoltenFlowRate`) | [molten network](../mechanics/molten-network.md) |
-| Converter tap cell → bath | ≤ 25 u/s - the whole tap cell, whose capacity is 25 | drain `BlockEntityConverterControl.cs:430`; capacity cited from [molten network](../mechanics/molten-network.md) |
+| Canal cell → canal cell | 50 u/s (`MoltenFlowRate`) | [molten network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/molten-network.md) |
+| Converter tap cell → bath | ≤ 25 u/s - the whole tap cell, whose capacity is 25 | drain `BlockEntityConverterControl.cs:430`; capacity cited from [molten network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/molten-network.md) |
 
 In steady state the furnace's own production is the limit - every transport hop is faster than the make. The
 converter's 25 u/s intake binds only while a standing pool is being drained down.
@@ -145,10 +145,10 @@ cold scrap.
 
 | Mechanism | Effect of a longer run | file:line |
 |---|---|---|
-| **Transit time.** One `FlowEdge` per cell per 1 s network tick | an N-cell run adds ≈ N seconds of cooling before the metal arrives | [molten network § ordering](../mechanics/molten-network.md) |
-| **Standing thermal mass.** Every push volume-weight-averages the two charges' temperatures | an N-cell run holds up to 50 N units of previously-poured, already-cooling metal that the new charge averages down into on arrival | `BlockEntityMoltenCanal.cs:216-221`; capacity cited from [molten network](../mechanics/molten-network.md) |
-| **No conduction.** Cells exchange heat only when metal moves | a standing run cools cell by cell independently; nothing upstream keeps it warm | [molten network § Open](../mechanics/molten-network.md) |
-| **The plug.** A cell below the metal's melting point latches `Solidified` and severs the graph | pig melts at 1150 °C (`mods/iiex/assets/iiex/config/metals/pigiron.json`), so a slow, long, cold run does not merely deliver cooler metal - it stops | [molten network § thermal pass](../mechanics/molten-network.md) |
+| **Transit time.** One `FlowEdge` per cell per 1 s network tick | an N-cell run adds ≈ N seconds of cooling before the metal arrives | [molten network § ordering](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/molten-network.md) |
+| **Standing thermal mass.** Every push volume-weight-averages the two charges' temperatures | an N-cell run holds up to 50 N units of previously-poured, already-cooling metal that the new charge averages down into on arrival | `BlockEntityMoltenCanal.cs:216-221`; capacity cited from [molten network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/molten-network.md) |
+| **No conduction.** Cells exchange heat only when metal moves | a standing run cools cell by cell independently; nothing upstream keeps it warm | [molten network § Open](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/molten-network.md) |
+| **The plug.** A cell below the metal's melting point latches `Solidified` and severs the graph | pig melts at 1150 °C (`mods/iiex/assets/iiex/config/metals/pigiron.json`), so a slow, long, cold run does not merely deliver cooler metal - it stops | [molten network § thermal pass](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/molten-network.md) |
 | **`SoakHeat` protects only the start.** A brim-full canal start being poured onto keeps taking heat | the rest of the run has no such protection | `BlockEntityMoltenCanal.cs:276` |
 
 ---
@@ -177,7 +177,7 @@ The beds are never obsolete, for three independent reasons.
 2. A busy converter backs the run up. `TickFilling` only runs in the `Filling` state
    (`BlockEntityConverterControl.cs:209`), so a converter that is blowing, pouring or full stops draining its
    input tap entirely; the tap cell fills to its 25-unit cap, the run fills behind it, and the furnace stalls
-   and counts a disruption ([molten network § back-pressure](../mechanics/molten-network.md)). The overflow
+   and counts a disruption ([molten network § back-pressure](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/molten-network.md)). The overflow
    destination is a bed.
 3. One bed can absorb the furnace's make. A bed pulls at 25 u/s, above the furnace's sustained ≈ 11 u/s, so a
    single overflow bed keeps up with anything but the burst of draining a full pool, which the canal buffers.
@@ -223,12 +223,12 @@ incentive is a step rather than a slope.
    the destination fitting, not sealing the canal.
 
 6. Two metals cannot share a run. `FlowEdge` refuses to push into a cell holding a different metal code
-   ([molten network § 6](../mechanics/molten-network.md)), so a canal that once carried slag will not take
+   ([molten network § 6](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/molten-network.md)), so a canal that once carried slag will not take
    pig until it is empty. A shared trunk between the metal tap and the slag tap is not possible, and nothing
    warns about it.
 
 7. Vertical drops do not flow. The flow driver walks horizontals only, while graph membership walks all faces
-   ([molten network § Gotcha 4](../mechanics/molten-network.md)). A converter on a different level from the
+   ([molten network § Gotcha 4](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/molten-network.md)). A converter on a different level from the
    furnace tap is in the same network and will never receive anything - a real constraint on "put it next to
    the furnace", since the obvious layout is to put the vessel below the tap.
 

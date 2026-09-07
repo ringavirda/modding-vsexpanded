@@ -23,21 +23,21 @@ zero hits in code - every hit is prose in `docs/design/`
 | Fact | Owner |
 |---|---|
 | `T_process = T_in − T_loss`, the coke/air/preheat terms, the melt-speed factor, the `Idle → Firing → Melting` FSM and every `Bf*` key | [heat balance](../mechanics/heat-balance.md) |
-| the graph substrate, one-medium-per-run, `MaxVolume`, gas pressure, leaks, vents, bursts, merge/split, the tick order, `MachinePorts` | [pipe network](../mechanics/pipe-network.md) |
-| the cast tier's 5 atm rating, the fittings, the joint families | [cast pipes](cast-pipes.md), [pipe network](../mechanics/pipe-network.md) |
+| the graph substrate, one-medium-per-run, `MaxVolume`, gas pressure, leaks, vents, bursts, merge/split, the tick order, `MachinePorts` | [pipe network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md) |
+| the cast tier's 5 atm rating, the fittings, the joint families | [cast pipes](cast-pipes.md), [pipe network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md) |
 | where coke comes from and why the beehive oven recovers nothing | [coke oven](coke-oven.md) |
 | where steam comes from, its rate and its pressure | [Cornish boiler](boiler-cornish.md) |
 | where blast air comes from | [twin-tub blower](twin-tub-blower.md); smex's engine air blower |
 | the cowper's regenerator model, its cycle and its `Cowper*` keys | [cowper](cowper.md) |
 | the open hearth as a machine - its bath, its scrap, its product | [open hearth](open-hearth.md) |
-| the filler footprint system, layout DSL, origin-is-the-negation | [multiblock](../mechanics/multiblock.md) |
+| the filler footprint system, layout DSL, origin-is-the-negation | [multiblock](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/multiblock.md) |
 | code-first defs, RCC stages, goldens, the recipe-cost catalogue | [recipes & config](../mechanics/recipes-config.md) |
 | the medium-agnostic bulk buffer, and why it cannot be built today | [fluid tank](fluid-tank.md) |
 | R1 single medium · R2 declared recovery · R5 gate efficiency · R7 nothing hidden | `../conventions.md:27-54` |
 
-**Depends on** [heat balance](../mechanics/heat-balance.md) · [pipe network](../mechanics/pipe-network.md) ·
+**Depends on** [heat balance](../mechanics/heat-balance.md) · [pipe network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md) ·
 [coke oven](coke-oven.md) · [Cornish boiler](boiler-cornish.md) · [cowper](cowper.md) ·
-[fluid tank](fluid-tank.md) · [multiblock](../mechanics/multiblock.md) ·
+[fluid tank](fluid-tank.md) · [multiblock](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/multiblock.md) ·
 [recipes & config](../mechanics/recipes-config.md) · `../overview.md:115-121` ·
 `../STATE.md:665-669`
 
@@ -173,7 +173,7 @@ the same bill plus a second pipe is the right order of magnitude.
 Inherited trap: the cowper's layout hard-codes iiex fittings. `BlockCowperStoveIntake.cs:53-54` declares
 `iiex:pipe-outlet*` and `iiex:pipe-passthrough-*` as required structure cells, so a smex machine cannot be
 completed out of the iiex tier. This is the same defect the Lancashire boiler has against the rolled tier
-([boiler-lancashire](boiler-lancashire.md), and [pipe network](../mechanics/pipe-network.md) § joints). A
+([boiler-lancashire](boiler-lancashire.md), and [pipe network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md) § joints). A
 producer's layout must name a fitting family, not a domain, or it inherits the bug on day one.
 
 ---
@@ -198,7 +198,7 @@ steam  ───────────────┘                        �
 |---|---|---|
 | charge coke | the fuel column | as every fired machine - coal piles in the shaft ([heat balance](../mechanics/heat-balance.md)) |
 | light it | the charge | the shared `Idle → Firing` transition (`BlockEntityFurnaceCore.cs:559-561`) |
-| plumb air in | the low port | a pipe run carrying `Air`, per [pipe network](../mechanics/pipe-network.md) |
+| plumb air in | the low port | a pipe run carrying `Air`, per [pipe network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md) |
 | plumb steam in | the low port | a tap off the boiler's steam main ([Cornish boiler](boiler-cornish.md)) |
 | plumb gas out | the high port | a pipe run that must reach the hearth and nothing else |
 | read state | block info | R7 nothing is hidden (`../conventions.md:48-54`) - bed temperature, gas rate, steam/air supply fractions |
@@ -264,7 +264,7 @@ invisible, and a producer that silently does nothing is the worst failure mode t
 ### Cited — owned elsewhere
 
 Run capacity (`nodes × LitresPerPipe`), gas pressure as a volume ratio, the 1-atm leak clamp, the burst
-grace and the vent strategy: [pipe network](../mechanics/pipe-network.md) § 3, § 5, § 6. `T_in`, `T_loss`,
+grace and the vent strategy: [pipe network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md) § 3, § 5, § 6. `T_in`, `T_loss`,
 `fuelFactor`, `airFactor` and every `Bf*` key: [heat balance](../mechanics/heat-balance.md). Steam pressure,
 the boiler's choke and `SteamExpansionFactor`: [Cornish boiler](boiler-cornish.md). The cowper's
 `CowperMaxTemperature` 1240 °C and its four soak/cool rates: `SiexConfig.cs:119-140`, owned by
@@ -300,7 +300,7 @@ forbids.
 | register the medium | `mods/siex/assets/siex/config/liquids.json` | file does not exist; the loader picks it up with no code (`ExLiquids.cs:74-97`) |
 | config keys | `SiexConfig.cs` - a new `#region Gas producer` | beside `#region Cowper stove` (`:119-140`) |
 | recipe + cost entry | `Recipes/Grid/GasProducerRecipeDefinitions.cs` + a row in `SiexRecipeConfig.Defaults()` (`:45-70`) | both are required; the catalogue is hand-maintained |
-| do not register a new network type | — | `"gas"` is a dead network type - the unified pipe network absorbed gas and water, and only `"pipe"` / `"molten"` / `"mpenergy"` are ever registered ([pipe network](../mechanics/pipe-network.md) Gotcha 5) |
+| do not register a new network type | — | `"gas"` is a dead network type - the unified pipe network absorbed gas and water, and only `"pipe"` / `"molten"` / `"mpenergy"` are ever registered ([pipe network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md) Gotcha 5) |
 
 ### Tests it will need
 
@@ -318,15 +318,15 @@ medium-isolation test that a producer main joined to an air main is caught rathe
   joins the producer main to the blast main gets one pool of relabelled gas - no warning, no particle, no
   refusal. The only thing that keeps fuel gas out of a tuyere is that the player routed the pipes properly.
   This is why the proposed priority is 30: at least the label tells the truth. Owned by
-  [pipe network](../mechanics/pipe-network.md) § 2; recorded here because the producer is the machine it
+  [pipe network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md) § 2; recorded here because the producer is the machine it
   bites.
 * A pipe run is already storage, whatever the buffering rules price: capacity is
-  `Nodes.Count × LitresPerPipe` = 30 L per pipe ([pipe network](../mechanics/pipe-network.md) § 3), so a
+  `Nodes.Count × LitresPerPipe` = 30 L per pipe ([pipe network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md) § 3), so a
   300-block main is a 9000 L holder built out of ordinary pipe - and one that keeps the gas hot, unlike a
   holder. Any pricing of storage has to account for it.
 * A hot gas run never cools. `ApplyPassiveCooling` requires `pass.Consumers == 0`, but every
   `BlockEntityPipe` counts as a consumer, so any run containing one pipe never passively cools
-  ([pipe network](../mechanics/pipe-network.md) Gotcha 1). The design wants the gas hot, so this accident is
+  ([pipe network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md) Gotcha 1). The design wants the gas hot, so this accident is
   currently in its favour, and any fix to that gotcha silently changes the producer's delivered temperature.
 * The cowper's stranded-gas latch is live and the producer would meet it. With both an exhaust connection
   and gas in the passthrough the stove latches to `cowperstove-status-exhaustmix` and vents the stranded

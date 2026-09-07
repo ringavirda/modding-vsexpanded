@@ -10,7 +10,7 @@ namespace IronIndustryExpanded.Recipes.Grid;
 /// player's own grid are put together. The table is costed in planks and candles only, with no metal and
 /// no tool, because drafting carries no progression gate: the running cost is the parchment and charcoal
 /// each diagram consumes. The bench costs iron for its vices, which is what it is fitted with.
-/// See docs/design/diagram-crafting.md and docs/design/machines/workbench.md.
+/// See docs/design/mechanics/diagram-crafting.md and docs/design/machines/workbench.md.
 /// </summary>
 public class CraftingStationRecipeDefinitions : IExRecipeDefProvider {
   public static IEnumerable<ExRecipeDef> Definitions(string domain) =>

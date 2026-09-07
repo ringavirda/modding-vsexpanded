@@ -24,17 +24,17 @@ zero hits.   **Mod** smex (`SteelmakingExpanded`)
 factor, the Idle/Firing/Melting FSM and its timers · [Bessemer](bessemer.md) - the converter's carbon model,
 its blast draw, its scrap gate, its capacity and its four-state tilt ·
 [ladle](ladle.md) - mixing by held proportion, the chill model, recarburisation, waste alloy ·
-[molten network](../mechanics/molten-network.md) and [molten canal](molten-canal.md) - the canal it taps into ·
-[pipe network](../mechanics/pipe-network.md) - R1 single medium, pool volume, pressure, burst ·
-[multiblock & fillers](../mechanics/multiblock.md) - the layout DSL and the filler footprint system ·
+[molten network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/molten-network.md) and [molten canal](molten-canal.md) - the canal it taps into ·
+[pipe network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md) - R1 single medium, pool volume, pressure, burst ·
+[multiblock & fillers](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/multiblock.md) - the layout DSL and the filler footprint system ·
 [recipes & config](../mechanics/recipes-config.md) · [cupola](cupola.md) and
 [crucible furnace](crucible-furnace.md) - the other two melting machines ·
 [blast furnace (cold)](blast-furnace-cold.md) - the pig source and the ferroalloy furnace ·
 [long cell](long-cell.md) - what the steel is cast into · [materials.md](../materials.md) - what open-hearth
-steel is and which parts require it · [STATE.md](../../internal/plans/STATE.md) - D3, D6, the blocker list
+steel is and which parts require it · [STATE.md](../../../../docs/plans/STATE.md) - D3, D6, the blocker list
 
-**Depends on** [heat balance](../mechanics/heat-balance.md) · [multiblock & fillers](../mechanics/multiblock.md) ·
-[molten network](../mechanics/molten-network.md) · [pipe network](../mechanics/pipe-network.md) ·
+**Depends on** [heat balance](../mechanics/heat-balance.md) · [multiblock & fillers](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/multiblock.md) ·
+[molten network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/molten-network.md) · [pipe network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md) ·
 [ladle](ladle.md) · [Bessemer](bessemer.md) · [recipes & config](../mechanics/recipes-config.md)
 
 ---
@@ -124,7 +124,7 @@ at the bottom centre, `side` variant drives the structure angle
 ([blast furnace § Orientation](blast-furnace-cold.md#orientation)).
 
 One layout problem is already known. A `MultiblockLayout` is a fixed cell table
-([multiblock](../mechanics/multiblock.md)), so "two chambers of n courses each" is not expressible any more
+([multiblock](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/multiblock.md)), so "two chambers of n courses each" is not expressible any more
 than the [crucible furnace](crucible-furnace.md)'s variable stack is. Either the chambers are fixed-size
 (recommended - the open hearth's scaling axis is heat size, not chamber count) or the machine needs the
 counted-scan approach that page proposes.
@@ -217,7 +217,7 @@ corrections to be worth making, and that its flame keeps the bath hot while they
 
 D3 applies: alloys inherit their base's grade as a continuous penalty, not a lockout - hadfield mixed on a
 Bessemer base gets a lower max pressure than hadfield mixed on an open-hearth base
-([STATE.md](../../internal/plans/STATE.md) D3).
+([STATE.md](../../../../docs/plans/STATE.md) D3).
 
 ### Scrap: the ceiling is time, not temperature
 
@@ -311,7 +311,7 @@ existing systems is small and specific:
 | Need | Status |
 |---|---|
 | a `producergas` medium | a new entry in `exlib/assets/exlib/config/liquids.json` (phase `gas`, its own priority), loaded by `ExLiquids.Load` (`ExpandedLib/Fluids/ExLiquids.cs:74`). The shipped file has 4 media |
-| a pipe run from producer to hearth | works today - [pipe network](../mechanics/pipe-network.md) |
+| a pipe run from producer to hearth | works today - [pipe network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md) |
 | R1: one medium per network | a producer-gas main and an air main are two separate networks; they cannot share a pipe. The open hearth therefore needs two intakes on two runs, exactly as the cowper does |
 | never stored | by design - no gasholder. Producer gas carries about a tenth of town gas's heating value, was fed hot so its sensible heat reached the regenerators, and is largely CO. Direct supply also makes the producer a live dependency: bank it down and the hearth cools |
 
@@ -429,7 +429,7 @@ None. When built, the shape of the suite is set by
    machine that accepts both is right and is also two charge paths.
 
 6. HSS feedstock is open-hearth-exclusive ([materials.md](../materials.md)) and elex is out of scope
-   ([STATE.md](../../internal/plans/STATE.md) D8). So one of this machine's three stated jobs has no consumer in the
+   ([STATE.md](../../../../docs/plans/STATE.md) D8). So one of this machine's three stated jobs has no consumer in the
    current release target - worth knowing before sizing it around that job.
 
 7. No `MaxAwayCatchupSteps` decision. A one-hour heat is exactly the machine a player walks away from, and

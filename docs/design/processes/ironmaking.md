@@ -38,14 +38,14 @@ keys, blast demand, the chill, ignition) ·
 drain path) ·
 [hot blast furnace](../machines/blast-furnace-hot.md) (the sealed top, the bell pair, the exhaust budget) ·
 [cowper](../machines/cowper.md) · [smokestack](../machines/smokestack.md) ·
-[pipe network](../mechanics/pipe-network.md) · [molten network](../mechanics/molten-network.md) ·
+[pipe network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md) · [molten network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/molten-network.md) ·
 [molten canal](../machines/molten-canal.md) · [casting bed](../machines/casting-bed.md) (slots, carve,
 harvest, denomination) · [pig](../items/pig.md) (the pig / chunk / bit family and the 375 u pig) ·
 [cupola](../machines/cupola.md) · [puddling furnace](../machines/puddling-furnace.md) ·
 [bessemer](../machines/bessemer.md) (the converter end of direct charging) ·
 [coking](coking.md) (where the coke comes from) · [roasting](roasting.md) (the unbuilt pre-step, and the
 8.5 u/nugget recovery anchor) · [density rule](../mechanics/density-rule.md) (1 vx³ = 2.5 u) ·
-[multiblock](../mechanics/multiblock.md) · [recipes & config](../mechanics/recipes-config.md)
+[multiblock](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/multiblock.md) · [recipes & config](../mechanics/recipes-config.md)
 
 ---
 
@@ -153,7 +153,7 @@ canal backs up, back-pressure reaches the tap, and the furnace's own pool fills 
 disruption and eventually extinguishes the furnace ([heat balance](../mechanics/heat-balance.md)).
 
 Nothing in `src/` models a rotation, a clearing time or a bed count. The stall path exists
-([molten network](../mechanics/molten-network.md)); the rotation is a player practice built on top of it.
+([molten network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/molten-network.md)); the rotation is a player practice built on top of it.
 At the 375 u pig, one full cold shaft at the reference richness ≈ one full bed (§ Derived).
 
 ### Exit B — direct charging
@@ -175,7 +175,7 @@ Three properties follow:
 * The beds are never obsolete, because the iron line needs solid pigs -
   [puddling](../machines/puddling-furnace.md) charges pigs and the [cupola](../machines/cupola.md) remelts
   them. Only the steel line can take liquid.
-* Metal cools per-cell in the canal ([molten network](../mechanics/molten-network.md)), so a long run to a
+* Metal cools per-cell in the canal ([molten network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/molten-network.md)), so a long run to a
   distant converter loses heat: the optimal layout is converter beside furnace.
 
 No routing aid exists: no valve automation, no destination selection, no HUD that says where a tap's metal
@@ -352,7 +352,7 @@ every per-coke figure below.
 | `HopperTallCapacity`, `HopperTallDropPerSecond`, `NextChargeColumn` | [tall hopper](../machines/tall-hopper.md) |
 | `TwinTubBlowerOutputPerSecond`, `TwinTubBlowerMaxPressure`, the 17.3 % gate | [twin-tub blower](../machines/twin-tub-blower.md) |
 | `BfMaxMoltenIron`/`Slag`, `TapDrainPerTick`, the stack factors, the hearth band keys | [cold blast furnace](../machines/blast-furnace-cold.md) |
-| `MoltenFlowRate`, per-cell capacity, cooldown, back-pressure | [molten network](../mechanics/molten-network.md) |
+| `MoltenFlowRate`, per-cell capacity, cooldown, back-pressure | [molten network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/molten-network.md) |
 | `PigUnits` / `ChunkUnits` / `BitUnits`, `SlagBrickUnits`, bed capacity 20 | [pig](../items/pig.md) · [casting bed](../machines/casting-bed.md) |
 | 1 vx³ = 2.5 u; 375 = 150 vx³ | [density rule](../mechanics/density-rule.md) |
 

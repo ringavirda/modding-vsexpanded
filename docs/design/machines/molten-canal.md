@@ -14,12 +14,12 @@
 - The pedestal's uncapped drain as a code fact.
 
 **Does not own - cited only**
-- [molten network](../mechanics/molten-network.md) - the model. `IMoltenCell`, the per-tick driver,
+- [molten network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/molten-network.md) - the model. `IMoltenCell`, the per-tick driver,
   `FlowEdge`, the distance BFS, per-cell capacities (canal / start / tap / pedestal / barrel), every
   `MoltenFlowRate` / `MoltenMinFlowAmount` / `CanalDefaultDrainSpeed` / cooldown / seal-cost tunable, the
   `Sealed` and `Solidified` latches, the solidify and hardened thresholds, `SoakHeat`, back-pressure, and
   the throughput-unification decision. Every number in that page is that page's.
-- [pipe network](../mechanics/pipe-network.md) - the shared block-network graph the canal is a node in.
+- [pipe network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md) - the shared block-network graph the canal is a node in.
 - [casting bed](casting-bed.md) and [casting cell](casting-cell.md) - the two stations a run ends at.
 - [cold blast furnace](blast-furnace-cold.md) and [cupola](cupola.md) - the taps a run starts at.
 - [recipes & config](../mechanics/recipes-config.md) - code-first block defs, the `Fhk` ingredient helpers,
@@ -169,7 +169,7 @@ at load (`:57-72`).
 
 The block entity is the family's only `ILiquidMetalSink`. Its `CanReceiveOrSoak` is looser than
 `CanReceive` so a brim-full start keeps taking heat instead of plugging - see
-[molten network § back-pressure](../mechanics/molten-network.md).
+[molten network § back-pressure](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/molten-network.md).
 
 A running pour tally is shown while metal is arriving and self-clears after an idle timeout
 (`BlockEntityMoltenCanalStart.cs:33-58, 149-156`).
@@ -223,7 +223,7 @@ and never satisfy the predicate.
 ## Numbers
 
 Every capacity, flow rate, drain speed, cooldown coefficient, clay cost and temperature threshold in this
-family belongs to [molten network](../mechanics/molten-network.md). What follows is only what the blocks
+family belongs to [molten network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/molten-network.md). What follows is only what the blocks
 declare.
 
 ### Fill geometry (block attributes)
@@ -302,7 +302,7 @@ Defaults when an attribute is absent: `fillStart` 14, `fillHeight` 1 (`BlockMolt
 | `MoldKinds` | `MoldKinds.cs:11` | large (tap-only) vs small (pedestal) tool molds |
 | `ClayHeatGate.WouldShatter` | `ClayHeatGate.cs:29` | the pure ceramic-ceiling decision, shared with `ToolMoldHeatGatePatch` |
 | `MoltenMoldSpill` | `MoltenMoldSpill.cs` | liquid-mold pickup denial and the spill-on-give path |
-| `BlockEntityMoltenCanal` and subclasses | see [molten network](../mechanics/molten-network.md) | the cell model |
+| `BlockEntityMoltenCanal` and subclasses | see [molten network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/molten-network.md) | the cell model |
 | Tests | `test/…/Blocks/Molten/{MoltenCanalBeTests,MoltenCanalStartTests,MoltenCanalTapTests,MoltenMoldPedestalTests,MoltenMoldSpillTests,FillQuadsTests,MoldKindsTests}.cs` | |
 
 **Where a caller hooks in.** To receive from a run: be an `IMoltenCell` node on the graph, or be a puller
@@ -333,7 +333,7 @@ the latter). To feed a run: call `ILiquidMetalSink` on a canal start. To add a c
    (`BlockEntityMoltenCanalTap.cs:462`); the pedestal drains `min(CellAmount, space)`
    (`BlockEntityMoltenCanalMoldPedestal.cs:218-219`), its whole cell in one tick. It is the only fitting
    in the family with no throughput limit at all.
-   [molten network § Open](../mechanics/molten-network.md) owns the decision about unifying it.
+   [molten network § Open](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/molten-network.md) owns the decision about unifying it.
 
 3. **`OnPickBlock` asks for variant keys the canal does not have.**
    `CodeWithVariants(["variant","state","orientation"], ["pass","normal","ns"])`
@@ -362,7 +362,7 @@ the latter). To feed a run: call `ILiquidMetalSink` on a canal start. To add a c
 8. **A closed tap or pedestal drops off the graph**, it does not merely stop delivering
    (`BlockEntityMoltenCanalTap.cs:49-50`, `BlockEntityMoltenCanalMoldPedestal.cs:52-53`). Its own cell then
    stops filling too. That is by design - see
-   [molten network § Gotcha 9](../mechanics/molten-network.md).
+   [molten network § Gotcha 9](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/molten-network.md).
 
 9. **The tap's parked-content renderer reads the content block's fill attributes, never the tap's**
    (`BlockEntityMoltenCanalTap.cs:260-276`); using the tap's own `fillStart` would pin a parked barrel's
@@ -409,14 +409,14 @@ crucible interaction.
 
 - **Throughput.** The canal edge, the tap drain and the pedestal drain run at three different rates (one of
   them unbounded), against a settled single 50 u/s. Owned by
-  [molten network § Open](../mechanics/molten-network.md); the pedestal line is Gotcha 2 here.
+  [molten network § Open](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/molten-network.md); the pedestal line is Gotcha 2 here.
 - **The dead barrel code (Gotcha 1)** is the family's only functional breakage and is a one-line fix per
   site, except `RemoveBarrel`, which has to pick which construction variant to hand back. The parked
   stack's own block is available at `AddBarrel` time (`BlockEntityMoltenCanalTap.cs:292-293`) but is not
   stored (`BlockEntityMoltenCanalTap.cs:283-296`).
 - **No vertical runs.** Flow walks horizontals only while the graph walks all faces, so a stacked pair of
   canals is in one network and never exchanges metal. Whether a vertical drop should flow is undecided -
-  [molten network § Gotcha 4](../mechanics/molten-network.md).
+  [molten network § Gotcha 4](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/molten-network.md).
 - **The ladle does not exist.** R3's mixing block, the only thing in the design allowed to merge two metals,
   has no type anywhere in `src/`. Until it does, a canal run can carry two metals side by side and nothing
   will combine them.

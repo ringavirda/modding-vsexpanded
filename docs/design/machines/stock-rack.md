@@ -23,7 +23,7 @@ lang and tests all ship; the composed-contents renderer is written but unverifie
 > **What that dissolves.** The two stacking modes (`pyramid` / `flat`), the half-width offset, the
 > 0.866 y-step, the layer count and the jitter belong to the *reheat hearth's bed*, not to the rack.
 > The rack therefore **no longer depends on `PileLayout`**
-> ([plan](../../internal/plans/2026-08-15-item-piles.md), stage 1, unstarted) - which this page named as
+> ([plan](../../../../docs/plans/2026-08-15-item-piles.md), stage 1, unstarted) - which this page named as
 > its blocking prerequisite. It can be built on its own.
 >
 > **What that opens.** *Mixed contents* under [Open](#open) is answered: yes, by length - a 2-run beside
@@ -71,7 +71,7 @@ lang and tests all ship; the composed-contents renderer is written but unverifie
 **Depends on**
 [recoverability](../mechanics/recoverability.md) (owns the ≤ 48 limit the rack's 3-cell length is sized to,
 and the reachability/LIFO argument the rack reuses) ·
-[multiblock & fillers](../mechanics/multiblock.md) (the footprint DSL, filler interaction rerouting,
+[multiblock & fillers](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/multiblock.md) (the footprint DSL, filler interaction rerouting,
 `allowAttach`, and why this needs no behaviour-capable cell) ·
 [reheat furnace](reheat-furnace.md) (the hearth whose bed composition this shares) ·
 [rolling mill](rolling-mill.md) · [shear](shear.md) (what fills the rack) ·
@@ -117,7 +117,7 @@ somewhere to put it down.
 It does not need behaviour-capable fillers. `Host(ch, …specs)` (`FillerLayoutBuilder.cs:69-77`) exists so a
 cell can carry a real block-entity behaviour - an MP port, a molten cell. A rack hosts none. Plain fillers
 already reroute interaction, breaking, drops, pick-block, look-at info and sounds to the principal
-([multiblock § invisible fillers](../mechanics/multiblock.md)), which is the entire requirement.
+([multiblock § invisible fillers](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/multiblock.md)), which is the entire requirement.
 
 Racks stack vertically, so shelving is just racks - see the `allowAttach` trap in Gotchas.
 
@@ -253,7 +253,7 @@ copy that model; see Gotchas.
 | Broken | Returns |
 |---|---|
 | any cell | the rack and every piece on it |
-| the fillers | nothing of their own - `BlockStructureFiller`'s drops are always `[]`, the principal owns all drops ([multiblock](../mechanics/multiblock.md)) |
+| the fillers | nothing of their own - `BlockStructureFiller`'s drops are always `[]`, the principal owns all drops ([multiblock](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/multiblock.md)) |
 
 This has to be written explicitly. Breaking any cell breaks the whole megablock (the filler reroutes
 getting-broken and broken to the principal), so the principal's `OnBlockBroken` must spawn the contents before

@@ -43,13 +43,13 @@ exlib; the cowper and the Lancashire boiler still burn vanilla coal piles
 | The gas producer, the tar boundary, the scope carve-out argument, the producer-gas medium spec | [gas producer](../machines/gas-producer.md) |
 | The cowper's regenerator model and every `Cowper*` value | [cowper](../machines/cowper.md) |
 | Boiler firing, choking and the extinguish timer | [Cornish boiler](../machines/boiler-cornish.md) · [Lancashire boiler](../machines/boiler-lancashire.md) |
-| Layout legends, wildcard matching and filler semantics | [multiblock](../mechanics/multiblock.md) |
+| Layout legends, wildcard matching and filler semantics | [multiblock](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/multiblock.md) |
 | The design table and the diagram system | [diagram crafting](../mechanics/diagram-crafting.md) |
 
 **Depends on** [burden](burden.md) · [burdenmaker](../machines/burdenmaker.md) ·
 [heat balance](../mechanics/heat-balance.md) · [coke oven](../machines/coke-oven.md) ·
 [gas producer](../machines/gas-producer.md) · [cowper](../machines/cowper.md) ·
-[multiblock](../mechanics/multiblock.md)
+[multiblock](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/multiblock.md)
 
 ---
 

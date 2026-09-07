@@ -10,7 +10,7 @@ namespace IronIndustryExpanded.Recipes.Grid;
 /// patterns in <see cref="MoltenRecipeDefinitions"/>. The diagram is <c>.Tool()</c> (isTool), so it is
 /// not consumed. Creative-only until the design table can draft diagrams, and it coexists with the
 /// legacy canal recipes, sharing their cobblestone capture so both paths yield the same <c>{rock}</c>
-/// variants. See docs/design/diagram-crafting.md.
+/// variants. See docs/design/mechanics/diagram-crafting.md.
 /// </summary>
 public class DiagramRecipeDefinitions : IExRecipeDefProvider {
   public static IEnumerable<ExRecipeDef> Definitions(string domain) =>

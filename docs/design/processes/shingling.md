@@ -27,7 +27,7 @@
 | what happens to the shingled piece next - gaps, passes, spread, roll sets | [rolling mill](../machines/rolling-mill.md), [steel roll sets](../machines/steel-roll-sets.md) |
 | putting heat back into a cold piece, and the ≤ 32 / ≤ 48 handling limits | [reheat furnace](../machines/reheat-furnace.md), [recoverability](../mechanics/recoverability.md) |
 | every crop taken off a shingled piece | [shear](../machines/shear.md) |
-| MP torque, the helve's drive, the flywheel | [mp energy](../mechanics/mp-energy.md), [flywheel & shafting](../machines/flywheel-and-shafting.md) |
+| MP torque, the helve's drive, the flywheel | [mp energy](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/mp-energy.md), [flywheel & shafting](../machines/flywheel-and-shafting.md) |
 | the cast route's billet/bloom/slab, which are cast, not shingled | [long cell](../machines/long-cell.md), [casting cell](../machines/casting-cell.md) |
 
 **Depends on** [puddling](puddling.md) · [steam hammer](../machines/steam-hammer.md) ·

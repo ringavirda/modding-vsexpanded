@@ -29,8 +29,8 @@ they feed, so the shaper is the earliest and the planer the latest
 | the `ItemDie` contract and the fastener benches | [heading machine](../machines/heading-machine.md) |
 | `1 vx³ = 2.5 u` and every mass | [density rule](density-rule.md) |
 | `ExBlockDef` / `ExItemDef` / `ExRecipeDef`, the RCC stage builder, goldens, the cost catalogue | [recipes & config](recipes-config.md) |
-| the `"mpenergy"` run, the four node contracts, torque and speed | [mp-energy](mp-energy.md) |
-| filler footprints, behaviour-capable cells, membership | [multiblock](multiblock.md), [framework composition](framework-composition.md) |
+| the `"mpenergy"` run, the four node contracts, torque and speed | [mp-energy](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/mp-energy.md) |
+| filler footprints, behaviour-capable cells, membership | [multiblock](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/multiblock.md), [framework composition](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/framework-composition.md) |
 
 ---
 
@@ -82,7 +82,7 @@ Two things open it:
    reason to build the shaper.
 2. **The shaper accepts both drives.** It is the one machine a player builds while still on a vanilla
    axle, so it must run off vanilla MP — and it must also join `mpenergy` later, or it becomes dead
-   weight on a finished line. [framework composition](framework-composition.md)'s membership
+   weight on a finished line. [framework composition](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/framework-composition.md)'s membership
    behaviour makes carrying both cheap: one footprint cell holds the `mpenergy` membership, another
    holds `exlib.BEBehaviorMPFillerPort`.
 
@@ -238,7 +238,7 @@ gesture instead, because a roll set is a profile rather than a consumable.
 ## The job convention
 
 The terminal-versus-sequence axis below is now general: every machine has a registry in one of those
-two shapes, and [process-extension](process-extension.md) owns the contract. `MachineJob` is the
+two shapes, and [process-extension](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/process-extension.md) owns the contract. `MachineJob` is the
 terminal shape for the four machine tools.
 
 **`MachineJob` lives in exlib** (settled 2026-08-11), alongside `ItemDie`. Both are mechanics rather

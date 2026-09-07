@@ -5,7 +5,7 @@ config key, no test.
 **Would live in** unassigned. Its consumers are the copper add-on (parent `smex`,
 [overview.md](../../overview.md):80); its interface is the iiex-owned molten canal, and no doc places it in
 a mod. See § Open.
-**Deferred by** D8 - non-ferrous is later ([STATE.md](../../../internal/plans/STATE.md)); the cut and its reasoning
+**Deferred by** D8 - non-ferrous is later ([STATE.md](../../../../../docs/plans/STATE.md)); the cut and its reasoning
 are owned by [scope.md](../../scope.md) § Non-ferrous.
 
 **Owns** - the facts this page is canonical for:
@@ -25,13 +25,13 @@ are owned by [scope.md](../../scope.md) § Non-ferrous.
 | The non-ferrous cut, that it is a different deferral from Homestead's, and what deferring it costs R3 | [scope.md](../../scope.md) § Non-ferrous |
 | The ferrous crucible furnace - form, charge, pot problem, draught arithmetic | [crucible-furnace](../../machines/crucible-furnace.md) |
 | R3, the ladle, its merge, the chill model and the zinc coke cover | [conventions.md](../../conventions.md):38-40, [ladle](../../machines/ladle.md) |
-| The molten flow driver, per-cell capacities, `IsFlowSource`, the type refusal | [molten network](../../mechanics/molten-network.md) |
+| The molten flow driver, per-cell capacities, `IsFlowSource`, the type refusal | [molten network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/molten-network.md) |
 | The bronzes' compositions and the waste-alloy rule | [alloys](../../items/alloys.md) · [ladle](../../machines/ladle.md) |
 | Which alloys are inside the release target | [alloying](../../processes/alloying.md):283-290 |
 
 **Depends on** [scope.md](../../scope.md) · [crucible-furnace](../../machines/crucible-furnace.md) ·
 [ladle](../../machines/ladle.md) · [molten canal](../../machines/molten-canal.md) ·
-[molten network](../../mechanics/molten-network.md) · [materials.md](../../materials.md) ·
+[molten network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/molten-network.md) · [materials.md](../../materials.md) ·
 [alloying](../../processes/alloying.md) · [copper reverberatory](copper-reverberatory.md) ·
 [Pierce-Smith](pierce-smith.md)
 
@@ -105,7 +105,7 @@ hand-carried pot pours a mold, a tilting vessel pours a run.
 
 The code path already exists and needs nothing new. The furnace tap is not a molten-graph node - it finds
 the canal start by a fixed offset and calls `ILiquidMetalSink` on it
-([molten network](../../mechanics/molten-network.md):276):
+([molten network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/molten-network.md):276):
 
 | Step | Existing implementation |
 |---|---|
@@ -217,7 +217,7 @@ Nothing in the release target waits on this machine.
    `assets/*/config/metals/*.json` entry, so they have no molten item, no `solidDrop`, no cast domain and no
    per-metal thresholds. Nothing non-ferrous can enter the canal deliberately until they exist.
 4. Producer-node or adjacent-cell pourer. The tap idiom (above) is the cheap answer and the one the design
-   assumes; a real graph node would be a change to [molten network](../../mechanics/molten-network.md).
+   assumes; a real graph node would be a change to [molten network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/molten-network.md).
 5. What drives the tilt - a lever, or mechanical power as the [Bessemer](../../machines/bessemer.md):101
    uses it. The Bessemer's precedent is MP-for-tilt-only; a hand lever costs nothing and matches the
    machine's scale.
@@ -226,4 +226,4 @@ Nothing in the release target waits on this machine.
    for a run.
 7. Throughput and capacity. No number is proposed anywhere. The canal start holds 100 u
    (`BlockEntityMoltenCanalStart.cs:24-25`) and the network moves 50 u/s end to end (D5b,
-   [STATE.md](../../../internal/plans/STATE.md)); nothing says what one tilt is worth.
+   [STATE.md](../../../../../docs/plans/STATE.md)); nothing says what one tilt is worth.

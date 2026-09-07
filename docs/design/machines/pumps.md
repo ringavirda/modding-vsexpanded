@@ -16,16 +16,16 @@
 
 **Does not own** - cited only, never restated:
 - The pipe graph, the one-medium pool, `MaxVolume`, liquid pressure vs `FeedPressure`, leaks, bursts and the
-  tick order - [pipe network](../mechanics/pipe-network.md).
+  tick order - [pipe network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md).
 - Pipe blocks, valves, the pressure valve, joints, the cast tier's burst rating - [cast pipes](cast-pipes.md).
 - The planned buffer between a pump and its consumer - [fluid tank](fluid-tank.md).
 - The boiler and engine FSMs, their steam/power/condensate rates, the Cornish/Watt stat tables and the
   boiler-feedwater design as a whole - [Cornish boiler](boiler-cornish.md) and [Watt engine](engine-watt.md).
 - The MP generator sub-machine and vanilla-MP torque - [Watt engine](engine-watt.md),
-  [mp-energy](../mechanics/mp-energy.md).
+  [mp-energy](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/mp-energy.md).
 - smex's engine air blower, which shares the sub-machine base and the same `× 3` bug - smex's block
   (no design page yet).
-- Multiblock fillers and footprints - [multiblock](../mechanics/multiblock.md).
+- Multiblock fillers and footprints - [multiblock](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/multiblock.md).
 - Code-first defs and the recipe-cost catalogue - [recipes-config](../mechanics/recipes-config.md).
 
 ---
@@ -339,7 +339,7 @@ does not break the feed loop; it makes the pump's cost/benefit meaningless.
 | fluid intake (source side) | fixed `1.0` | `BlockEntityFluidIntake.cs:49` |
 
 That pressure is realised only once the delivery line is brim-full; below capacity a liquid run's pressure
-tracks its fill ratio ([pipe network](../mechanics/pipe-network.md) § 3). The only consumer that reads
+tracks its fill ratio ([pipe network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md) § 3). The only consumer that reads
 it is the boiler's steam boost (`BlockEntityBoiler.cs:359-366`).
 
 ---
@@ -374,7 +374,7 @@ Two consequences fall out of machinery that already exists:
 
 - It is a flow contest, not only a pressure one. A liquid run reports its commanded pressure only once
   brim-full, and every draw recomputes it (`PipeNetworkState.ComputeLiquidPressure`,
-  [pipe network](../mechanics/pipe-network.md)). A pump that cannot refill as fast as the boiler empties
+  [pipe network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md)). A pump that cannot refill as fast as the boiler empties
   watches its own delivery pressure sag.
 - The same constant-power relation governs the mechanical MP pump. Only the power source differs.
 
@@ -494,7 +494,7 @@ beside it said 5 L/s.
 7. **The intake is not an `IPipeNode`.** Its BE is a bare `BlockEntityNetworkNode`
    (`BlockEntityFluidIntake.cs:21`), so `ClassifyOpenings` never counts it as a consumer - the only
    configuration in which the network's passive-cooling pass can fire at all
-   ([pipe network](../mechanics/pipe-network.md) Gotcha 1).
+   ([pipe network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md) Gotcha 1).
 
 8. **The intake never self-breaks.** Water is not an attachable surface, so the base self-break would destroy
    a freshly placed intake; losing the pond merely disables it (`BlockFluidIntake.cs:81-96`). It also means a

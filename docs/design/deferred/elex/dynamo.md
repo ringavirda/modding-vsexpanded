@@ -1,7 +1,7 @@
 # Dynamo (DC generator)
 
 **Status** deferred   **Would live in** **elex** (Electrical Expanded) - a mod with no project, no asset
-domain and no code   **Deferred by** **D8** ([STATE.md](../../../internal/plans/STATE.md)); the decision, its reasoning and
+domain and no code   **Deferred by** **D8** ([STATE.md](../../../../../docs/plans/STATE.md)); the decision, its reasoning and
 the release target are recorded in [scope.md](../../scope.md)
 
 **Owns**
@@ -25,13 +25,13 @@ the release target are recorded in [scope.md](../../scope.md)
 | The arc furnace and the electrode consumption rate | [arc-furnace.md](arc-furnace.md) |
 | Wire, the extruder and D7 | [wire-extruder.md](wire-extruder.md) |
 | The Tandem Corliss (~36 kW, *(planned)*) | the archived hpex spec (git history) |
-| The live flywheel as hardware, and `mpenergy`'s model | [machines/flywheel-and-shafting.md](../../machines/flywheel-and-shafting.md) · [mechanics/mp-energy.md](../../mechanics/mp-energy.md) |
+| The live flywheel as hardware, and `mpenergy`'s model | [machines/flywheel-and-shafting.md](../../machines/flywheel-and-shafting.md) · [mechanics/mp-energy.md](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/mp-energy.md) |
 | Who needs bearings and why the requirement stops at the Corliss | [machines/bearings.md:241-271](../../machines/bearings.md) |
 | Pure copper as a material | [materials.md](../../materials.md) |
 
 **Depends on** [electrical-grid.md](electrical-grid.md) · [alternator.md](alternator.md) ·
 [scope.md](../../scope.md) · the archived elex and hpex specs ·
-[mechanics/mp-energy.md](../../mechanics/mp-energy.md) ·
+[mechanics/mp-energy.md](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/mp-energy.md) ·
 [machines/flywheel-and-shafting.md](../../machines/flywheel-and-shafting.md) ·
 [machines/bearings.md](../../machines/bearings.md)
 
@@ -168,7 +168,7 @@ Nothing outside elex waits on it. It is a leaf of the ferrous line, not a link i
   Nothing chooses. The two differ in whether the generator is on the mechanical network at all.
 * **"Upgrading removes the MP output" may delete the shop's mechanical reservoir.** If the generator replaces
   the flywheel under reading (a), converting it removes a storage node - and `MpEnergyNetwork.OnTick` nulls
-  the whole network state when `Σ I ≤ 0` ([mechanics/mp-energy.md](../../mechanics/mp-energy.md) § Gotchas,
+  the whole network state when `Σ I ≤ 0` ([mechanics/mp-energy.md](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/mp-energy.md) § Gotchas,
   `MpEnergyNetwork.cs:81-89`). Every consumer on that run then reads `Speed == 0` and stops, with no error
   anywhere. The failure is silent, which R7 ([conventions.md](../../conventions.md)) would not accept: a shop
   that electrifies its engine should be told its rolling mill just lost its drive.
@@ -180,7 +180,7 @@ Nothing outside elex waits on it. It is a leaf of the ferrous line, not a link i
   does not exist; if it is vanilla copper, the subset is real. Full statement of the problem at
   [electrical-grid.md](electrical-grid.md) § Gotchas.
 * **"36 kW at the shaft" has no representation in the live mechanical model.** A producer on `mpenergy`
-  returns a torque-speed curve, not a kW rating ([mechanics/mp-energy.md](../../mechanics/mp-energy.md)
+  returns a torque-speed curve, not a kW rating ([mechanics/mp-energy.md](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/mp-energy.md)
   § Torque governs, not power), and the live calibration puts the whole network's bridge supply at ~2 W. The
   scale gap and what to do about it are on [electrical-grid.md](electrical-grid.md) § How it relates; the
   drive-side specification gap is on [alternator.md](alternator.md) § The prime mover.

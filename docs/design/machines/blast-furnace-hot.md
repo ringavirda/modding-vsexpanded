@@ -25,8 +25,8 @@ model, the taps, tuyeres, yields, pools and drains; the iiex part blocks `iiex:f
 columns draw) · [burdenmaker](burdenmaker.md) (where burden is made) · [burden](../items/burden.md) (the
 ore + flux item and its flux stamp) · [fuels](../items/fuels.md) (coke and charcoal carbon values) ·
 [cowper](cowper.md) (the preheat source) · [smokestack](smokestack.md) (the exhaust sink) ·
-[pipe network](../mechanics/pipe-network.md) · [molten network](../mechanics/molten-network.md) ·
-[multiblock](../mechanics/multiblock.md) · [recipes & config](../mechanics/recipes-config.md) ·
+[pipe network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md) · [molten network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/molten-network.md) ·
+[multiblock](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/multiblock.md) · [recipes & config](../mechanics/recipes-config.md) ·
 [ironmaking](../processes/ironmaking.md) · [cupola](cupola.md) · [density rule](../mechanics/density-rule.md)
 
 ---
@@ -67,7 +67,7 @@ under the shaft. The hot core passes no brick tiers to the shared `BlockFurnaceC
 fragment, so unlike `iiex:furnace-blastcore-{tier}-{side}` it is a single, tier-less block.
 
 Layout authored in the anchor's own north frame with `Origin(-3, -2)` - the negation of the `C` glyph's
-(col, row), per [multiblock](../mechanics/multiblock.md).
+(col, row), per [multiblock](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/multiblock.md).
 
 | Source | Where |
 |---|---|
@@ -152,7 +152,7 @@ which are smex's.
 | bell hopper shape | `mods/siex/assets/siex/shapes/blastfurnace/hopper-bell.json` | live; no animation |
 | charge contents mesh | `iiex:shapes/ore/burden.json`, tesselated at runtime by the reinforced hopper | live - the only moving part either hopper shows |
 | tuyere / tap shapes | iiex - see [cold blast furnace](blast-furnace-cold.md) | |
-| outlet shape | `iiex:pipes/outlet` | see [pipe network](../mechanics/pipe-network.md) |
+| outlet shape | `iiex:pipes/outlet` | see [pipe network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md) |
 
 Editable sources: only `workbench/shapes/furnace-block-hopperreinforced.json` exists. The bell hopper
 has no editable counterpart and cannot be re-edited from source.
@@ -186,7 +186,7 @@ craftable-gear compatibility pattern, not a duplicate.
 Plus the raw structure: 99 `game:refractorybricks-good-tier3` (tier 3 exactly - a tier-1 or tier-2 wall
 will not complete this furnace), 2 × `iiex:furnace-tuyere`, the iron and slag taps and 2 × `iiex:pipe-outlet`
 (all from other mods; their recipes are the [cold blast furnace](blast-furnace-cold.md)'s and
-[pipe network](../mechanics/pipe-network.md)'s).
+[pipe network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md)'s).
 
 ### The core is missing from the recipe-cost catalogue
 
@@ -295,7 +295,7 @@ clears the melt line where the same charge on cold blast stalls short of it - th
 | `CowperIntakeVolume` (SiexConfig.cs:143), the regenerator rates | [cowper](cowper.md) |
 | `SmokestackGasIntakeVolume` (SiexConfig.cs:259) | [smokestack](smokestack.md) |
 | `BlastPressureThreshold`, `AirBlowerOutputPerSecond` | unowned - no page covers the smex air blower yet; see Open #4 |
-| `LitresPerPipe`, burst, leak | [pipe network](../mechanics/pipe-network.md) |
+| `LitresPerPipe`, burst, leak | [pipe network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md) |
 
 ---
 
@@ -306,7 +306,7 @@ clears the melt line where the same charge on cold blast stalls short of it - th
 | core | itself, the same `-{side}` variant |
 | reinforced hopper | itself plus the whole charge stack still in the tank, grade preserved |
 | bell hopper | itself plus the magazine's own stack, grade preserved - the magazine stack is returned directly, never re-minted through an item lookup |
-| tuyere / tap / outlet / brick / frozen pool | see [cold blast furnace](blast-furnace-cold.md) and [pipe network](../mechanics/pipe-network.md) |
+| tuyere / tap / outlet / brick / frozen pool | see [cold blast furnace](blast-furnace-cold.md) and [pipe network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md) |
 
 Breaking the core while lit extinguishes first, so the molten pool freezes onto the crucible rather than
 vanishing - [cold blast furnace](blast-furnace-cold.md).

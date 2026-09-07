@@ -18,7 +18,7 @@ the shared firebox branch's charge model ([heat balance](../mechanics/heat-balan
 
 **Depends on**
 [recoverability](../mechanics/recoverability.md) · [heat balance](../mechanics/heat-balance.md) ·
-[multiblock & filler structures](../mechanics/multiblock.md) ·
+[multiblock & filler structures](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/multiblock.md) ·
 [definitions, recipes & config](../mechanics/recipes-config.md) ·
 [density rule](../mechanics/density-rule.md) · [rolling mill](rolling-mill.md) ·
 [puddling furnace](puddling-furnace.md) (the same chassis, one row shallower) · [firebox](firebox.md) ·

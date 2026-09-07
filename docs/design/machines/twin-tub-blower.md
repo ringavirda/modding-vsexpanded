@@ -12,12 +12,12 @@
 
 **Does not own** - cited only, never restated:
 - The pipe graph, pools, one-medium rule, capacity, burst-by-tier, joints, valves, leaks, the tick order -
-  [pipe network](../mechanics/pipe-network.md).
+  [pipe network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md).
 - `RequiredBlastPressureFor` / `TuyereDrawFor`, the coke→demand mapping, and every `Bf*BlastPressure*`
   constant - [heat balance](../mechanics/heat-balance.md), § Blast demand.
 - The MP network the axle rides, `BEBehaviorMPFillerPort`, speed/angle semantics -
-  [mp-energy](../mechanics/mp-energy.md).
-- Fillers, footprints, the filler-can-never-be-a-graph-node rule - [multiblock](../mechanics/multiblock.md).
+  [mp-energy](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/mp-energy.md).
+- Fillers, footprints, the filler-can-never-be-a-graph-node rule - [multiblock](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/multiblock.md).
 - Code-first defs, recipes, cost catalogue - [recipes-config](../mechanics/recipes-config.md).
 - Hot blast and preheating - [cowper](cowper.md). Steam-age blowers - [engine-watt](engine-watt.md).
 
@@ -66,7 +66,7 @@ can never disagree.
 ### The network connector
 
 The principal is the only graph node: the blower's footprint cells declare no membership, and a cell that
-declares none is not a node ([multiblock](../mechanics/multiblock.md), § A filler cell is a graph node when
+declares none is not a node ([multiblock](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/multiblock.md), § A filler cell is a graph node when
 it declares one). So the blast main must butt
 against the principal cell, on the single face named by the `orientation` variant: `GetConnectorFaces` maps
 each character of `Orientation` through `SideToFace` (`BlockNetworkNode.cs:784-793`,
@@ -79,7 +79,7 @@ the `-n` connector face. See [Gotchas](#gotchas).
 
 Joint family is the shared flanged joint registered for the iiex domain
 (`IronIndustryExpandedModSystem.cs:75`), so the blower couples to plated, cast and rolled segments alike; the
-joint rule is per-tier and owned by [pipe network](../mechanics/pipe-network.md).
+joint rule is per-tier and owned by [pipe network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md).
 
 The blower also carries the shared `MultiblockStructure` behaviour (`:51`) for uniformity. It is not a cell of
 any furnace layout, so the layout-ownership resolver finds no anchor and the projection gesture does nothing
@@ -167,7 +167,7 @@ mechanical network.
 ### HUD - `GetBlockInfo`, `:184-199`
 
 The pipe readout first (medium, throughput, pressure - owned by
-[pipe network](../mechanics/pipe-network.md)), then either `iiex:blower-info-idle`
+[pipe network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md)), then either `iiex:blower-info-idle`
 ("Bellows idle - no axle turning") or `iiex:blower-info-blowing` with the live flow rate formatted through
 `ExMeasure.FlowRate` (`ExMeasure.cs:81`) and the percentage of rated output.
 
@@ -206,7 +206,7 @@ ordering can be checked in one place.
 | rich charge (30 % carbon) demands | 1.25 atm | [heat balance](../mechanics/heat-balance.md) | derived from `IiexConfig.cs:178`, `:185` |
 | standard charge (20 % carbon) demands | 2.0 atm | [heat balance](../mechanics/heat-balance.md) | `IiexConfig.cs:178` (`BfBlastPressureAtReference`) |
 | blower ceiling | 2.2 atm | this page | `IiexConfig.cs:816` |
-| plated pipe burst | 2.5 atm | [pipe network](../mechanics/pipe-network.md) | `IiexConfig.cs:214` |
+| plated pipe burst | 2.5 atm | [pipe network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md) | `IiexConfig.cs:214` |
 | lean charge (10 % carbon) demands | 2.75 atm | [heat balance](../mechanics/heat-balance.md) | derived, same two keys |
 
 ```

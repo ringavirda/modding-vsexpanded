@@ -17,13 +17,13 @@ work   **Mod** iiex
 - The bed-specific open items in § Open.
 
 **Does not own — cited only**
-- [molten network](../mechanics/molten-network.md) — the `IMoltenCell` contract, `BEBehaviorMoltenCell`,
+- [molten network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/molten-network.md) — the `IMoltenCell` contract, `BEBehaviorMoltenCell`,
   the flow driver and how the bed's private copy differs from the network one, `MoltenFlowRate`,
   `MoltenMinFlowAmount`, the hard-coded `PullRatePerTick = 25`, the cooldown/solidify/hardened model, and
   the whole throughput-unification question.
 - [density rule](../mechanics/density-rule.md) — 1 vx³ = 2.5 u, and the pig's 375 u mass.
 - [pig](../items/pig.md) — the pig / pigchunk / pigbit item family and its canonical masses.
-- [multiblock & filler structures](../mechanics/multiblock.md) — the filler footprint system, behaviour-capable
+- [multiblock & filler structures](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/multiblock.md) — the filler footprint system, behaviour-capable
   fillers, and the interaction rerouting the bed's carve/harvest clicks ride on.
 - [recipes & config](../mechanics/recipes-config.md) — code-first block defs, RCC stages, goldens.
 - [molten canal](molten-canal.md) — the run that feeds the bed.
@@ -168,7 +168,7 @@ nearer → farther (`:221`, `:243-258`). An edge exists only where both ends are
 uncarved and shaken-out sand is not a channel, so the heat runs exactly where the player cut it. Cells
 still tick thermally either way, so a stranded charge cools. The edge rule itself is a near-copy of the
 network's with one extra clause - a drain fitting never gives metal back (`:302-303`) - see
-[molten network § the other two copies of the driver](../mechanics/molten-network.md).
+[molten network § the other two copies of the driver](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/molten-network.md).
 
 **Harvest.** Units are denominated greedily into pigs / chunks / bits, conserving mass to within a sub-bit
 crumb (`:416-424`). Slag denominates into `iiex:slagbrick` at one brick per pig cavity (`:475-480`). A
@@ -216,7 +216,7 @@ mold. See Gotcha 2 for what that count gets wrong.
 
 | key | value | file:line | what it does |
 |---|---|---|---|
-| `PullRatePerTick` | *(see [molten network](../mechanics/molten-network.md) § Hard-coded)* | `:44` | hard-coded here, but the value and its conflict with the settled 50 u/s are that page's |
+| `PullRatePerTick` | *(see [molten network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/molten-network.md) § Hard-coded)* | `:44` | hard-coded here, but the value and its conflict with the settled 50 u/s are that page's |
 | server tick | `1000 ms` | `:70` | pull → flow → cool |
 | client tick | `1000 ms` | `:82` | refresh the molten surfaces |
 | surface spin | `Block.Shape.rotateY` | `:485` | the mesh's angle, not `StructureAngle` |

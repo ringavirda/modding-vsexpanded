@@ -1,6 +1,6 @@
 # Arc furnace
 **Status** deferred   **Would live in** `elex` (Electrical Expanded - a mod with no project, no asset domain
-and no code)   **Deferred by** D8 ([STATE.md](../../../internal/plans/STATE.md)) - the release target is the ferrous line,
+and no code)   **Deferred by** D8 ([STATE.md](../../../../../docs/plans/STATE.md)) - the release target is the ferrous line,
 so elex ships after it; the cut itself is [scope](../../scope.md)'s
 
 **Owns**
@@ -36,7 +36,7 @@ It is the one melter that bypasses the fuel/air-blast chain entirely - no coke, 
 
 ## Why it is deferred
 
-D8 ([STATE.md](../../../internal/plans/STATE.md)): the release target is the complete ferrous line, and elex is not on it. The reasoning belongs to [scope](../../scope.md) § The release target.
+D8 ([STATE.md](../../../../../docs/plans/STATE.md)): the release target is the complete ferrous line, and elex is not on it. The reasoning belongs to [scope](../../scope.md) § The release target.
 
 The electrode dependency is not the reason. [scope](../../scope.md) § elex rates electrodes a degraded path, not a wall, because carbon electrodes are in scope and period-correct. The furnace is deferred by release scheduling, not by chemistry.
 
@@ -132,7 +132,7 @@ Both ores are vanilla: `wolframite` appears in vanilla `blocktypes/stone/ore-ung
 | Copper smelting (reverberatory alternative) | — | doubly deferred: the role's whole downstream is non-ferrous ([scope](../../scope.md)) |
 | hpex's HP crusher having a second consumer | minor | without HSS the crusher's chromite output feeds only ferrochrome ([bearings](../../machines/bearings.md):232) |
 
-Nothing in the shipped ferrous line is walled by this machine. It is the ceiling of the tool-material ladder; crucible steel (D9, [STATE.md](../../../internal/plans/STATE.md)) was adopted so the suite had a gear reward that did not wait on elex.
+Nothing in the shipped ferrous line is walled by this machine. It is the ceiling of the tool-material ladder; crucible steel (D9, [STATE.md](../../../../../docs/plans/STATE.md)) was adopted so the suite had a gear reward that did not wait on elex.
 
 ---
 
@@ -140,7 +140,7 @@ Nothing in the shipped ferrous line is walled by this machine. It is the ceiling
 
 * The no-tar chain is not reversible by reopening the coke-oven decision. Both graphite ingredients come from Homestead - oil for petcoke, gasworks for pitch - so adding by-product recovery to the beehive oven does not produce a graphite electrode. [coking](../../processes/coking.md):216-232 draws the chain.
 * The ladle merges nothing today ([ladle](../../machines/ladle.md):13). HSS is a ladle alloy under R3, so the arc furnace inherits whatever state that mechanic is in; it is the same idle-rule problem the tilting crucible has from the non-ferrous side ([scope](../../scope.md)).
-* A latent bootstrap loop sits in the bearing chain ([STATE.md](../../../internal/plans/STATE.md)) - "only HP jaws crack chromite" would make an hpex machine the sole source of a material hpex needs. It is safe today only because chromite is vanilla. HSS puts a second consumer on that same crusher, so if the gate is ever enforced literally, this furnace tightens the loop rather than relieving it.
+* A latent bootstrap loop sits in the bearing chain ([STATE.md](../../../../../docs/plans/STATE.md)) - "only HP jaws crack chromite" would make an hpex machine the sole source of a material hpex needs. It is safe today only because chromite is vanilla. HSS puts a second consumer on that same crusher, so if the gate is ever enforced literally, this furnace tightens the loop rather than relieving it.
 * Its power supply is gated by a different deferred page. Three-phase means three [alternators](alternator.md); alternators need pure copper windings; pure copper needs the [electrolysis cell](electrolysis-cell.md). This machine is not the one to bring forward first - the DC subset ([scope](../../scope.md)) reaches HSS only if the arc furnace can be made to accept a DC or single-phase supply, which nothing has decided.
 * The copper-smelter role has a second owner. The arc route replaces the reverberatory only, leaving the Pierce-Smith → blister → electrolysis chain intact - see [copper reverberatory](../non-ferrous/copper-reverberatory.md) before assuming the electric route shortens anything.
 

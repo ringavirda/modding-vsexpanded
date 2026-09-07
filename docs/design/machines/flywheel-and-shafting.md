@@ -24,12 +24,12 @@ transmission housings. The bevel-gear item still has no recipe.
 the four node contracts, the vanilla-MP bridge and its torque curve, `CoupleRatio`, the direction flag, the
 hub-cell coordinate constants, the transmission's numeric ratios, the 2 % sync throttle, `SpinSpeed` /
 `IsTurning` / `BranchSpinSign`, and every `Mp*` / `Flywheel*` / `ShaftInertia` config key - all
-[mp-energy](../mechanics/mp-energy.md). The filler footprint system, behaviour-capable filler cells and the
-no-filler-graph-node rule - [multiblock](../mechanics/multiblock.md). Code-first defs, RCC mechanics and
+[mp-energy](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/mp-energy.md). The filler footprint system, behaviour-capable filler cells and the
+no-filler-graph-node rule - [multiblock](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/multiblock.md). Code-first defs, RCC mechanics and
 goldens - [recipes & config](../mechanics/recipes-config.md). The one machine that spends the energy -
 [rolling mill](rolling-mill.md).
 
-**Depends on** [mp-energy](../mechanics/mp-energy.md) · [multiblock](../mechanics/multiblock.md) ·
+**Depends on** [mp-energy](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/mp-energy.md) · [multiblock](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/multiblock.md) ·
 [recipes & config](../mechanics/recipes-config.md) · [rolling mill](rolling-mill.md)
 
 ---
@@ -46,7 +46,7 @@ the gearbox, and the only place two separate runs meet.
 
 A flywheel is inertia, not a battery: a drive that cannot out-torque the load plus standing friction never
 spins it up at all, so there is no trickle-charging a pulse. The build ritual that follows - spin the wheel
-up, then roll - is owned by [mp-energy](../mechanics/mp-energy.md).
+up, then roll - is owned by [mp-energy](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/mp-energy.md).
 
 At iron tier the prime mover is vanilla, a waterwheel or windmill bridged through the flywheel's hub, so
 mechanical power exists long before a boiler does; in iiex the player swaps the producer for an engine and
@@ -92,7 +92,7 @@ place an axle against the hub at all. Placement refuses unless the entire disc v
 is ever orphaned (`:179-190`).
 
 The hub-cell coordinates and the fact that the BE duplicates them by hand are owned by
-[mp-energy](../mechanics/mp-energy.md).
+[mp-energy](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/mp-energy.md).
 
 ### Shaft and bevel — one cell each
 
@@ -126,7 +126,7 @@ X-slice, S→N       -  i      i = the quarter-block clutch-lever cell (1,1,0)
 
 The principal reads the `mpenergy` network on the cell in front and the cell behind it and projects
 them onto the gear constraint without ever merging them. That it is not a graph node - and why it must not
-become one - is owned by [mp-energy](../mechanics/mp-energy.md), as are the ratios and the constraint maths.
+become one - is owned by [mp-energy](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/mp-energy.md), as are the ratios and the constraint maths.
 
 The lever interaction is localised to the `(1,1,0)` filler, rotated to the placed side
 (`BlockEntityTransmission.cs:91-95`). Every other click on a built transmission is swallowed so nothing can
@@ -148,7 +148,7 @@ be placed against it; clicks before construction fall through to the RCC behavio
 | Bevel-gear item | `iiex:item/gearbevel` (`mods/iiex/assets/iiex/shapes/item/gearbevel.json`) | - | - | - |
 
 Every clip is authored as one revolution of its reference shaft; the playback convention that depends on
-that is owned by [mp-energy](../mechanics/mp-energy.md).
+that is owned by [mp-energy](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/mp-energy.md).
 
 **Animation wiring**
 
@@ -229,7 +229,7 @@ bridge feeds the run. There are no verbs - no clicks, no inventory, no configura
 gauge: the disc turns at the run's speed, so its visible rate is the reservoir's charge
 (`BlockEntityFlywheel.cs:151-188`), and looking at it prints charge / speed / supply / draw
 (`:284-310`). The block-info values, the throttled sync that carries them to clients, and what each means are
-owned by [mp-energy](../mechanics/mp-energy.md).
+owned by [mp-energy](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/mp-energy.md).
 
 Both sizes are `stackSize 1` and `SolidNonOpaque` - the disc is authored larger than its cell, so the placed
 cell must stay solid without culling its neighbours' faces (`BlockFlywheel.cs:103`, `:126`).
@@ -261,7 +261,7 @@ The lever hint is shown only on a built clutch's lever cell (`BlockTransmission.
 ## Numbers
 
 Every simulation constant - inertias, bridge torque, friction, ω_max, mesh loss, ratios, tick intervals, sync
-thresholds, hub coordinates - is owned by [mp-energy](../mechanics/mp-energy.md) § Numbers. What follows is
+thresholds, hub coordinates - is owned by [mp-energy](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/mp-energy.md) § Numbers. What follows is
 the block half only.
 
 ### Flywheel — `BlockFlywheel.cs`
@@ -324,7 +324,7 @@ the block half only.
 | Shaft | the shaft (default drop, `stackSize 64`) |
 | Bevel | the shaft it was made from + one `iiex:bevelgear` - an explicit `GetDrops` override, so the conversion is fully reversible (`BlockCastIronBevel.cs:118-135`). The shaft variant is reconstructed from `Orientation`, defaulting to `ns` |
 | Transmission | nothing from the block. The RCC behaviour scatters whatever construction materials went in (`BlockTransmission.cs:52`, `:219-225`) |
-| A transmission filler | routes to the principal, per the shared filler system ([multiblock](../mechanics/multiblock.md)) |
+| A transmission filler | routes to the principal, per the shared filler system ([multiblock](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/multiblock.md)) |
 
 ---
 
@@ -347,12 +347,12 @@ the block half only.
 | `BlockTransmission` | `Blocks/BlockTransmission.cs:29` | `BlockFilledMegastructure` + `IFillerInteractionTarget`; `HandleInteract` at `:116-136` |
 | `BlockEntityTransmission` | `BlockEntities/BlockEntityTransmission.cs:35` | `BlockEntityProductionMachine`; `IsLeverCell` (`:91-95`), `ToggleEngaged` (`:99-106`), `UpdateSpin` (`:146-175`) |
 | `BevelGearItemDefinitions` | `Items/BevelGearItemDefinitions.cs:10` | the gear item |
-| `EnergyAnim` | `BlockNetworkEnergy/EnergyAnim.cs:10` | pure motion conventions - owned by [mp-energy](../mechanics/mp-energy.md) |
+| `EnergyAnim` | `BlockNetworkEnergy/EnergyAnim.cs:10` | pure motion conventions - owned by [mp-energy](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/mp-energy.md) |
 
 ### Where a caller hooks in
 
 To put a machine on the run, or to add a producer or storage node, follow
-[mp-energy](../mechanics/mp-energy.md) § Where a caller hooks in; the contracts are that page's, not
+[mp-energy](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/mp-energy.md) § Where a caller hooks in; the contracts are that page's, not
 this one's.
 
 What belongs here: a machine that needs to bridge vanilla MP copies the flywheel's hub pattern - a
@@ -361,7 +361,7 @@ footprint cell declared with `Host('M', new FillerBehaviorSpec("exlib.BEBehavior
 blower uses the same idiom.
 
 A machine that must span cells and still conduct needs dedicated invisible node blocks, not fillers -
-the rolling mill's axle cells ([rolling mill](rolling-mill.md), [multiblock](../mechanics/multiblock.md)).
+the rolling mill's axle cells ([rolling mill](rolling-mill.md), [multiblock](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/multiblock.md)).
 
 ### Tests
 
@@ -393,12 +393,12 @@ the rolling mill's axle cells ([rolling mill](rolling-mill.md), [multiblock](../
   (`BlockEntityCastIronBevel.cs:46`, `:84-89`). Correct today (the geometry per face is fixed), but a
   texture or shape reload will not reach it.
 - The clutch has no readout beyond the lever pose. Owned as an open question by
-  [mp-energy](../mechanics/mp-energy.md); the lever cell is a quarter-block filler and easy to miss when
+  [mp-energy](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/mp-energy.md); the lever cell is a quarter-block filler and easy to miss when
   looking at the machine.
 - `BlockFlywheel.cs:28-29` says "The spin animation and any producers that spend the stored energy are
   follow-ups; until one lands the run simply sits idle." Both landed. Stale class doc.
 - `BlockEntityFlywheel.cs:55` says "The shaft speed is unused for now" and the parameter is genuinely
-  ignored. True, and flagged as open by [mp-energy](../mechanics/mp-energy.md); the method's signature
+  ignored. True, and flagged as open by [mp-energy](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/mp-energy.md); the method's signature
   implies a droop curve that does not exist.
 - The flywheel's `Inertia` and the bridge's torque read config live, so a `/exmod config` retune takes
   effect on the next tick with no rebuild - but the wheel's capacity is derived, so retuning inertia
@@ -424,4 +424,4 @@ the rolling mill's axle cells ([rolling mill](rolling-mill.md), [multiblock](../
 - Re-export the runtime shapes from the new editable sources, then delete the retired ones from the
   index.
 - Framework-level gaps - pulsed supply, bridge speed droop, driving back into vanilla MP, the governor and
-  over-speed burst - are owned by [mp-energy](../mechanics/mp-energy.md) § Open.
+  over-speed burst - are owned by [mp-energy](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/mp-energy.md) § Open.

@@ -22,9 +22,9 @@
 **Does not own** - cited only, never restated:
 [heat balance](../mechanics/heat-balance.md) (the `T_process` law, the raceway rate model and every
 carbon/gas constant, the derived state, blast demand) ·
-[molten network](../mechanics/molten-network.md) (canal start, flow, per-cell capacity, back-pressure) ·
-[pipe network](../mechanics/pipe-network.md) (the blast main the tuyeres draw from, pressure, burst) ·
-[multiblock](../mechanics/multiblock.md) (the layout DSL, origin-is-negation, fillers, the build
+[molten network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/molten-network.md) (canal start, flow, per-cell capacity, back-pressure) ·
+[pipe network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md) (the blast main the tuyeres draw from, pressure, burst) ·
+[multiblock](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/multiblock.md) (the layout DSL, origin-is-negation, fillers, the build
 outline) · [recipes & config](../mechanics/recipes-config.md) (code-first defs, goldens, recipe costs) ·
 [burden](../items/burden.md) (the ore + flux item and its flux bands) · [fuels](../items/fuels.md)
 (coke and charcoal, carbon values) · [ironmaking](../processes/ironmaking.md) (the process chain,
@@ -42,7 +42,7 @@ that handles iron either re-melts metal that is already metal ([cupola](cupola.m
 ([puddling furnace](puddling-furnace.md)) or refines it downstream (smex).
 
 Charged in alternating courses of fuel and [burden](../items/burden.md), it hands liquid metal straight
-into a [molten canal](../mechanics/molten-network.md); no ingot becomes an inventory item on the way
+into a [molten canal](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/molten-network.md); no ingot becomes an inventory item on the way
 out. It costs a 160-cell structure, a blast main kept pressurised, and the fuel : burden ratio of every
 course laid.
 
@@ -66,7 +66,7 @@ Nothing of this exists in `src/`.
 Anchor: `iiex:furnace-blastcore-{tier}-{side}` at the bottom centre of the furnace, in the hearth floor
 directly under the shaft. The layout is authored in the anchor's own north frame with `Origin(-3, -2)`,
 the negation of the `C` glyph's (col, row) so the core lands on its own (0, 0, 0) - see
-[multiblock](../mechanics/multiblock.md).
+[multiblock](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/multiblock.md).
 
 Source of truth: the nine ASCII cross-sections in `BlockBlastFurnaceCoreCold.cs` (y = 0 hearth floor →
 y = 8 open stack; the open top is the cold furnace's chimney - it takes no exhaust outlets). Golden:
@@ -223,8 +223,8 @@ tuyere are pinned to tier 3.
 
 | In | Out |
 |---|---|
-| fuel courses (coke or charcoal) and [burden](../items/burden.md) courses, dripped by the hopper | molten pig iron down the lower tap into a [canal start](../mechanics/molten-network.md) |
-| pressurised air at both tuyeres, off the [twin-tub blower](twin-tub-blower.md) through the [pipe network](../mechanics/pipe-network.md) | molten slag down the upper tap |
+| fuel courses (coke or charcoal) and [burden](../items/burden.md) courses, dripped by the hopper | molten pig iron down the lower tap into a [canal start](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/molten-network.md) |
+| pressurised air at both tuyeres, off the [twin-tub blower](twin-tub-blower.md) through the [pipe network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md) | molten slag down the upper tap |
 | | on extinguish: the pool frozen as `iiex:hearthmetal-pigiron` on the hearth floor, plus burnt-out salvage in the columns |
 
 ### The player's verbs
@@ -324,8 +324,8 @@ by carbon burned at the raceway ([heat balance](../mechanics/heat-balance.md)).
 | burden composition, the three flux bands, stack size | [burden](../items/burden.md) |
 | fuel carbon values (coke 2, charcoal 1) | [fuels](../items/fuels.md) |
 | `BfBurnoutFuelRetainedBottom` / `Top`, the recovery ladder | [ironmaking](../processes/ironmaking.md) |
-| `MoltenFlowRate`, canal/start capacities, cooldown | [molten network](../mechanics/molten-network.md) |
-| pipe burst pressure, litres, leak | [pipe network](../mechanics/pipe-network.md) |
+| `MoltenFlowRate`, canal/start capacities, cooldown | [molten network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/molten-network.md) |
+| pipe burst pressure, litres, leak | [pipe network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md) |
 | `TwinTubBlowerOutputPerSecond`, `TwinTubBlowerMaxPressure` | [twin-tub-blower](twin-tub-blower.md) |
 | `CupolaChargeMetalUnitsPerBlock`, cupola melt point and unit scale | [cupola](cupola.md) |
 
@@ -370,7 +370,7 @@ by carbon burned at the raceway ([heat balance](../mechanics/heat-balance.md)).
 * A new blast source implements `IPipeNode` and is joined to the tuyere cells; the furnace only calls
   `TryConsume` and reads `Medium` / `Pressure` / `Temperature`.
 * A new destination for the tap implements the canal-start contract
-  ([molten network](../mechanics/molten-network.md)); `TryPourMetal` returns accepted and the pool is
+  ([molten network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/molten-network.md)); `TryPourMetal` returns accepted and the pool is
   decremented by exactly that, so a partial accept is safe.
 
 ### Tests

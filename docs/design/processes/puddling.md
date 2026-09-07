@@ -29,7 +29,7 @@ the stroke cooldown and the ball count are play-tuning numbers, and none of it h
 | where pigs come from, and the bed rotation that supplies them | [blast furnace](../machines/blast-furnace-cold.md), [casting bed](../machines/casting-bed.md) |
 | the other pig consumer, and pig remelt | [cupola](../machines/cupola.md) |
 | where the wrought stock goes, and the reheat/handling limits it must respect | [reheat furnace](../machines/reheat-furnace.md), [rolling mill](../machines/rolling-mill.md), [recoverability](../mechanics/recoverability.md) |
-| filler footprints, interaction rerouting, the completion walk | [multiblock & fillers](../mechanics/multiblock.md) |
+| filler footprints, interaction rerouting, the completion walk | [multiblock & fillers](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/multiblock.md) |
 | code-first defs, grid recipes, goldens, config layout | [recipes & config](../mechanics/recipes-config.md) |
 
 **Depends on** [puddling furnace](../machines/puddling-furnace.md) ·

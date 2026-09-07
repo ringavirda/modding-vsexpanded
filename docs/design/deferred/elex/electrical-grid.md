@@ -1,7 +1,7 @@
 # Electrical grid (AC + DC)
 
 **Status** deferred   **Would live in** elex (Electrical Expanded) - a mod with no project, no asset
-domain and no code   **Deferred by** D8 ([STATE.md](../../../internal/plans/STATE.md)) - the release target is the
+domain and no code   **Deferred by** D8 ([STATE.md](../../../../../docs/plans/STATE.md)) - the release target is the
 complete ferrous line, so elex is out of it; the decision and its reasoning are recorded in
 [scope.md](../../scope.md) § The release target and § elex
 
@@ -21,13 +21,13 @@ grid-hardware block set, and how all of that relates to and diverges from the li
 | The electrolysis cell, its bath and its anode | [electrolysis-cell.md](electrolysis-cell.md) |
 | Wire, the extruder and D7 | [wire-extruder.md](wire-extruder.md) |
 | The Tandem Corliss and every hpex number | the archived hpex spec (git history); the figures survive on these pages |
-| The live mechanical network's model, numbers and code | [mechanics/mp-energy.md](../../mechanics/mp-energy.md) |
+| The live mechanical network's model, numbers and code | [mechanics/mp-energy.md](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/mp-energy.md) |
 | R1–R7, the network-family list, the block-size vocabulary | [conventions.md](../../conventions.md) |
 | Pure copper and HSS as materials | [materials.md](../../materials.md) |
 
 **Depends on** [scope.md](../../scope.md) · the archived elex and hpex specs ·
-[mechanics/mp-energy.md](../../mechanics/mp-energy.md) ·
-[mechanics/pipe-network.md](../../mechanics/pipe-network.md) ·
+[mechanics/mp-energy.md](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/mp-energy.md) ·
+[mechanics/pipe-network.md](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md) ·
 [conventions.md](../../conventions.md) · [dynamo.md](dynamo.md) · [alternator.md](alternator.md)
 
 ---
@@ -119,7 +119,7 @@ constant-power sinks pulled toward return.
 | Source ceiling | the driving engine, not the wire. Demand past the Corliss's max stalls the engine and drops the whole network - and any shared MP load - at once |
 
 Brownout is emergent from the sag equation the way a stall is emergent from the sign of `τ_net`
-([mechanics/mp-energy.md](../../mechanics/mp-energy.md) § The integration step), and cable melt is the
+([mechanics/mp-energy.md](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/mp-energy.md) § The integration step), and cable melt is the
 electrical version of the pipe's burst - the consequence of ignoring a readable number, per R5
 ([conventions.md](../../conventions.md)).
 
@@ -149,7 +149,7 @@ electrical version of the pipe's burst - the consequence of ignoring a readable 
 | Wire extruder | megablock | MP-driven, not electric (needs iiex MP): copper rod/plate → wire, impure or pure |
 
 The wire extruder is the one block on this list that needs no grid to work - it is an MP machine. Under D7
-([STATE.md](../../../internal/plans/STATE.md)) wire lives in elex, which is what puts it on this table at all.
+([STATE.md](../../../../../docs/plans/STATE.md)) wire lives in elex, which is what puts it on this table at all.
 
 ### The numbers, and they are self-consistent
 
@@ -169,7 +169,7 @@ it, including the "one dynamo = one cell" identity the bootstrap loop is built o
 
 ## How it relates to `mpenergy` — and where it diverges
 
-The live [MP energy network](../../mechanics/mp-energy.md) is the closest thing in the repo to what elex
+The live [MP energy network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/mp-energy.md) is the closest thing in the repo to what elex
 wants, and close enough to mislead. The two model different physics and would not share a solver.
 
 | | **`mpenergy`** *(live)* | **elex grid** *(deferred)* |
@@ -191,7 +191,7 @@ semantics of `BEBehaviorEngineMPGenerator` (`torque = budget / speed`, settles a
 stalls past ~2× rated), which is the model `mpenergy` superseded.
 
 Under the live model there is no such cliff and no such rating: a producer returns `DriveTorque(ω)`, not kW
-([mechanics/mp-energy.md](../../mechanics/mp-energy.md) § Torque governs, not power), an over-drawn run winds
+([mechanics/mp-energy.md](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/mp-energy.md) § Torque governs, not power), an over-drawn run winds
 down rather than dropping, and a flywheel on the run buffers the excursion. So the rule has to be either
 ported (the generator becomes an `IMpEnergyConsumer` whose electrical demand is a `LoadTorque`, and
 "stalling the engine" becomes the ordinary ω→0 stall) or kept deliberately as a different family's rule.
@@ -201,7 +201,7 @@ only in the archived elex/hpex specs and nowhere in the mechanical design - is
 
 ### And the two models are 4 orders of magnitude apart
 
-`mpenergy`'s live calibration ([mechanics/mp-energy.md](../../mechanics/mp-energy.md) § Numbers):
+`mpenergy`'s live calibration ([mechanics/mp-energy.md](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/mp-energy.md) § Numbers):
 `MpMaxSpeed = 2.0` rad/s (`mods/exlib/src/ExlibConfig.cs:98`) and `FlywheelBridgeChargePower = 1.0` N·m
 (`mods/iiex/src/IiexConfig.cs:467`). One bridge at full speed therefore supplies
 τ·ω = 1 × 2 = 2 W, of which friction takes `0.05·2 + 0.5 = 0.6` N·m, leaving 0.8 W of usable headroom -
@@ -259,7 +259,7 @@ never touches the shaft network, is a prerequisite to either generator page.
 * **Cycles.** The DC model is a tree and nothing on the exlib graph forbids a player closing a cable ring.
   Every existing family is loop-indifferent because it pools a single state; a circuit is not. Either the
   traversal spans a tree and ignores the closing edge, or the joint rule refuses it the way the pipe tiers
-  refuse a mismatched flange ([mechanics/pipe-network.md](../../mechanics/pipe-network.md)).
+  refuse a mismatched flange ([mechanics/pipe-network.md](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md)).
 * **The synchroniser is given two different jobs.** The archived elex spec and the block table row describe
   it as paralleling - lock two alternators to the same phase and share load. The same spec then builds
   three-phase from "three synchronised single-phase ones 120° apart", which is the opposite constraint:
