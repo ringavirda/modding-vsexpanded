@@ -511,6 +511,10 @@ over both trees. `RepoPaths` and `RepoManifest` resolve which tree is whose from
 [Testing API Reference](Testing-API-Reference)): a mod, a sample and a plain `mods/<id>` fallback all
 resolve the same way, so these four checks read the same whether `exmod.json` exists or not.
 
+`dotnet new exlib-tests` scaffolds two of the four against `YourModProject`'s own tree -
+`Invariants/ShippedAssetJsonTests.cs` and `Localization/LangParityTests.cs` - trivially true (no
+files found, no failure) until the scaffolded mod ships assets and a translated locale to check.
+
 ### Reflection scans: `RegistryLawScanner` and `ResourceInvariant`
 
 A law that must hold for every concrete subclass of some base type - wherever it is declared, not

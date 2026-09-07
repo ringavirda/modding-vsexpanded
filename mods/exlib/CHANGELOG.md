@@ -282,6 +282,12 @@ see the git history.
 
 ### Changed
 
+- The `ExpandedLib` package now carries the config and lang source generators (packed as analyzers
+  under `analyzers/dotnet/cs/`) and the MSBuild plumbing behind `GamePath` resolution, provisioning,
+  asset globs and version stamping (packed under `build/`), so a consumer references one package and
+  needs no props of its own beyond a `TargetFramework`. Package versions for `ExpandedLib`,
+  `ExpandedLib.Industry` and `ExpandedLib.Testing` are central, in `Directory.Packages.props` at the
+  repo root, read once from `modinfo.json`.
 - The framework no longer names its consumers' test assemblies: `InternalsVisibleTo` on `exlib.dll`
   grants only `ExpandedLib.Tests` and `ExpandedLib.Testing`. The internal seams `IronIndustryExpanded.Tests`
   and `SteelIndustryExpanded.Tests` reached directly now go through harness hooks

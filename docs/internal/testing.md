@@ -197,10 +197,10 @@ Two traps worth knowing, both of which fail *quietly*:
   .EveryCollectionNameHasADefinition` (`ExpandedLib.Testing`) catches it, and each suite calls it from
   one `CollectionGuardTests` fact.
 
-Two source-tree guards live in `ExpandedLib.Tests` rather than per-mod, because they discover every
-domain from the source tree and so cover a new mod automatically: `LangParityTests` (locale key sets +
-format placeholders) and `HandbookParityTests` (shipped handbook text vs its `docs/<mod>/handbook/*.html`
-source - `EXLIB_WRITE_HANDBOOK=1` to import, `EXLIB_EXPORT_HANDBOOK=1` to write back the other way).
+`HandbookParityTests` lives in `ExpandedLib.Tests` rather than per-mod, because it discovers every
+domain from the source tree and so covers a new mod automatically: shipped handbook text vs its
+`docs/<mod>/handbook/*.html` source - `EXLIB_WRITE_HANDBOOK=1` to import, `EXLIB_EXPORT_HANDBOOK=1`
+to write back the other way.
 
 ## Packaging and release
 

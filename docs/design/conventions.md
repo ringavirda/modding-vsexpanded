@@ -255,6 +255,9 @@ for it first, not by its base class - `BlockNetworkNode` sits in `Networks/` bes
 because a modder building a network wants both. The retired rule split each family across a
 model folder and a `Blocks/` shell folder and asked consumers to import both; the split is gone.
 
+`exmod.json` at the repo root names this repo's own mods, samples and test projects; `RepoPaths`
+and `exmod` read it, falling back to the `mods/<id>` convention where the file is absent.
+
 `mods/exlib/testing` is one namespace, `ExpandedLib.Testing`, laid out the same way: `World/` (the
 fake world and its blocks), `Scenes/` (the layout DSL), `Rigs/` (drivers for machines and
 structures), `Doubles/` (stand-ins), `Checks/` (the validators), `Repo/` (this repository's own

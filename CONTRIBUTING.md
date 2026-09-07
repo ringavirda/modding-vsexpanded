@@ -49,6 +49,23 @@ machine
   fix-registry    repoint Windows' Vintage Story file association (Windows only)
 ```
 
+### The manifest, central versions, the solution filter
+
+`exmod.json` at the repo root names this repo's own mods, samples and test projects; `RepoPaths`
+and `exmod` read it and fall back to the `mods/<id>` convention where it is silent. Every
+`PackageReference` version in the repo (exlib's own test projects, the harness, the generators,
+`infra/tools/ExlibVerify*`, both samples) comes from `Directory.Packages.props` at the root -
+central package management, one number per package, no `Version` attribute at the reference site.
+`exlib.slnf` is the solution filter scoped to exlib itself: its projects, the generators, the
+harness, exlib's tests and both samples with their tests, none of `mods/iiex`, `mods/siex` or
+`infra/` - `dotnet build exlib.slnf` is the fast loop for exlib work alone.
+
+A project referencing `ExpandedLib` builds in one of two modes, switched on `$(ExlibRoot)`: source
+mode (inside this repo, or a workspace checkout with `ExlibRoot` set) references the checked-out
+projects directly; package mode (`-p:ExlibRoot=`, the default outside the repo) restores the
+`ExpandedLib` NuGet package, which carries the generators as analyzers and the `build/` plumbing
+alongside the dll.
+
 ### The API patch
 
 `provision game` runs `infra/tools/patch-api.cs` over the provisioned

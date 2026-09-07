@@ -5,7 +5,7 @@
 > (the main session), one per green task, short messages. Do not run `exmod format`; match the
 > surrounding style by hand. Record each task in Progress at the bottom when its gate is green.
 
-**Status** written 2026-09-06, not started. Step 2 of
+**Status** complete 2026-09-07. Step 2 of
 [2026-09-06-repo-restructure.md](2026-09-06-repo-restructure.md): rulings B1, R1 (prepared in the
 sample), E5, and the tidy named in its order of work. Runs after the module-system plan.
 
@@ -596,3 +596,37 @@ link check in `exmod check` clean.
   (3/3) and `HarnessSurfaceTests` (73/73) both green; `command grep -rn "InternalsVisibleTo" mods/exlib/src
   mods/exlib/industry` names only `ExpandedLib.Tests` (both files) and `ExpandedLib.Testing`
   (`mods/exlib/src` only) - no consumer test assembly anywhere.
+
+- **Task 6** (2026-09-07): `mods/exlib/README.md`'s Building section now states the two modes
+  (source, inside this repo or a workspace with `ExlibRoot` set; package, from NuGet with
+  `-p:ExlibRoot=`) and what the package carries. `Getting-Started.md`'s "Reference exlib at compile
+  time" already read right from Task 3 (the `PackageReference`-only shape, no repo-layout section to
+  add the manifest to) and needed no change. `Testing-Harness.md`'s "Repo-wide guards, per mod"
+  gained one paragraph naming the template's two scaffolded guard files
+  (`Invariants/ShippedAssetJsonTests.cs`, `Localization/LangParityTests.cs`).
+  `docs/design/conventions.md` gained one sentence under the layout rule on `exmod.json` naming the
+  repo's mods, samples and test projects, read by `RepoPaths` and `exmod` (the `build/` row itself
+  was already there, from Task 2). `docs/internal/testing.md`'s per-mod-guards/manifest paragraph
+  was already there from Task 4; found and fixed one line left stale by that task - "two source-tree
+  guards live in `ExpandedLib.Tests` rather than per-mod" still named `LangParityTests`, which Task 4
+  moved to a per-mod thin fact, alongside `HandbookParityTests`, which is still whole-repo. `CONTRIBUTING.md`
+  gained one subsection ("The manifest, central versions, the solution filter") under "Running
+  things" covering `exmod.json`, `Directory.Packages.props`, `exlib.slnf` and the two build modes.
+  `mods/exlib/CHANGELOG.md` gained one `[Unreleased]`/Changed bullet on the package now carrying the
+  generators and build plumbing and central versions, ahead of Task 5's existing `InternalsVisibleTo`
+  bullet - the two read as one entry on what a consumer now gets from one package reference.
+  `docs/internal/README.md`'s row for this plan is now `complete 2026-09-07`. One worklog entry added
+  at the top of `docs/internal/worklog/2026-09.md`, dated 2026-09-07.
+
+  Deviation found while checking `mods/exlib/README.md`: three wiki links in its existing prose
+  (`[Modules](../wiki/Modules.md)` and two more) resolved to `mods/wiki/*.md`, one level above the
+  real `mods/exlib/wiki/`, predating this task (introduced in the monorepo restructure, not touched
+  by Tasks 1-5). Fixed to `wiki/*.md` so the link check this task's gate runs is clean, rather than
+  carrying a known-broken link past a task whose own gate is a link check.
+
+  Gate green: `bash scripts/exmod.sh test latest` all six lanes at the Task 5 counts
+  (11/1817/4/4/2461/348) - `WikiParityTests`, `PublicSurfaceTests` and `HarnessSurfaceTests` all pass
+  inside that run, since none of this task's edits touched a symbol those guards check. A manual
+  relative-link check (script, not `exmod check`, which needs a provisioned game) over every file
+  this task modified plus every page under `mods/exlib/wiki/`: 32 files, every `[text](target)`
+  resolved, including the three fixed above.

@@ -49,20 +49,20 @@ of its own - install it because another mod depends on it.
   extends the framework or a mod built on it without carrying a `ModSystem` of its own, driven
   through a host mod's lifecycle instead: `ExpandedLib.Industry` is the first, shipped inside this
   mod's own folder; a third party's own mod can be one too, depending on exlib. See the wiki's
-  [Modules](../wiki/Modules.md) page.
+  [Modules](wiki/Modules.md) page.
 
 ## Start from the sample
 
 `samples/HelloExpanded` is a third-party mod written against this library end to end: a block, a
 saved counter, a config value and a command, plus two headless tests, all in the shapes the wiki's
-[Getting Started](../wiki/Getting-Started.md) walk teaches. It builds and boots like any other mod
+[Getting Started](wiki/Getting-Started.md) walk teaches. It builds and boots like any other mod
 here (`dotnet build VintageStory.sln`, `exmod smoke`) - read it alongside the wiki rather than typing
 its snippets by hand.
 
 ## What is supported
 
 `ExpandedLib.*` outside `ExpandedLib.Industry` is the supported contract: every public type
-there is listed on the wiki's [Supported API](../wiki/Supported-API.md) page, and a public type
+there is listed on the wiki's [Supported API](wiki/Supported-API.md) page, and a public type
 missing from that list has been hidden from IntelliSense with `[EditorBrowsable(Never)]` because
 the engine has to see it, not because a mod is meant to call it. `ExpandedLib.Industry` is also
 public, but it is the family's own content layer and changes without notice.
@@ -90,6 +90,17 @@ None of them carries the game's own assemblies: a consuming project references
 At runtime the player installs this mod, and the game loads it like any other dependency.
 
 ## Building
+
+A project resolves `exlib` one of two ways, switched on `$(ExlibRoot)`. Source mode - inside this
+repo, or a workspace checkout with `ExlibRoot` pointing at it - builds against the checked-out
+`ExpandedLib.csproj`/`ExpandedLib.Generators.csproj` directly, so exlib's own change history builds
+against itself with no release round-trip. Package mode - `-p:ExlibRoot=` (empty), the default
+outside this repo - restores the `ExpandedLib` NuGet package instead, which carries `exlib.dll`,
+its XML docs, the generators packed as analyzers under `analyzers/dotnet/cs/`, and the `build/`
+plumbing (`ExpandedLib.props`/`.targets`: `GamePath` resolution, provisioning, asset globs, version
+stamping) that NuGet imports into the consuming project automatically. Central package versions for
+`ExpandedLib`, `ExpandedLib.Industry` and `ExpandedLib.Testing` live once, in `Directory.Packages.props`
+at the repo root.
 
 ```sh
 dotnet build mods/exlib/src/ExpandedLib.csproj        # the framework
