@@ -282,6 +282,11 @@ see the git history.
 
 ### Changed
 
+- The framework no longer names its consumers' test assemblies: `InternalsVisibleTo` on `exlib.dll`
+  grants only `ExpandedLib.Tests` and `ExpandedLib.Testing`. The internal seams `IronIndustryExpanded.Tests`
+  and `SteelIndustryExpanded.Tests` reached directly now go through harness hooks
+  (`MachineTestHooks`, `StructureTestHooks`, `NetworkNodeTestHooks` - see
+  [Testing API Reference](wiki/Testing-API-Reference.md)) instead.
 - ⛔ **Breaking: `ExpandedLib.Industry` is its own assembly and its own NuGet package.** The
   family's content layer - pipes, molten metal, mechanical power, metals, heat - now builds as
   `exlib.industry.dll` from `mods/exlib/industry/`, and ships beside `exlib.dll` inside the same

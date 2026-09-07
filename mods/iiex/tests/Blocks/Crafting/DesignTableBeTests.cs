@@ -20,22 +20,16 @@ public class DesignTableBeTests {
   private const string Paper = "game:paper";
   private const string Tuyere = "iiex:diagram-tuyere";
 
-  /// <summary>
-  /// The real design table with the engine's interaction-range test switched off. On 1.22 the station's
-  /// access check runs <c>CachedAccessPerms</c>, which asks the engine whether the player is in range of
-  /// the block - and a substitute <see cref="IPlayer"/> is never in range of anything, so every packet
-  /// route would be rejected before it was reached. Nothing else about the access check is changed: the
-  /// claim check below still decides, which is what the rejection tests turn on.
-  /// </summary>
-  private sealed class ReachableDesignTable : BlockEntityDesignTable {
-    internal override bool ValidatePickRange => false;
-  }
-
   private static BlockEntityDesignTable Table(TestWorld world, BlockPos pos) {
-    var be = new ReachableDesignTable {
+    var be = new BlockEntityDesignTable {
       Pos = pos,
       Block = TestBlocks.Configure(new Block(), "iiex:designtable", 100),
     };
+    // On 1.22 the station's access check runs CachedAccessPerms, which asks the engine whether the
+    // player is in range of the block - and a substitute IPlayer is never in range of anything, so
+    // every packet route would be rejected before it was reached. Nothing else about the access check
+    // is changed: the claim check below still decides, which is what the rejection tests turn on.
+    be.DisablePickRangeCheck();
     world.Place(pos, be.Block, be);
     world.Initialize(be); // runs the real Initialize so the inventory captures the API
     return be;

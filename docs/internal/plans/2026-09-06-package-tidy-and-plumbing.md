@@ -531,3 +531,68 @@ link check in `exmod check` clean.
   -v q` all zero warnings; `test latest` six lanes green at the counts above
   (11/1814/4/4/2461/348); the deliberate-error check; `HarnessSurfaceTests` green (67/67, folded into
   the exlib lane total).
+
+- **Task 5** (2026-09-07): Derived list. Removing the two `InternalsVisibleTo` entries and building
+  `mods/iiex/tests` and `mods/siex/tests` (serially) surfaced five members, each already doc-commented
+  "Test seam" at its declaration:
+  - `BlockEntityMachineStation.ValidatePickRange` (CS0115 - an override, not a plain reference: a
+    headless test's `ReachableDesignTable : BlockEntityDesignTable` subclass turned it off)
+  - `BlockNetworkNode.SetNetworkTypeForTest`/`.ApplyOrientationForTest` (CS1061, on eleven concrete
+    node block types across both mods: `BlockCastIronShaft`, `BlockCastIronBevel`, `BlockFlywheel`,
+    `BlockMoltenCanal`, `BlockPipe`, `BlockPressureValve`, `BlockRollingMill`,
+    `BlockRollingMillAxle`, `BlockTuyere`, `BlockTwinTubMPBlower`, `BlockFluidIntake`)
+  - `BEBehaviorProductionMachine.DriveProductionTick` and `BlockEntityProductionMachine.DriveProductionTick`
+    (CS1061, on `BEBehaviorProductionMachine` itself and on `BlockEntityBoilerCornish`)
+  - `BlockEntityMultiblockStructure.ApplyStructureRotation` (CS1061, on `BlockEntityBlastFurnaceCold`
+    and on a generic `Furnace<T>() where T : BlockEntityFurnaceCore, new()` helper - the constraint
+    already carries the base type, so the harness needed no generic helper of its own, per the trap).
+
+  Deriving the full list needed one build-order workaround, noted here rather than guessed around:
+  `mods/iiex/tests`'s single CS0115 (the override) stopped the compiler from reporting any other
+  file's CS1061s in the same pass - overriding a member C# cannot see at all is resolved before the
+  rest of the compilation's diagnostics surface, unlike a plain missing-member reference - and
+  `mods/siex/tests` depends on `mods/iiex/tests` as a `ProjectReference`, so its build never got past
+  that dependency's failure to show whether siex's own suite reached anything `iiex`'s did not. Fixed
+  by probing: commenting out the override line, rebuilding to see the masked CS1061s (temporarily, not
+  the fix in place - the actual fixes below both apply this and get iiex green), then rebuilding siex
+  to confirm it reached nothing iiex's suite had not already surfaced (siex's own build produced no
+  additional CS1061s once iiex's were fixed).
+
+  Decisions, all (a) - a documented harness hook, none (b): every member was already commented "Test
+  seam" at its declaration site with no other caller anywhere in the tree, so none is an engine-facing
+  seam a mod might legitimately reach; no judgment call.
+  - `ValidatePickRange` changed from an `internal virtual` expression-bodied property to a plain
+    `internal` settable one (the override it existed for was the only use anywhere in the tree, so the
+    virtual dispatch point is gone with it); `MachineTestHooks.DisablePickRangeCheck(this
+    BlockEntityMachineStation)` in `Rigs/MachineRig.cs` sets it, and `DesignTableBeTests.Table()` calls
+    the hook on a plain `BlockEntityDesignTable` instead of subclassing.
+  - `MachineTestHooks.DriveProductionTick` (two overloads, `BEBehaviorProductionMachine` and
+    `BlockEntityProductionMachine`) also in `Rigs/MachineRig.cs`, next to the rig whose own doc comment
+    already named "invoking a production tick by reflection" as the by-hand alternative to stepping.
+  - `StructureTestHooks.ApplyStructureRotation` in `Rigs/StructureRig.cs`, beside the rig it is the
+    by-hand alternative to.
+  - `NetworkNodeTestHooks.SetNetworkTypeForTest`/`.ApplyOrientationForTest` in `Doubles/TestNetworkBlock.cs`,
+    beside the one double that already takes both through its constructor and so needs neither hook
+    itself.
+  Each hook is a `public static` extension method on the exlib base type; none needed to become public
+  themselves (all five stay `internal`) since `mods/exlib/src/InternalsVisibleTo.cs` now also grants
+  `ExpandedLib.Testing` - the framework naming its own shipped harness, not a consumer's test assembly.
+  `IronIndustryExpanded.Tests`/`SteelIndustryExpanded.Tests` call the hooks and keep every assertion
+  they had.
+
+  Files modified: `mods/exlib/src/InternalsVisibleTo.cs`; `mods/exlib/src/Machines/BlockEntityMachineStation.cs`;
+  `mods/exlib/testing/Rigs/MachineRig.cs`; `mods/exlib/testing/Rigs/StructureRig.cs`;
+  `mods/exlib/testing/Doubles/TestNetworkBlock.cs`; `mods/iiex/tests/Blocks/Crafting/DesignTableBeTests.cs`;
+  `mods/exlib/wiki/Testing-API-Reference.md` (three new type sections plus the `Rigs/`/`Doubles/`
+  "Where things are" rows); `mods/exlib/CHANGELOG.md`. `mods/exlib/industry/InternalsVisibleTo.cs`
+  untouched, as specified. No `Supported-API.md` change: every visibility change is internal-to-`ExpandedLib.Testing`
+  via the new `InternalsVisibleTo`, not a change to exlib's own public surface.
+
+  Gate green: `build latest` warning-free with the two consumer attributes gone;
+  `dotnet build mods/exlib/tests|mods/iiex/tests|mods/siex/tests -v q` all zero warnings;
+  `bash scripts/exmod.sh test latest` six lanes green (11/1817/4/4/2461/348 - exlib's +3 over the
+  Task 4 baseline is `HarnessSurfaceTests`' own theory picking up the three new public hook types;
+  iiex and siex unchanged, since the hooks keep every case those suites ran); `PublicSurfaceTests`
+  (3/3) and `HarnessSurfaceTests` (73/73) both green; `command grep -rn "InternalsVisibleTo" mods/exlib/src
+  mods/exlib/industry` names only `ExpandedLib.Tests` (both files) and `ExpandedLib.Testing`
+  (`mods/exlib/src` only) - no consumer test assembly anywhere.

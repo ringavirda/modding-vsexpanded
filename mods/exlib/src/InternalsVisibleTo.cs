@@ -4,12 +4,8 @@ using System.Runtime.CompilerServices;
 // notably the block migrator's ReplaceBlock/RemapInventory and their RemapEntry records.
 [assembly: InternalsVisibleTo("ExpandedLib.Tests")]
 
-// A mod's own tests reach exlib internals too, because the type under test derives from an exlib base:
-// the design table is a BlockEntityMachineStation, whose ValidatePickRange seam a headless packet test
-// has to turn off (its substitute player is one the engine will never place in range).
-[assembly: InternalsVisibleTo("IronIndustryExpanded.Tests")]
-
-// siex's suites drive the same production/structure/network seams: a hot blast furnace is a
-// BlockEntityMultiblockMachine, a converter control a BlockEntityMultiblockStructure, and both carry
-// pipe/canal nodes that derive BlockNetworkNode.
-[assembly: InternalsVisibleTo("SteelIndustryExpanded.Tests")]
+// The harness wraps a handful of test-only internal seams (block-entity ticks a test needs to drive
+// directly rather than through the game's own scheduler) in public hooks beside the double or rig that
+// uses them, so a mod's tests reach them through ExpandedLib.Testing instead of naming exlib's own
+// internals.
+[assembly: InternalsVisibleTo("ExpandedLib.Testing")]

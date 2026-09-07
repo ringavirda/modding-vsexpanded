@@ -230,8 +230,9 @@ public abstract class BlockEntityMachineStation : BlockEntityContainer {
   // Whether the engine's interaction-range test runs as part of the access check. Internal and not part
   // of exlib's API: the only thing that turns it off is a headless test, whose player is a substitute
   // the engine will never place in range, and which would otherwise be unable to exercise any packet
-  // route at all. The claim check is not behind it and cannot be switched off.
-  internal virtual bool ValidatePickRange => true;
+  // route at all - see ExpandedLib.Testing's DisablePickRangeCheck. The claim check is not behind it
+  // and cannot be switched off.
+  internal bool ValidatePickRange { get; set; } = true;
 
   /// <summary>
   /// Whether <paramref name="player"/> may act on this machine: claim access, and on 1.22 and later

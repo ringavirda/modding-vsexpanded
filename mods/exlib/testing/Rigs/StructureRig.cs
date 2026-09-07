@@ -409,3 +409,17 @@ public sealed class StructureRig {
     return inner;
   }
 }
+
+/// <summary>Test-only hook for a fixture that needs a structure's rotation recomputed without going
+/// through <see cref="StructureRig"/>.</summary>
+public static class StructureTestHooks {
+  /// <summary>Recomputes <paramref name="structure"/>'s rotation, the same protected path a load or
+  /// monitor tick uses. When <paramref name="orientationOrSide"/> is given, it is written to whichever
+  /// orientation-bearing variant key ("side" or "orientation") the block's variant map already carries
+  /// before the recompute, so a test can rotate and re-derive the angle in one call; when null, the
+  /// block's current variant is read as-is.</summary>
+  public static void ApplyStructureRotation(
+    this BlockEntityMultiblockStructure structure,
+    string? orientationOrSide = null
+  ) => structure.ApplyStructureRotation(orientationOrSide);
+}

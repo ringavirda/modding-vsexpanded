@@ -87,3 +87,18 @@ public sealed class TestNetworkBlock : BlockNetworkNode {
     return family;
   }
 }
+
+/// <summary>Test-only hooks for setting a <see cref="BlockNetworkNode"/>'s shape-family and connector
+/// state directly, for a real production node whose asset-load pipeline a fixture bypasses (a
+/// <see cref="TestNetworkBlock"/> already takes both through its constructor).</summary>
+public static class NetworkNodeTestHooks {
+  /// <summary>Sets <see cref="BlockNetworkNode.Type"/> directly, the shape-family answer normally read
+  /// off the block's variant map during load.</summary>
+  public static void SetNetworkTypeForTest(this BlockNetworkNode node, string type) =>
+    node.SetNetworkTypeForTest(type);
+
+  /// <summary>Sets <see cref="BlockNetworkNode.Orientation"/> directly, the connector-face code
+  /// normally resolved from the surrounding network during placement.</summary>
+  public static void ApplyOrientationForTest(this BlockNetworkNode node, string token) =>
+    node.ApplyOrientationForTest(token);
+}

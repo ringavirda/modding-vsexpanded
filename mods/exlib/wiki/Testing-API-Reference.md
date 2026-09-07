@@ -10,8 +10,8 @@ Full public surface of `ExpandedLib.Testing`. For setup and worked examples see 
 |---|---|
 | `World/` | `TestWorld`, `TestBlocks`, `TestLang`, `VsAssemblyResolver` |
 | `Scenes/` | `Scene`, `SceneDiagram`, `SceneGrid` |
-| `Rigs/` | `StructureRig`, `MachineRig`, `RegistryLawScanner`, `ResourceInvariant<TState>`, `StaticStateCollection`, `HarmonyFixture` |
-| `Doubles/` | stand-ins: `StubNetwork`, `TestNetworkBlock`, `CapturingNode`, `SeverableNode`, `OrientableNode`, `RccFake`, `TestMemberBlockEntity`, `MechPower`; supported doubles: `TestPlayer`, `TestInventory`, `TestModLoader`, `WorldConfigBag`, `ModConfigFiles`, `RecordingLogger`, `TestChannels` |
+| `Rigs/` | `StructureRig`, `StructureTestHooks`, `MachineRig`, `MachineTestHooks`, `RegistryLawScanner`, `ResourceInvariant<TState>`, `StaticStateCollection`, `HarmonyFixture` |
+| `Doubles/` | stand-ins: `StubNetwork`, `TestNetworkBlock`, `NetworkNodeTestHooks`, `CapturingNode`, `SeverableNode`, `OrientableNode`, `RccFake`, `TestMemberBlockEntity`, `MechPower`; supported doubles: `TestPlayer`, `TestInventory`, `TestModLoader`, `WorldConfigBag`, `ModConfigFiles`, `RecordingLogger`, `TestChannels` |
 | `Checks/` | the content validators: `CodeLiterals`, `CodePrefixCollision`, `CostSelectorOverlap`, `DefinitionAssets`, `DefinitionCatalogue`, `DefinitionCodes`, `DefinitionGoldens`, `DefinitionJson`, `DefinitionParity`, `HandbookSync`, `LangCallSites`, `LangCoverage`, `LangKeys`, `LangParity`, `LayoutTable`, `LoopingAnimations`, `MegablockFrames`, `MultiblockCodes`, `NetworkNodeContract`, `PinnedNetworkNodes`, `PressureVesselGate`, `RecipeCodes`, `ReferencedCodes`, `ShapeExtents`, `ShippedJson`, `TreeKeys`, `VanillaToolTiers`, `WikiParity` |
 | `Repo/` | `RepoPaths`, `RepoManifest`, `ReleasedHistory`, `ReleasedCodes`, `ReleasedVersions`, `ReleasedCodeDebt`, `BlockCodeEmitter`, `RepoCheckSource` |
 | (root) | `ReflectionHelpers` |
@@ -241,6 +241,20 @@ public sealed class TestNetworkBlock : BlockNetworkNode
 The `orientation` string is the connector set (`"ns"`, `"we"`, `"nswe"`). Default code is
 `test:{networkType}-{orientation}-{id}`.
 
+### `NetworkNodeTestHooks`
+
+```csharp
+public static class NetworkNodeTestHooks
+{
+    public static void SetNetworkTypeForTest(this BlockNetworkNode node, string type);
+    public static void ApplyOrientationForTest(this BlockNetworkNode node, string token);
+}
+```
+
+Sets a real production node's shape-family and connector state directly, bypassing the asset-load
+pipeline, for a fixture over a concrete node block (`TestNetworkBlock` already takes both through
+its constructor and needs neither hook).
+
 ### `CapturingNode : BlockEntity, INetworkNode`
 
 Records broadcasts and open-connector notifications so tests can assert propagation.
@@ -367,6 +381,24 @@ public abstract class MachineRig(TestWorld world)
 Each step fires block-entity ticks then the network tick (`World.FireBlockEntityTicks` then
 `World.Tick`), the order `Scene.Step` uses. `RunUntil` throws `TimeoutException` if `until` never
 holds within `ceilingSeconds`.
+
+## `MachineTestHooks`
+
+```csharp
+public static class MachineTestHooks
+{
+    public static void DisablePickRangeCheck(this BlockEntityMachineStation station);
+    public static void DriveProductionTick(this BEBehaviorProductionMachine behavior, float dt);
+    public static void DriveProductionTick(this BlockEntityProductionMachine machine, float dt);
+}
+```
+
+`DisablePickRangeCheck` turns off the engine's interaction-range test that gates a machine
+station's access check, so a headless test's substitute player - never "in range" of anything -
+can still exercise a packet route gated on it; the claim check is unaffected. Both
+`DriveProductionTick` overloads run one production tick exactly as the registered listener would,
+including the readiness gate and the catch-up `dt` clamp, for a fixture stepping a machine by hand
+instead of through `MachineRig`.
 
 ## `RegistryLawScanner`
 
@@ -525,6 +557,20 @@ public sealed class StructureRig
 Stands up a mega-block's multiblock footprint headlessly so its own monitor tick observes
 `InCompleteBlockCount == 0` and sets `StructureComplete` itself, rather than a test forcing the
 flag - see [Testing Harness § Standing up a mega-block](Testing-Harness#standing-up-a-mega-block-with-structurerig).
+
+## `StructureTestHooks`
+
+```csharp
+public static class StructureTestHooks
+{
+    public static void ApplyStructureRotation(this BlockEntityMultiblockStructure structure, string? orientationOrSide = null);
+}
+```
+
+Recomputes a structure's rotation directly, the same path a load or monitor tick uses, for a
+fixture that builds a structure by hand instead of through `StructureRig`. When
+`orientationOrSide` is given, it is written to whichever orientation-bearing variant key ("side"
+or "orientation") the block's variant map already carries before the recompute.
 
 ## Doubles internals (`Doubles/`)
 
