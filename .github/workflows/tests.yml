@@ -33,15 +33,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # extools is a private repository while it is still being carved out of this one; the
-      # wrappers (scripts/exmod.sh) need its exmod.ps1 to dispatch every command below.
-      - name: Checkout extools
-        uses: actions/checkout@v4
-        with:
-          repository: ringavirda/extools
-          ref: v0.1.0
-          path: extools
-          token: ${{ secrets.EXTOOLS_TOKEN }}
 
       - name: Set up .NET
         uses: actions/setup-dotnet@v4
@@ -83,13 +74,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Checkout extools
-        uses: actions/checkout@v4
-        with:
-          repository: ringavirda/extools
-          ref: v0.1.0
-          path: extools
-          token: ${{ secrets.EXTOOLS_TOKEN }}
 
       - name: Set up .NET
         uses: actions/setup-dotnet@v4
