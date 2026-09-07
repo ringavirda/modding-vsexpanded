@@ -54,8 +54,7 @@
        above it, so $(ExlibRoot) stays empty and every project falls back to the ExpandedLib
        package - see the iiex/siex csprojs' dual-mode item groups. -->
   <PropertyGroup>
-    <_WorkspaceBuildProps
-      >$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))</_WorkspaceBuildProps>
+    <_WorkspaceBuildProps>$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))</_WorkspaceBuildProps>
   </PropertyGroup>
   <Import
     Project="$(_WorkspaceBuildProps)"
