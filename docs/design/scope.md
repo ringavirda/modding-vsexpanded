@@ -28,10 +28,10 @@ off-spine add-ons.
 | R3, the ladle-is-the-only-merge rule | [conventions.md](conventions.md), exlib's molten-network mechanics page |
 | The ladle as a machine, and the zinc coke cover | [ladle](machines/ladle.md) |
 | elex's grid model, arc furnace and electrode mechanic | [deferred/elex/](deferred/elex/electrical-grid.md) |
-| Current build status and every open decision (the D/N rulings, the blocker list) | [STATE.md](../../../docs/plans/STATE.md) |
+| Current build status and every open decision (the D/N rulings, the blocker list) | [STATE.md](../../../docs/superpowers/plans/STATE.md) |
 | The mod chain, the pillars, the build order | [overview.md](overview.md) |
 
-**Depends on** [overview.md](overview.md) · [STATE.md](../../../docs/plans/STATE.md) · [conventions.md](conventions.md) ·
+**Depends on** [overview.md](overview.md) · [STATE.md](../../../docs/superpowers/plans/STATE.md) · [conventions.md](conventions.md) ·
 [materials.md](materials.md) · [gas-producer](machines/gas-producer.md) ·
 [fluid-tank](machines/fluid-tank.md) · [crucible-furnace](machines/crucible-furnace.md)
 
@@ -120,7 +120,7 @@ fractionating still as a block, and every product built on it - are deferred.
 
 ## Non-ferrous - a different deferral
 
-Decision D8 ([STATE.md](../../../docs/plans/STATE.md)). Deferred later, not to Homestead: this is period-correct
+Decision D8 ([STATE.md](../../../docs/superpowers/plans/STATE.md)). Deferred later, not to Homestead: this is period-correct
 metalworking that is not on the release path.
 
 | Deferred | Record | What it was for |

@@ -37,14 +37,14 @@ against one spec type whose home is undecided.
 | the spec-carrying tooling idiom - its five invariants, the four places a new family must touch, the array-not-float-key rule, the double-not-float authoring rule | [roll sets](roll-sets.md) |
 | the `mold` sibling and its 96 items | [patterns](patterns.md) |
 | `1 vx³ = 2.5 u` and every mass the ledger uses | [density rule](../mechanics/density-rule.md) |
-| the fastener placement rule (nails and bolts are iron, rivets are steam) | [STATE.md § Fasteners](../../../../docs/plans/STATE.md) |
+| the fastener placement rule (nails and bolts are iron, rivets are steam) | [STATE.md § Fasteners](../../../../docs/superpowers/plans/STATE.md) |
 | code-first defs, `attributesByType`, goldens, the cost catalogue | [recipes & config](../mechanics/recipes-config.md) |
 
 **Depends on** [heading machine](../machines/heading-machine.md) ·
 [steam hammer](../machines/steam-hammer.md) · [nail machine](../machines/nail-machine.md) ·
 [bearings](../machines/bearings.md) · [hp hammer](../machines/hp-hammer.md) ·
 [shear](../machines/shear.md) · [roll sets](roll-sets.md) · [patterns](patterns.md) ·
-[density rule](../mechanics/density-rule.md) · [STATE.md § Fasteners](../../../../docs/plans/STATE.md)
+[density rule](../mechanics/density-rule.md) · [STATE.md § Fasteners](../../../../docs/superpowers/plans/STATE.md)
 
 ---
 
@@ -54,7 +54,7 @@ A die is the third member of the spec-carrying tooling family. Where a [roll set
 are the thicknesses this stand can reach" and a [pattern](patterns.md) says "this is the cavity this cell
 fills", a die says: this input becomes that output, this many times. That is why one bench can be a bolt works
 or a rivet works - Fig 1 of the 1867 machine-tool plate is captioned "rivet making machine" and the same
-machine made bolts, the die being the whole difference ([STATE.md § Fasteners](../../../../docs/plans/STATE.md)). One
+machine made bolts, the die being the whole difference ([STATE.md § Fasteners](../../../../docs/superpowers/plans/STATE.md)). One
 block, a tooling slot, and iiex adds a rivet without touching iiex
 ([heading machine](../machines/heading-machine.md)).
 
@@ -220,7 +220,7 @@ What is settled about how a die is made, all cited:
 |---|---|
 | a die is forged, never cast - "a die takes the blow and imparts the profile, so it is tough, not brittle" | [steam hammer](../machines/steam-hammer.md) § Construction |
 | two tiers - plain steel for soft stock, quench-hardened for hadfield and HSS | [steam hammer](../machines/steam-hammer.md) |
-| hardened die sets are one of crucible steel's four named consumers | [STATE.md § D9](../../../../docs/plans/STATE.md) |
+| hardened die sets are one of crucible steel's four named consumers | [STATE.md § D9](../../../../docs/superpowers/plans/STATE.md) |
 | "dies are crafted separately and are the extension point: many dies, one machine" | [heading machine](../machines/heading-machine.md) § Construction |
 
 The die is therefore the only one of the three tooling families that is forged. A roll set is cast (chilled

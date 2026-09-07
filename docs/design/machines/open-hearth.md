@@ -31,7 +31,7 @@ its blast draw, its scrap gate, its capacity and its four-state tilt ·
 [crucible furnace](crucible-furnace.md) - the other two melting machines ·
 [blast furnace (cold)](blast-furnace-cold.md) - the pig source and the ferroalloy furnace ·
 [long cell](long-cell.md) - what the steel is cast into · [materials.md](../materials.md) - what open-hearth
-steel is and which parts require it · [STATE.md](../../../../docs/plans/STATE.md) - D3, D6, the blocker list
+steel is and which parts require it · [STATE.md](../../../../docs/superpowers/plans/STATE.md) - D3, D6, the blocker list
 
 **Depends on** [heat balance](../mechanics/heat-balance.md) · [multiblock & fillers](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/multiblock.md) ·
 [molten network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/molten-network.md) · [pipe network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md) ·
@@ -217,7 +217,7 @@ corrections to be worth making, and that its flame keeps the bath hot while they
 
 D3 applies: alloys inherit their base's grade as a continuous penalty, not a lockout - hadfield mixed on a
 Bessemer base gets a lower max pressure than hadfield mixed on an open-hearth base
-([STATE.md](../../../../docs/plans/STATE.md) D3).
+([STATE.md](../../../../docs/superpowers/plans/STATE.md) D3).
 
 ### Scrap: the ceiling is time, not temperature
 
@@ -429,7 +429,7 @@ None. When built, the shape of the suite is set by
    machine that accepts both is right and is also two charge paths.
 
 6. HSS feedstock is open-hearth-exclusive ([materials.md](../materials.md)) and elex is out of scope
-   ([STATE.md](../../../../docs/plans/STATE.md) D8). So one of this machine's three stated jobs has no consumer in the
+   ([STATE.md](../../../../docs/superpowers/plans/STATE.md) D8). So one of this machine's three stated jobs has no consumer in the
    current release target - worth knowing before sizing it around that job.
 
 7. No `MaxAwayCatchupSteps` decision. A one-hour heat is exactly the machine a player walks away from, and

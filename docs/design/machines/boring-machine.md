@@ -22,7 +22,7 @@
 [shear](shear.md) owns the crop verb · [steam hammer](steam-hammer.md) owns blanking/stamping ·
 [gears](gears.md) owns the gear items this machine cuts ·
 [pipe network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md) owns the pipe tiers · [cast-parts](../items/cast-parts.md) owns the cast-part catalogue and the machine bills ·
-[conventions.md](../conventions.md) · [STATE.md](../../../../docs/plans/STATE.md)
+[conventions.md](../conventions.md) · [STATE.md](../../../../docs/superpowers/plans/STATE.md)
 
 ---
 
@@ -44,7 +44,7 @@ Three reasons it exists, all downstream:
 2. The cast pipe tier has no other route. Cast pipe is assembled from cast pipe-parts finished on the boring machine ([conventions.md § pipe tiers](../conventions.md), [pipe network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md)), so with the machine unbuilt, iiex's own pipe tier has no survival source.
 3. Gears are cut from blanks, not cast to shape. A coarse mill gear could be cast; a gear that must mesh is cut from a disc on a gear-cutting machine, the boring mill's close cousin ([cast-parts](../items/cast-parts.md)). The `gear12` / `gear24` / `gearbevel` diagrams are therefore cutting schematics, not mold patterns.
 
-Placement: a machine lives with the content it feeds ([STATE.md](../../../../docs/plans/STATE.md)). The cylinder, the cast pipe-parts and the machine gears are all steam-tier parts, so the machine is iiex's; the cast blanks it eats are iiex's. iiex casts rough, iiex machines to spec.
+Placement: a machine lives with the content it feeds ([STATE.md](../../../../docs/superpowers/plans/STATE.md)). The cylinder, the cast pipe-parts and the machine gears are all steam-tier parts, so the machine is iiex's; the cast blanks it eats are iiex's. iiex casts rough, iiex machines to spec.
 
 The drive rides "MP (waterwheel)" at iron tier: per the settled power progression the run is the same at both tiers and only the prime mover changes - vanilla waterwheel at iron, steam engine at low-pressure.
 
@@ -191,7 +191,7 @@ Everything in this section is proposed. The machine has no config section and no
 | `BoringTickMs` | 1000 ms | state `ProductionTickMs` on the hosted process - `BEBehaviorProductionMachine.cs:25` (`protected virtual`, default 1000) | job tick |
 | `BoringSecondsPerItem` | ≈ 2 s | - | "a craft takes a couple of seconds" ([diagram crafting](../mechanics/diagram-crafting.md)); a stack multiplies it |
 | `BoringPortResistance` | 0.5 | `BEBehaviorMPFillerPort.DefaultResistance = 0.5f` - `BEBehaviorMPFillerPort.cs:30` | vanilla-MP load, if the vanilla route is chosen |
-| bit tier ladder | cast iron → quench-hardened steel → HSS | [STATE.md § D9](../../../../docs/plans/STATE.md) (crucible steel's consumers include "boring-machine bits") | bit material gates the hardest metal the machine will cut |
+| bit tier ladder | cast iron → quench-hardened steel → HSS | [STATE.md § D9](../../../../docs/superpowers/plans/STATE.md) (crucible steel's consumers include "boring-machine bits") | bit material gates the hardest metal the machine will cut |
 | bit durability | - | model on `WoodenPatternDurability = 24` (`PatternItemDefinitions.cs:109`) | a bit is a wear part, like the pattern |
 | cost key | `boringmachine-grid` | `IiexRecipeConfig.cs:59-86` | rescales with `RecipeLevel` (`IiexConfig.cs:224`) |
 
@@ -258,7 +258,7 @@ Caller-side contract for anyone adding a job: declare it on the schematic item, 
 - ~~A filler cannot be a graph node.~~ Retired: a footprint cell that declares a `BEBehaviorNetworkMember` is a node, so the `"mpenergy"` port may live on the top cell after all. [multiblock](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/multiblock.md) owns the rule. What was the design's biggest structural constraint is no longer one.
 - The schematic is never consumed; the diagram sometimes is. The boring machine's schematics are reusable tooling ([diagram crafting](../mechanics/diagram-crafting.md)), while a structure-core diagram is a consumed grid ingredient. Both are decided by the `.Tool()` flag, not by machine code.
 - The machine's whole input chain is unbuilt. `blank`, `castframe`, the cylinder blank, the gear blanks and the cutting schematics do not exist as items; only `castplate-heavy` and `cast-barrel` do (`CastPartItemDefinitions.cs:28-29`).
-- This machine gates the cast pipe tier. Until it exists, `iiex:pipe-*` has no cast-pipe-part route and the tier is reachable only through the recipes that currently accept the plain plated iiex segment (`MachineRecipeDefinitions.cs`'s `StraightPipe`, which is deliberately `iiex:pipe-plated-straight-*`). The dead cost key `pipe-straight-grid` (`IiexRecipeConfig.cs:72`) costs a grid recipe that does not exist ([STATE.md](../../../../docs/plans/STATE.md)).
+- This machine gates the cast pipe tier. Until it exists, `iiex:pipe-*` has no cast-pipe-part route and the tier is reachable only through the recipes that currently accept the plain plated iiex segment (`MachineRecipeDefinitions.cs`'s `StraightPipe`, which is deliberately `iiex:pipe-plated-straight-*`). The dead cost key `pipe-straight-grid` (`IiexRecipeConfig.cs:72`) costs a grid recipe that does not exist ([STATE.md](../../../../docs/superpowers/plans/STATE.md)).
 
 ---
 

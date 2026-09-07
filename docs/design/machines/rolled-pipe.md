@@ -45,7 +45,7 @@ The tier is a variant axis, and the high-order one: a rolled pipe is `siex:pipe-
 written down.
 
 Until 2026-08-14 this section read *"the tier is the mod, not a variant axis"*, and the domain was the key.
-**M4 supersedes it** ([STATE.md](../../../../docs/plans/STATE.md)): the merge puts iiex and iiex in one domain, so
+**M4 supersedes it** ([STATE.md](../../../../docs/superpowers/plans/STATE.md)): the merge puts iiex and iiex in one domain, so
 tier could no longer be `Code.Domain` without collapsing two tiers into one - which M3 forbids. The reasoning the
 old ruling rested on survives intact on the new axis. `BlockPipe.PlatedTier` / `.CastTier` / `.RolledTier`
 (`BlockPipe.cs:31`, `:34`, `:37`) are the three names.

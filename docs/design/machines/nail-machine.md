@@ -15,7 +15,7 @@
 [rolling mill](rolling-mill.md) (rolls a rod into nail plate on `flat`) ·
 [multiblock & fillers](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/multiblock.md) (why 1 × 1 needs none of it, and how a shape may overhang its cell) ·
 [density rule](../mechanics/density-rule.md) (`nailplate` 4 × 1 × 10 = 100 u; nails 25 u each) ·
-[recipes & config](../mechanics/recipes-config.md) · [STATE.md § Fasteners](../../../../docs/plans/STATE.md)
+[recipes & config](../mechanics/recipes-config.md) · [STATE.md § Fasteners](../../../../docs/superpowers/plans/STATE.md)
 
 ---
 

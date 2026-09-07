@@ -1,7 +1,7 @@
 # Alternator (AC generator)
 
 **Status** deferred   **Would live in** elex (Electrical Expanded) - a mod with no project, no asset domain
-and no code   **Deferred by** two independent gates: D8 ([STATE.md](../../../../../docs/plans/STATE.md)), which puts all
+and no code   **Deferred by** two independent gates: D8 ([STATE.md](../../../../../docs/superpowers/plans/STATE.md)), which puts all
 of elex outside the release target, and the pure-copper winding requirement, the one elex block with no
 in-scope fallback. Both are recorded in [scope.md](../../scope.md) (§ The release target, § elex, § The shape
 elex would take).

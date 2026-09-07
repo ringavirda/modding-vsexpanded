@@ -37,7 +37,7 @@ steel · hpex is the first consumer that has no choice
 | `1 vx³ = 2.5 u` and the measured mass of every shipped part | [density rule](../mechanics/density-rule.md) |
 | RCC construction stages, grid recipes, `ExRecipeCosts`, goldens | [recipes & config](../mechanics/recipes-config.md) |
 | the HP hammer, and why its frame cannot be cast | [HP hammer](../machines/hp-hammer.md) |
-| the placement rule that decides which mod ships which half | [STATE.md](../../../../docs/plans/STATE.md) |
+| the placement rule that decides which mod ships which half | [STATE.md](../../../../docs/superpowers/plans/STATE.md) |
 
 **Depends on** [cast parts](../items/cast-parts.md) · [bending](bending.md) · [rolling](rolling.md) ·
 [heading machine](../machines/heading-machine.md) · [casting cell](../machines/casting-cell.md) ·

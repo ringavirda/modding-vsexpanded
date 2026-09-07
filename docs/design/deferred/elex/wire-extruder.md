@@ -1,5 +1,5 @@
 # Wire extruder
-**Status** deferred   **Would live in** `elex` (Electrical Expanded — no project, no asset domain, no code)   **Deferred by** **D7** ([STATE.md](../../../../../docs/plans/STATE.md)) — *"Wire. Exists, in elex."* — and with the mod, by **D8**
+**Status** deferred   **Would live in** `elex` (Electrical Expanded — no project, no asset domain, no code)   **Deferred by** **D7** ([STATE.md](../../../../../docs/superpowers/plans/STATE.md)) — *"Wire. Exists, in elex."* — and with the mod, by **D8**
 
 **Owns**
 * the D7 placement record — that wire is one machine at one tier, and the two prior rejections D7 reconciles rather than overturns;
@@ -103,7 +103,7 @@ copper rod/plate ──MP wire machine──▶ wire ──▶ cable / heavy cab
 
 | Question | Answer on record |
 |---|---|
-| Which tier? | elex — **D7** ([STATE.md](../../../../../docs/plans/STATE.md)) |
+| Which tier? | elex — **D7** ([STATE.md](../../../../../docs/superpowers/plans/STATE.md)) |
 | Which power? | MP (iiex-tier), never electric |
 | Which feedstock? | copper rod or plate |
 | Two grades? | yes - impure and pure, and the grade is the whole payoff |

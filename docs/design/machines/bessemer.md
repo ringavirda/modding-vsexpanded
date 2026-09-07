@@ -41,7 +41,7 @@ metal-type refusal, the missing `Ladle` ·
 [long cell](long-cell.md) - what the steel is cast into ·
 [ladle](ladle.md) · [open hearth](open-hearth.md) · [cupola](cupola.md) ·
 [blast furnace (cold)](blast-furnace-cold.md) - the pig source ·
-[materials.md](../materials.md) - what Bessemer steel is · [STATE.md](../../../../docs/plans/STATE.md) - D4, N1, the blocker list
+[materials.md](../materials.md) - what Bessemer steel is · [STATE.md](../../../../docs/superpowers/plans/STATE.md) - D4, N1, the blocker list
 
 **Depends on** [heat balance](../mechanics/heat-balance.md) · [molten network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/molten-network.md) ·
 [pipe network](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/pipe-network.md) · [multiblock & fillers](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/multiblock.md) ·
@@ -71,7 +71,7 @@ the attended machine.
 ### Settled 2026-07-29: the product is **blown iron**, and recarburisation is mandatory
 
 The blow burns out all the carbon and the manganese, leaving iron that is oxygen-saturated and unusable
-([STATE.md](../../../../docs/plans/STATE.md) N1). Recarburisation - Mushet's 1856 spiegeleisen addition - is mandatory,
+([STATE.md](../../../../docs/superpowers/plans/STATE.md) N1). Recarburisation - Mushet's 1856 spiegeleisen addition - is mandatory,
 not a refinement; without it the process does not work. The settled chain:
 
 ```
@@ -79,7 +79,7 @@ molten pig ──▶ BESSEMER (blow) ──▶ blown iron ──▶ LADLE (recar
 ```
 
 Powdered coke cannot substitute: it adds carbon only, and it is manganese that scavenges the oxygen
-([STATE.md](../../../../docs/plans/STATE.md) § "How ferroalloys are added"). The additive rules and the chill model are
+([STATE.md](../../../../docs/superpowers/plans/STATE.md) § "How ferroalloys are added"). The additive rules and the chill model are
 the [ladle](ladle.md)'s.
 
 Two recarburisers, two grades (settled 2026-08-07). A 10–15 % spiegeleisen dose on the converter's heat lands
@@ -638,7 +638,7 @@ without anything noticing.
    exists, and the ladle does not exist as a type anywhere in `src/`.
 
 2. **Capacity: 4800 shipped, 6000 settled - and 6000 still does not land on the ladder.**
-   [STATE.md](../../../../docs/plans/STATE.md) D4 sets 6000 u as "exactly 2 slab pours / 3 bloom pours". But
+   [STATE.md](../../../../docs/superpowers/plans/STATE.md) D4 sets 6000 u as "exactly 2 slab pours / 3 bloom pours". But
    `CapacityUnits` gates the charge, which is pig, and the blow sheds 10 % of it. A brim-full 6000 u pig
    charge pours 5400 u of steel = 1.8 slab pours. Either the key must become 6667 u of pig (6000 ÷ 0.90), or
    D4 must be restated as a steel capacity and the fill gate changed to count product. This needs deciding

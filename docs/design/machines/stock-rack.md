@@ -23,7 +23,7 @@ lang and tests all ship; the composed-contents renderer is written but unverifie
 > **What that dissolves.** The two stacking modes (`pyramid` / `flat`), the half-width offset, the
 > 0.866 y-step, the layer count and the jitter belong to the *reheat hearth's bed*, not to the rack.
 > The rack therefore **no longer depends on `PileLayout`**
-> ([plan](../../../../docs/plans/2026-08-15-item-piles.md), stage 1, unstarted) - which this page named as
+> ([plan](../../../../docs/superpowers/plans/2026-08-15-item-piles.md), stage 1, unstarted) - which this page named as
 > its blocking prerequisite. It can be built on its own.
 >
 > **What that opens.** *Mixed contents* under [Open](#open) is answered: yes, by length - a 2-run beside

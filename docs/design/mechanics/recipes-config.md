@@ -1,7 +1,7 @@
 # Definitions, Recipes & Config
 **Status** live   **Mod** exlib (`ExpandedLib`) - every other mod is a consumer
 **Owns** the code-first definition builders (`ExBlockDef` / `ExItemDef` / `ExRecipeDef` / `GridRecipeBuilder` / `IngredientBuilder`), how a def becomes a synthetic asset and when it is injected, the RCC `ConstructionStages` builder and the `brokenDropsRatio` resolution chain, the golden-file parity harness and its comparison rules, the recipe-cost catalogue (entry shape, level derivation, the `cheap` 0.5 factor, the apply pipeline), and the on-disk config layout (`ex_values.json` / `ex_recipes.json` sections, migrations, sanitising, ranges, the source-generated accessors).
-**Depends on** [multiblock & filler structures](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/multiblock.md) (the ASCII layout DSL `ExBlockDef.MultiblockLayout` / `.FillerOffsets` feed, and the RCC-built mega-blocks that carry construction stages) · [repo status](../../../../docs/plans/STATE.md)
+**Depends on** [multiblock & filler structures](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/multiblock.md) (the ASCII layout DSL `ExBlockDef.MultiblockLayout` / `.FillerOffsets` feed, and the RCC-built mega-blocks that carry construction stages) · [repo status](../../../../docs/superpowers/plans/STATE.md)
 
 ## Role
 

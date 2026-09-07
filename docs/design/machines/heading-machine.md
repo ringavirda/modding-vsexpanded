@@ -7,7 +7,7 @@ shipped accordingly as `iiex:rivetrod`, and the riveter was **built 2026-08-21**
 never was.
 
 ★★ **The die half is settled, the bolt half is not (owner, 2026-08-21).** Asked directly which of this
-page and [STATE.md](../../../../docs/plans/STATE.md)'s *"no dies"* stood, the owner kept the dies, with a
+page and [STATE.md](../../../../docs/superpowers/plans/STATE.md)'s *"no dies"* stood, the owner kept the dies, with a
 reason neither page had: **dies are wanted for the steam hammer's stamping as well**. So the `ItemDie`
 contract this page owns is vindicated and has two consumers, not one — and it now has its first shipped
 users, `iiex:die-nail` and `iiex:die-rivet`. ⛔ **The bolt stays rejected**: `content-waits-on-infrastructure`
@@ -28,7 +28,7 @@ balls, the one headed fastener neither built bench makes. Its die catalogue shri
 [rolling mill](rolling-mill.md) (the `grooved` schedule that makes rod) ·
 [nail machine](nail-machine.md) (shares this page's `ItemDie` contract and the BE base - not the shape) ·
 [multiblock & fillers](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/multiblock.md) · [density rule](../mechanics/density-rule.md) ·
-[recipes & config](../mechanics/recipes-config.md) · [STATE.md § Fasteners](../../../../docs/plans/STATE.md)
+[recipes & config](../mechanics/recipes-config.md) · [STATE.md § Fasteners](../../../../docs/superpowers/plans/STATE.md)
 
 ---
 
@@ -36,7 +36,7 @@ balls, the one headed fastener neither built bench makes. Its die catalogue shri
 
 A bolt-and-rivet header: a short length of rod is gripped, and a die upsets a head onto the end of it. Fig 1 of the 1867 machine-tool plate is captioned "rivet making machine" and the same machine made bolts - the die was the whole difference, which is why this is one block with a tooling slot and not two blocks.
 
-It is not a "rivet machine", and the distinction is a placement rule. Rivets belong to iiex: a rivet makes a joint that is strong and tight, so it arrives with the first thing that holds pressure - the boiler. Nails and bolts are strong but not tight, and they are the iron tier's fasteners. Putting the machine in iiex would strand the `grooved` 1.0 gap, whose product is the 25 u rod: an iiex mill making something only iiex can use is the dangling end the placement rule exists to prevent. Resolution: same rod, same bench, different die ([STATE.md § Fasteners](../../../../docs/plans/STATE.md)).
+It is not a "rivet machine", and the distinction is a placement rule. Rivets belong to iiex: a rivet makes a joint that is strong and tight, so it arrives with the first thing that holds pressure - the boiler. Nails and bolts are strong but not tight, and they are the iron tier's fasteners. Putting the machine in iiex would strand the `grooved` 1.0 gap, whose product is the 25 u rod: an iiex mill making something only iiex can use is the dangling end the placement rule exists to prevent. Resolution: same rod, same bench, different die ([STATE.md § Fasteners](../../../../docs/superpowers/plans/STATE.md)).
 
 | Die | Input | Output | Ships with |
 |---|---|---|---|

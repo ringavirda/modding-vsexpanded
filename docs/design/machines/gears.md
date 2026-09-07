@@ -17,7 +17,7 @@
 [casting cell](casting-cell.md) owns the patterns that would cast the gear blanks ·
 [mp-energy](https://github.com/ringavirda/exlib/blob/main/docs/design/mechanics/mp-energy.md) owns the `"mpenergy"` run the transmission serves ·
 [density rule](../mechanics/density-rule.md) owns masses and the `materialUnits` convention ·
-[overview.md](../overview.md) · [STATE.md](../../../../docs/plans/STATE.md)
+[overview.md](../overview.md) · [STATE.md](../../../../docs/superpowers/plans/STATE.md)
 
 ---
 

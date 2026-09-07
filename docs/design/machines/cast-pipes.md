@@ -43,7 +43,7 @@ the burst rating, the throughput and the joint family (`BlockPipe.cs:252-255`, `
 material per tier, one model per tier - unchanged; what moved is where the tier is written down.
 
 Until 2026-08-14 this read *"the tier is the mod, not a variant axis"*, with the domain as the key. **M4
-supersedes it** ([STATE.md](../../../../docs/plans/STATE.md)): the merge puts this tier and the plated one in a
+supersedes it** ([STATE.md](../../../../docs/superpowers/plans/STATE.md)): the merge puts this tier and the plated one in a
 single domain, so the domain can no longer name a tier without collapsing the two - which M3 forbids.
 
 ★ **The two valves are cast-tier too** (`BlockValve.cs:39`, `BlockPressureValve.cs:39`). That is where the

@@ -9,11 +9,11 @@ conventions live outside it: a page here is never also a task tracker.
 
 | | |
 |---|---|
-| [plans/STATE.md](../../../docs/plans/STATE.md) | what is actually true right now - live vs designed vs blocked, every blocker with code evidence, and the open decisions. Read before trusting any page's status |
-| [plans/NEXT.md](../../../docs/plans/NEXT.md) | what is being built right now and what comes next |
-| [plans/iiex-bringup.md](../../../docs/plans/iwex-bringup.md) | the art queue and the playtest gates for bringing iiex online |
+| [plans/STATE.md](../../../docs/superpowers/plans/STATE.md) | what is actually true right now - live vs designed vs blocked, every blocker with code evidence, and the open decisions. Read before trusting any page's status |
+| [plans/NEXT.md](../../../docs/superpowers/plans/NEXT.md) | what is being built right now and what comes next |
+| [plans/iiex-bringup.md](../../../docs/superpowers/plans/iwex-bringup.md) | the art queue and the playtest gates for bringing iiex online |
 | [workbench/layouts.md](../../workbench/layouts.md) | multiblock layout scratchpad. Not a source of truth - the goldens are |
-| [vanilla/](../../../docs/vanilla/README.md) | the vendored Vintage Story source: where its types live, the practices it follows, the traps it hides. What the game does, cited to a line |
+| [vanilla/](../../../docs/superpowers/vanilla/README.md) | the vendored Vintage Story source: where its types live, the practices it follows, the traps it hides. What the game does, cited to a line |
 | [CONTRIBUTING.md](../../CONTRIBUTING.md) | code style, comment conventions, formatting |
 
 ## Read first

@@ -1,7 +1,7 @@
 # Dynamo (DC generator)
 
 **Status** deferred   **Would live in** **elex** (Electrical Expanded) - a mod with no project, no asset
-domain and no code   **Deferred by** **D8** ([STATE.md](../../../../../docs/plans/STATE.md)); the decision, its reasoning and
+domain and no code   **Deferred by** **D8** ([STATE.md](../../../../../docs/superpowers/plans/STATE.md)); the decision, its reasoning and
 the release target are recorded in [scope.md](../../scope.md)
 
 **Owns**

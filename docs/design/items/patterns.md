@@ -43,7 +43,7 @@ one piece: `castbillets` (3 lanes), `castblooms` (2), `castslab` (1). The items 
 **Depends on** [casting cell](../machines/casting-cell.md) · [long cell](../machines/long-cell.md) ·
 [roll sets](roll-sets.md) · [density rule](../mechanics/density-rule.md) ·
 [recipes & config](../mechanics/recipes-config.md) · [dies](dies.md) ·
-[STATE.md § placement rule](../../../../docs/plans/STATE.md)
+[STATE.md § placement rule](../../../../docs/superpowers/plans/STATE.md)
 
 ---
 
@@ -107,7 +107,7 @@ part live in one mod (`PatternItemDefinitions.cs:144-147` records the reasoning 
 ### Settled but unwritten — five more patterns, one more mod
 
 Each row is a drawn impression with no `Molds` entry. The mod column follows the placement rule
-([STATE.md](../../../../docs/plans/STATE.md)): a pattern lives with the content it feeds.
+([STATE.md](../../../../docs/superpowers/plans/STATE.md)): a pattern lives with the content it feeds.
 
 | Pattern *(proposed)* | Would cast | Station | Impression already drawn | Owner |
 |---|---|---|---|---|

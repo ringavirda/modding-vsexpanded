@@ -74,12 +74,12 @@ flywheels. mp-energy already designs for this shape of load (pulsed supply, gove
 
 > Hook a crusher straight to a waterwheel and it stalls on every rock. Add a flywheel and it runs smooth.
 
-[iiex-bringup](../../../../docs/plans/iwex-bringup.md) records that mp-energy's weakness is too few consumers for the
+[iiex-bringup](../../../../docs/superpowers/plans/iwex-bringup.md) records that mp-energy's weakness is too few consumers for the
 flywheel to justify itself. A machine that cannot run well without one teaches the flywheel rather than
 announcing it.
 
 **3. Being MP-driven does not make it iiex's.** The forming-line rule (iiex = MP · iiex = steam · smex =
-extends, [settled 2026-07-29](../../../../docs/plans/STATE.md)) governs variants of one machine, not which mod owns every
+extends, [settled 2026-07-29](../../../../docs/superpowers/plans/STATE.md)) governs variants of one machine, not which mod owns every
 MP consumer. There is one crusher and it lives in iiex, because that is where it sits in the player's arc: a
 throughput upgrade bought once a steam plant exists, never required by the iiex loop, with a harder-ore half
 that serves the steel-era ferroalloys. Keeping it out of iiex also protects the rule that nothing before cast

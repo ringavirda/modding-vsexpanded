@@ -33,13 +33,13 @@ again after the 2026-08-15 ruling - see Gotcha 4
 | the pass model, `δ_max = μ²R`, the two-round rule, gaps and barrel widths | [rolling mill](../machines/rolling-mill.md) · [steel roll sets](../machines/steel-roll-sets.md) · [roll sets](roll-sets.md) |
 | `rolledrod`, `nailplate`, `beam`, `boilerplate` as rolled products | [rolled parts](rolled-parts.md) |
 | where rivets are spent - riveted shells, barrels, rims, girders | [bending roller](../machines/bending-roller.md) · [cast parts](cast-parts.md) |
-| the placement rule and the D2/N3 decisions | [STATE.md](../../../../docs/plans/STATE.md) |
+| the placement rule and the D2/N3 decisions | [STATE.md](../../../../docs/superpowers/plans/STATE.md) |
 | code-first defs, ingredient helpers as a system, the cost catalogue | [recipes & config](../mechanics/recipes-config.md) |
 
 **Depends on** [density rule](../mechanics/density-rule.md) · [nail machine](../machines/nail-machine.md) ·
 [heading machine](../machines/heading-machine.md) · [shear](../machines/shear.md) ·
 [rolling mill](../machines/rolling-mill.md) · [rolled parts](rolled-parts.md) ·
-[cast parts](cast-parts.md) · [bearings](../machines/bearings.md) · [STATE.md](../../../../docs/plans/STATE.md)
+[cast parts](cast-parts.md) · [bearings](../machines/bearings.md) · [STATE.md](../../../../docs/superpowers/plans/STATE.md)
 
 ---
 
@@ -59,7 +59,7 @@ makes a joint that is strong **and tight**; nails and bolts are strong but not t
 because it must hold steam; a flywheel is bolted because it merely must not fall apart. So the rivet
 arrives with the first thing that holds pressure - iiex's boiler - and not one step earlier. iiex machines
 that might want one use nails or bolts and accept rivets later through the standard RCC dual path
-([STATE.md § Fasteners](../../../../docs/plans/STATE.md)).
+([STATE.md § Fasteners](../../../../docs/superpowers/plans/STATE.md)).
 
 That rule places the dies, not the bench: a machine in iiex would strand iiex's own rod, so there is one
 bench and the die is the difference - see [heading machine](../machines/heading-machine.md), which owns the
@@ -197,7 +197,7 @@ repo that is:
 
 The element names are stale. `CutNailRod1…4` and the filename `item-rod-nail.json` both say nail, but under
 the settled rule the 25 u piece goes to the rivet bench and nails come from plate
-([STATE.md § Fasteners](../../../../docs/plans/STATE.md)) - so the rename target is **`rivetrod`**, which is
+([STATE.md § Fasteners](../../../../docs/superpowers/plans/STATE.md)) - so the rename target is **`rivetrod`**, which is
 also what the *other* drawing of the same bundle already calls it (`CutRivetRod1…4` in
 `item-rolled-rod.json`, exported as `iiex:item/rolled-rivetrod` and shipped as the item's shape).
 

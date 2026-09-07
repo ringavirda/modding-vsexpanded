@@ -39,7 +39,7 @@ see [The cross-mod emit question](#the-cross-mod-emit-question).
 **Depends on** [rolling mill](../machines/rolling-mill.md) · [wide hall](../machines/wide-hall.md) ·
 [steel roll sets](../machines/steel-roll-sets.md) · [shear](../machines/shear.md) ·
 [recipes & config](../mechanics/recipes-config.md) · [density rule](../mechanics/density-rule.md) ·
-[patterns](patterns.md) · [dies](dies.md) · [STATE.md § placement rule](../../../../docs/plans/STATE.md)
+[patterns](patterns.md) · [dies](dies.md) · [STATE.md § placement rule](../../../../docs/superpowers/plans/STATE.md)
 
 ---
 
@@ -122,7 +122,7 @@ items
 Bending is not a roll-set job. The [bending roller](../machines/bending-roller.md) walks curvature up in
 passes while the mill walks thickness down in gaps; `WorkPiece` has no curvature axis, so expressing a bend as
 a `gaps` array would mean an array that silently means something else
-([STATE.md § Bending is a separate machine](../../../../docs/plans/STATE.md)). Blade sets for the
+([STATE.md § Bending is a separate machine](../../../../docs/superpowers/plans/STATE.md)). Blade sets for the
 [shear](../machines/shear.md) and die sets for the [steam hammer](../machines/steam-hammer.md) are separate
 tooling families with their own attribute keys, not roll-set variants - see [dies](dies.md).
 

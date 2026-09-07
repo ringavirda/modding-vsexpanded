@@ -60,7 +60,7 @@ The mill only ever makes stock; the shear turns a stage into a product; this pag
   ([rolling mill](../machines/rolling-mill.md)), so the reduction simulator terminates in nothing.
 - Every cast-iron structural part gets a rolled/fabricated equivalent built from beam + plate + rivets
   through the RCC dual path, which is what gives `beam` and the wide plates a consumer list
-  ([STATE.md § D2](../../../../docs/plans/STATE.md)).
+  ([STATE.md § D2](../../../../docs/superpowers/plans/STATE.md)).
 
 No route mints a unit against the hand route. The chain is conserved end to end: one 400 u bar is 2 plates or
 4 rods or 16 nails, and 4 nails per 100 u is vanilla's own anvil rate
@@ -202,7 +202,7 @@ named for what it feeds. The naming half is not a matter of taste - the piece is
 rod by section and by mass** (1 × 1 × 10 at 25 u against 2 × 2 × 10 at 100 u), so a bare `rod` puts two
 items a player cannot tell apart beside each other in the handbook and the crop table.
 [fasteners.md](fasteners.md)'s *"`rivetrod` is a dead name"* is struck by that ruling, and it agrees with
-[STATE.md](../../../../docs/plans/STATE.md)'s own settled Fasteners row - *"the rivet machine cuts and upsets
+[STATE.md](../../../../docs/superpowers/plans/STATE.md)'s own settled Fasteners row - *"the rivet machine cuts and upsets
 rod @ 25 u"* - which the later heading-machine page had overwritten without noticing.
 
 ⛔ **What is still open is the bench, not the blank**: the ruling restores the rivet machine, while
