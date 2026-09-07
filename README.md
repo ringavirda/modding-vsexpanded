@@ -108,9 +108,10 @@ Everything else is fetched on demand into gitignored folders:
 ### Setup
 
 Every repo task goes through `exmod`, one entry point for every stage of the repo's life.
-`scripts/exmod.ps1` holds the implementation and runs on all three platforms under
-PowerShell 7; `scripts/exmod.sh` is a POSIX launcher that finds `pwsh` (installing it into
-`.dotnet/tools` if the machine has none) and forwards to it. A fresh clone is:
+`scripts/exmod.sh` and `scripts/exmod.ps1` are launchers: they find the tools checkout (the
+`EXTOOLS_HOME` variable, the sibling `../extools`, or a clone of the version `exmod.json` pins)
+and run its dispatcher with this repository as the root. The commands themselves live in
+[extools](https://github.com/ringavirda/extools).
 
 ```sh
 bash scripts/exmod.sh setup      # Linux/macOS

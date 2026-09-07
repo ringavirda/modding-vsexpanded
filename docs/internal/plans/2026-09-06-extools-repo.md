@@ -5,7 +5,7 @@
 > `builder` each. No review pass per task. Record each task in Progress at the bottom when its
 > gate is green.
 
-**Status** written 2026-09-06, not started. Step 4 of
+**Status** complete 2026-09-07 apart from the pushes (the owner's permission). Step 4 of
 [2026-09-06-repo-restructure.md](2026-09-06-repo-restructure.md): ruling L6. Runs after the exmod
 manifest plan, which removes the last family knowledge from the scripts.
 
