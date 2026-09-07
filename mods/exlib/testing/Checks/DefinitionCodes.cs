@@ -17,7 +17,7 @@ public static class DefinitionCodes {
   /// enumerated, because the states live in vanilla's assets and there is no registry headless:
   /// <c>horizontalorientation</c> is exact (a fixed four), the rest take one representative, which is
   /// enough to prove a code has a migration path. Kept identical to
-  /// <c>scripts/gen-released-codes.py</c>'s sampling, so the released manifest and the live registry
+  /// extools' <c>tools/gen-released-codes.py</c>'s sampling, so the released manifest and the live registry
   /// expand by one rule rather than two that can drift.
   /// </summary>
   private static readonly Dictionary<string, string[]> PropertySamples = new() {

@@ -26,13 +26,7 @@
     <!-- The config/lang source generators; netstandard2.0 only, ships nothing. -->
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="4.8.0" />
 
-    <!-- infra/CakeBuild. -->
-    <PackageVersion Include="Cake.Frosting" Version="6.1.0" />
-    <PackageVersion Include="Cake.Json" Version="7.0.1" />
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.4" />
-    <!-- Pin transitive NuGet.* deps (from Cake.NuGet) to patched 7.3.1 - fixes NU1901 GHSA-g4vj-cjjj-v7hg -->
-    <PackageVersion Include="NuGet.Packaging" Version="7.3.1" />
-    <PackageVersion Include="NuGet.Protocol" Version="7.3.1" />
 
     <!-- The three packable exlib projects reference each other's package identity, not a fixed
          version: the row tracks exlib's own modinfo.json, the same file the csprojs read today, so

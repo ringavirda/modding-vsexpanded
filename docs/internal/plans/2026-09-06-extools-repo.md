@@ -149,4 +149,51 @@ and `test latest` green with nothing edited (remove the clone after).
 
 ## Progress
 
-(nothing yet)
+Task 1: the repository exists at ~/src/extools, tag v0.1.0, GitHub remote created private,
+nothing pushed yet.
+
+Task 2: this repo's `scripts/exmod.sh`/`scripts/exmod.ps1` are now the wrappers (byte-identical
+to extools' `wrappers/`); `scripts/exmod/`, `infra/CakeBuild/`, `infra/tools/ExlibVerify{,.Tests}/`,
+`infra/tools/patch-api.cs`, `coverage_gate.py`, `gen-released-codes.py` and `templates/ci/` are
+gone. `exmod.json` pins `"tools": "0.1.0"`, `tests` is empty, `packages` lists the three
+ExpandedLib projects. `.gitignore` gains `/.extools/`. `VintageStory.sln` no longer carries the
+CakeBuild/ExlibVerify/ExlibVerify.Tests projects (no empty solution folder was left - infra/ was
+never one). `Directory.Packages.props` drops the four Cake/NuGet.* rows; `Newtonsoft.Json` stays,
+still referenced by every mod's own csproj. Every remaining path into the deleted folders across
+.md/.yml/.json/.cs/.csproj is updated to point at extools (CONTRIBUTING.md's "Running things" now
+documents the wrapper contract, the three resolution rungs and cloning extools as a workspace
+sibling to work on the tools; release.yml's Cake/dotnet-pack steps now call `exmod pack`/`bundle`/
+`nuget`; the verify tool's home in Checks.md and testing.md now points at extools). CHANGELOG.md
+entries were left alone as historical record.
+
+Deviation: `exmod pack` failed against the fresh extools checkout - `pack/CakeBuild.csproj`
+resolves its compile-time `VintagestoryAPI.dll` reference two directories up from itself
+(`../../.game/<version>`), correct for the old `infra/CakeBuild/` nesting but one level too many
+now that the project lives directly under `pack/`. Fixed in extools' `exmod/dist.ps1`
+(`Invoke-CakeTarget` now passes `-p:VINTAGE_STORY=<resolved game path>` to `dotnet run`, the same
+override the csproj already reads, rather than relying on its broken relative default) since it
+blocked this task's own gate; that edit is uncommitted in ~/src/extools and is the driver's to
+fold into Task 1's history.
+
+CI note: `.github/workflows/*.yml` all still call `bash scripts/exmod.sh ...`, unchanged in form,
+but none of them check out extools, and extools' GitHub repo is private with nothing pushed - CI
+cannot resolve the tools (no sibling, no reachable tag to clone) until the owner pushes extools and
+either makes it public or grants CI access. Not fixed here per the plan's instruction.
+
+Results: `build latest` warning-free (5 projects x exlib/iiex/siex/helloexpanded/hellomodule).
+`test latest`: exlib 1817, iiex 2461, siex 348, helloexpanded 4, hellomodule 4 - five lanes, all
+green, matching the baseline. `verify`: all 5 mods (exlib, iiex, siex, helloexpanded, hellomodule)
+verified clean (0 errors, 66 informational findings, all pre-existing/expected). `pack`: 9 zips
+(3 mods x 3 series) in dist/Releases. `nuget`: exactly 3 packages (ExpandedLib, ExpandedLib.Industry,
+ExpandedLib.Testing) after clearing a stale pre-task ExpandedLib.Verify.nupkg left in the gitignored
+dist/nuget/ from before the split. `smoke`: server booted, verified clean, stopped. `dotnet build
+VintageStory.sln -clp:ErrorsOnly`: 0 warnings, 0 errors. The Task 2 grep, run again after every fix,
+finds nothing outside `docs/internal/plans|worklog|research` and `mods/exlib/CHANGELOG.md`.
+
+Fresh-clone gate: could not use a literal `git clone` here without committing (out of scope for
+this task per instruction), so the fresh-tree check ran instead against an `rsync` copy of the
+working tree with `.git`, build output and `.game`/`.dotnet` (symlinked back to this checkout)
+excluded - the same shape a fresh clone plus the plan's own symlink step would produce. `exmod
+help`, `build latest -Mod exlib` and `test latest` (same five-lane counts as above) all ran green
+from there with nothing edited; the clone was removed after. A real `git clone` re-check is owed
+once this task's changes are committed.

@@ -82,7 +82,7 @@ Reference the harness, xUnit, the test SDK and NSubstitute, plus the game API DL
 
 `exmod provision game` (both `-Kind server` and `-Kind client`) runs `Publicize-GameApi`
 on the provisioned `VintagestoryAPI.dll` after every fetch, every re-check of an existing install and
-every version bump - see the function in `scripts/exmod/provision.ps1`. It flips the accessibility bits on
+every version bump - see the function in extools' `exmod/provision.ps1`. It flips the accessibility bits on
 `IPlayer.IsInInteractionRangeOf(BlockPos, float)`, which the game ships as `internal abstract`: an
 interface member no external assembly is allowed to implement, so `Substitute.For<IPlayer>()` (and
 `IServerPlayer`, which inherits the same member) cannot construct a proxy at all without this patch.
@@ -648,15 +648,15 @@ A mod whose `modinfo.json` doesn't even parse is still copied in (under its fold
 failed locally, so the real mod loader is what reports it - the point of this lane is what the game
 itself catches, not what the script can catch first.
 
-CI runs it in its own job (see `.github/workflows/tests.yml`'s `smoke` job, or
-[`templates/ci/smoke.yml`](../../../templates/ci/smoke.yml) for a mod outside this repo), separate
-from the test job so a game-loading failure and a test failure are reported distinctly.
+CI runs it in its own job (see `.github/workflows/tests.yml`'s `smoke` job, or extools'
+`templates/ci/smoke.yml` for a mod outside this repo), separate from the test job so a
+game-loading failure and a test failure are reported distinctly.
 
 #### CI templates
 
-`templates/ci/tests.yml` (provision + `dotnet test`) and `templates/ci/smoke.yml` (this section's
-lane) are the copy-into-your-own-repo forms of `.github/workflows/tests.yml`'s two jobs - each
-carries the two edits a third-party repo needs to make, marked `CHANGE` inline.
+extools' `templates/ci/tests.yml` (provision + `dotnet test`) and `templates/ci/smoke.yml` (this
+section's lane) are the copy-into-your-own-repo forms of `.github/workflows/tests.yml`'s two jobs -
+each carries the two edits a third-party repo needs to make, marked `CHANGE` inline.
 
 ## 5. Where things are
 

@@ -175,11 +175,12 @@ its stdin, and fails (non-zero exit, printing the offending lines) on a timeout,
 log line, or a non-clean verify summary. See [Testing Harness](../../mods/exlib/wiki/Testing-Harness.md)
 "The smoke lane" for what it checks and the CI template.
 
-`exlib-verify` (`infra/tools/ExlibVerify`, `dotnet run --project infra/tools/ExlibVerify --
-<modpath> [--game <install>]`) is the JSON-only path into the same idea: no build, no xUnit, no
-running game, just a mod folder or zip checked for parse errors, patches that don't apply, and
-dangling recipe/handbook codes. See [Checks](../../mods/exlib/wiki/Checks.md), "Without the game:
-exlib-verify", for the full error/informational split.
+`exlib-verify` (the `ExpandedLib.Verify` .NET tool built from [extools](https://github.com/ringavirda/extools),
+`exlib-verify <modpath> [--game <install>]` once installed) is the JSON-only path into the same
+idea: no build, no xUnit, no running game, just a mod folder or zip checked for parse errors,
+patches that don't apply, and dangling recipe/handbook codes. See
+[Checks](../../mods/exlib/wiki/Checks.md), "Without the game: exlib-verify", for the full
+error/informational split.
 
 Two traps worth knowing, both of which fail *quietly*:
 
@@ -208,9 +209,9 @@ to write back the other way.
 `ExpandedLib` and `ExpandedLib.Testing` are `dotnet pack`-able NuGet packages (`PackageId`,
 `Version` read from `modinfo.json`, `Authors`, `Description`, `RepositoryUrl`, `PackageReadmeFile`,
 `PackageLicenseExpression` MIT, matching the repository's `LICENSE`). `.github/workflows/release.yml`
-builds both on a `v*` tag, alongside the Cake `Package`/`PackageTesting` mod zips and dev bundle, and
-attaches everything to the GitHub release; nothing is pushed to NuGet.org (the step is present and
-commented). `templates/ci/tests.yml` and `templates/ci/smoke.yml` are the copy-into-your-own-repo
-CI templates for a mod outside this one.
+builds both on a `v*` tag, alongside the extools `Package`/`PackageTesting` mod zips and dev bundle,
+and attaches everything to the GitHub release; nothing is pushed to NuGet.org (the step is present
+and commented). extools' `templates/ci/tests.yml` and `templates/ci/smoke.yml` are the
+copy-into-your-own-repo CI templates for a mod outside this one.
 
 See [mods/exlib/wiki/Testing-Harness.md](../../mods/exlib/wiki/Testing-Harness.md) for the harness API.

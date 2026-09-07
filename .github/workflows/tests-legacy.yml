@@ -17,7 +17,8 @@ on:
 # build (see tests.yml).
 #
 # Adding a game version means a row HERE, in the mods/exlib/build/ExpandedLib.props manifest (CI
-# YAML can't read MSBuild), in $GameTfms in scripts/exmod.ps1, and in CakeBuild's GameTargets.
+# YAML can't read MSBuild), in $GameTfms in extools' exmod.ps1, and in extools' pack/Program.cs
+# GameTargets.
 
 jobs:
   test:

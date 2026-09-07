@@ -68,7 +68,7 @@ jobs:
     runs-on: ubuntu-latest
 
     # A separate job runs on its own fresh checkout with none of `test`'s build output, so `exmod
-    # smoke` builds whatever mod isn't already built (see Get-DefaultSmokeMods in scripts/exmod.ps1).
+    # smoke` builds whatever mod isn't already built (see Invoke-Smoke in extools' exmod/run.ps1).
     steps:
       - name: Checkout
         uses: actions/checkout@v4

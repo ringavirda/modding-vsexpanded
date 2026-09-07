@@ -21,9 +21,9 @@ steel making:
 | `mods/Directory.Build.props`    | Shared MSBuild config + the supported-game-version manifest.           |
 | `mods/<mod>/assets/<domain>/`   | Each mod's own asset tree, the packaged layout verbatim.               |
 | `mods/<mod>/tests/`             | Headless xUnit test projects (per-mod unit tests + cross-mod integration). |
-| `scripts/`                      | Game/.NET provisioning, mod staging, test runners.                     |
+| `scripts/`                      | The two `exmod` launchers; the implementation lives in [extools](https://github.com/ringavirda/extools). |
 | `docs/`                         | Cross-mod design docs, internal plans, setups.                        |
-| `infra/CakeBuild/`              | Cake build project that publishes per-game-version release zips into `dist/Releases/`. |
+| `infra/tools/`                  | Family-specific helper scripts (shape conversion, rolled-stock generation). |
 | `VintageStory.sln`              | Solution tying the projects together.                                  |
 
 The dependency chain is a straight line, `exlib -> iiex -> siex`. Every reference is

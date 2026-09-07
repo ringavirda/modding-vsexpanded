@@ -15,8 +15,8 @@
     <RootNamespace>ExpandedLib.Testing</RootNamespace>
     <AssemblyName>ExpandedLib.Testing</AssemblyName>
     <!-- Not a game mod - never copied into a Mods/mod folder - but packable as a developer library;
-         see the pack metadata below and infra/CakeBuild's PackageTesting task for the older,
-         NuGet-free dev bundle this repo also still ships on a release. -->
+         see the pack metadata below and extools' PackageTesting task for the older, NuGet-free dev
+         bundle this repo also still ships on a release. -->
     <IsPackable>true</IsPackable>
     <!-- ../../Directory.Build.props only turns this on for a project with its own modinfo.json (a
          mod); this project has none, so it opts in for itself - the nupkg ships IntelliSense docs.

@@ -1,5 +1,5 @@
 {
-  "tools": "0.0.0",
+  "tools": "0.1.0",
   "solution": "VintageStory.sln",
   "series": ["1.22", "1.21", "1.20"],
   "mods": {
@@ -11,7 +11,7 @@
     "helloexpanded": { "path": "samples/HelloExpanded", "tests": "samples/HelloExpanded.Tests" },
     "hellomodule":   { "path": "samples/HelloModule",   "tests": "samples/HelloModule.Tests" }
   },
-  "tests": ["infra/tools/ExlibVerify.Tests"],
-  "packages": ["mods/exlib/src", "mods/exlib/industry", "mods/exlib/testing", "infra/tools/ExlibVerify"],
+  "tests": [],
+  "packages": ["mods/exlib/src", "mods/exlib/industry", "mods/exlib/testing"],
   "depends": { "exlib": { "github": "ringavirda/exlib" } }
 }

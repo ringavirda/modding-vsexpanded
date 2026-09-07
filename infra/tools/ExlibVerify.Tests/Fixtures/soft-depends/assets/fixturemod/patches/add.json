@@ -1,9 +1,0 @@
-[
-  {
-    "op": "replace",
-    "file": "fixturemod:itemtypes/testitem.json",
-    "path": "/maxstacksize",
-    "value": 64,
-    "dependsOn": [ { "modid": "somemissingmod" } ]
-  }
-]

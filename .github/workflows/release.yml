@@ -49,24 +49,18 @@ jobs:
         run: bash scripts/exmod.sh test latest
 
       # Builds every mod for every supported game version and zips them into dist/Releases/, then
-      # (PackageTesting, on demand - see infra/CakeBuild/Program.cs) the harness dev bundle
-      # (exlib-testing_<version>.zip: ExpandedLib.Testing.dll + exlib.dll + docs + generators).
-      - name: Cake package (mod zips)
-        run: dotnet run --project infra/CakeBuild
-      - name: Cake package (testing dev bundle)
-        run: dotnet run --project infra/CakeBuild -- --target=PackageTesting
+      # the harness dev bundle (exlib-testing_<version>.zip: ExpandedLib.Testing.dll + exlib.dll +
+      # docs + generators). Both run the packaging build from extools.
+      - name: Package (mod zips)
+        run: bash scripts/exmod.sh pack
+      - name: Package (testing dev bundle)
+        run: bash scripts/exmod.sh bundle
 
-      # The NuGet packages, built independently of Cake's own outputs (see the csprojs' pack
-      # metadata: PackageId, Version read from modinfo.json, Authors, Description, RepositoryUrl,
+      # The NuGet packages, built independently of the zips (see the csprojs' pack metadata:
+      # PackageId, Version read from modinfo.json, Authors, Description, RepositoryUrl,
       # PackageReadmeFile, PackageLicenseExpression=MIT).
-      # ExlibVerify.csproj packs the same way, as a .NET tool (PackAsTool, ToolCommandName
-      # exlib-verify) rather than a library.
       - name: dotnet pack (NuGet)
-        run: |
-          dotnet pack mods/exlib/src/ExpandedLib.csproj -c Release -o dist/nuget
-          dotnet pack mods/exlib/industry/ExpandedLib.Industry.csproj -c Release -o dist/nuget
-          dotnet pack mods/exlib/testing/ExpandedLib.Testing.csproj -c Release -o dist/nuget
-          dotnet pack infra/tools/ExlibVerify/ExlibVerify.csproj -c Release -o dist/nuget
+        run: bash scripts/exmod.sh nuget
 
       - name: Collect release assets
         run: |

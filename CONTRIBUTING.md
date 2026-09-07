@@ -9,11 +9,24 @@ convention that a reviewer has to catch.
 
 ## Running things
 
-Every repo task goes through one entry point. `scripts/exmod.ps1` holds the implementation and runs
-on all three platforms under PowerShell 7; `scripts/exmod.sh` is a launcher for POSIX shells that
-finds `pwsh` (installing it into `.dotnet/tools` if the machine has none) and forwards to it. There
-is deliberately no second implementation: the previous `.ps1`/`.sh` pairs had already drifted, with
+Every repo task goes through one entry point, `exmod`, which lives in its own repository,
+[extools](https://github.com/ringavirda/extools). `scripts/exmod.sh` and `scripts/exmod.ps1` are
+launchers checked into this repo, not the implementation: they resolve the tools checkout and
+forward every argument to `exmod.ps1` there with this repository as `-RepoRoot`. There is
+deliberately no second implementation: the previous `.ps1`/`.sh` pairs had already drifted, with
 the same VS Code task provisioning a different game build on Windows than on Linux.
+
+Both launchers resolve the tools checkout in the same order, stopping at the first that holds
+`exmod.ps1`:
+
+1. the `EXTOOLS_HOME` environment variable;
+2. the workspace sibling `../extools` - clone `extools` beside this repository to work on the
+   tools themselves; every edit there is picked up on the next `exmod` run, no reinstall;
+3. `.extools/`, cloned on first use from the `"tools"` pin in `exmod.json` (`EXTOOLS_URL`
+   overrides the clone source) and moved to the pinned tag when it changes.
+
+`exmod.sh` also finds `pwsh` (installing it into `.dotnet/tools` if the machine has none) before
+handing off; `exmod.ps1` runs directly under PowerShell 7.
 
 `exmod help <command>` prints one command in detail, flags included - the list below is a map, not
 a manual.
@@ -82,9 +95,9 @@ directory beside the repo root whose own `exmod.json` builds that id, used from 
 directly - else a cached or freshly downloaded release, unpacked under `.exmod/mods/<id>/`
 (gitignored).
 
-Every `PackageReference` version in the repo (exlib's own test projects, the harness, the generators,
-`infra/tools/ExlibVerify*`, both samples) comes from `Directory.Packages.props` at the root -
-central package management, one number per package, no `Version` attribute at the reference site.
+Every `PackageReference` version in the repo (exlib's own test projects, the harness, the
+generators, both samples) comes from `Directory.Packages.props` at the root - central package
+management, one number per package, no `Version` attribute at the reference site.
 `exlib.slnf` is the solution filter scoped to exlib itself: its projects, the generators, the
 harness, exlib's tests and both samples with their tests, none of `mods/iiex`, `mods/siex` or
 `infra/` - `dotnet build exlib.slnf` is the fast loop for exlib work alone.
@@ -97,7 +110,7 @@ alongside the dll.
 
 ### The API patch
 
-`provision game` runs `infra/tools/patch-api.cs` over the provisioned
+`provision game` runs extools' `tools/patch-api.cs` over the provisioned
 `.game/<slug>/VintagestoryAPI.dll` and makes `IPlayer.IsInInteractionRangeOf(BlockPos, float)` public.
 
 Vintage Story 1.22.6 ships that member as `internal abstract`. An interface member is a vtable slot

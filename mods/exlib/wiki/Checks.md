@@ -51,8 +51,9 @@ includes whatever `/exmod verify` finds.
 ## Without the game: `exlib-verify`
 
 A JSON-only modder has no code to build and no reason to install xUnit, but still wants "does my
-mod even load" before ever launching the game. `exlib-verify` (`infra/tools/ExlibVerify`, packed as
-the `ExpandedLib.Verify` .NET tool) answers that from a mod folder or zip alone, against a
+mod even load" before ever launching the game. `exlib-verify`, the `ExpandedLib.Verify` .NET tool
+built from [extools](https://github.com/ringavirda/extools) and installed with
+`dotnet tool install -g ExpandedLib.Verify`, answers that from a mod folder or zip alone, against a
 provisioned game install and any number of other mods:
 
 ```
@@ -99,8 +100,8 @@ informational finding, not only an error.
 A hybrid code+JSON mod (most third-party mods on the Mod DB) will still show real findings this way:
 anything it registers from C# is invisible to a JSON-only scan, so a reference to it reads as
 unresolved. That is a limitation of what a JSON-only pass can know, not a defect in the check - see
-`infra/tools/ExlibVerify.Tests`'s own run over `.compat/_im` and `.compat/industrialstory` for what
-this looks like against two real mods.
+extools' `verify/ExlibVerify.Tests`'s own run over `.compat/_im` and `.compat/industrialstory` for
+what this looks like against two real mods.
 
 ## Rung 3: `ExlibChecks.All` from your own code
 

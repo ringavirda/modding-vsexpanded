@@ -312,7 +312,7 @@ Open #2.
 > coverage while claiming a code nothing placed.
 
 The shipped set is recorded as data in `mods/exlib/testing/ReleasedCodes.cs`, extracted from
-`dist/Releases/1.22.0` by `scripts/gen-released-codes.py` rather than from memory - 501 concrete codes
+`dist/Releases/1.22.0` by extools' `tools/gen-released-codes.py` rather than from memory - 501 concrete codes
 across three domains.
 
 Only `exlib`, `ppex` and `smex` have ever shipped. There has never been a released `iiex`, `iiex` or
