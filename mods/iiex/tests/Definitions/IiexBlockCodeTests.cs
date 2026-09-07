@@ -9,6 +9,7 @@ namespace IronIndustryExpanded.Tests;
 /// with a chosen variant instead of typing it. The emitted table goes stale silently when a variant
 /// group changes, so it is compared against the definitions it was emitted from.
 /// </summary>
+[Trait("exmod", "codes")]
 public class IiexBlockCodeTests {
   private static readonly Assembly Mod =
     typeof(Recipes.Grid.FurnaceRecipeDefinitions).Assembly;

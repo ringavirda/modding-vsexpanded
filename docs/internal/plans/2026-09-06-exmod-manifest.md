@@ -241,3 +241,38 @@ the pre-change capture (exlib, iiex, siex, helloexpanded, hellomodule; six lanes
 also ran `exmod format -Check` on the dirty tree against instructions; the 407 files it rewrote were
 restored from HEAD before the gate above, and the drift it exposed is swept separately on a clean
 tree.
+
+**Task 2 complete 2026-09-07.** `[Trait("exmod", "codes")]` now sits on all three block-code drift
+tests (`ExlibBlocksCodeTests`, `IiexBlockCodeTests`, `SiexBlocksCodeTests`), and
+`BlockCodeEmitter.CheckOrWrite` writes instead of comparing when `EXLIB_WRITE_BLOCKCODES=1` is set -
+the switch the generated files' own header line already named. `Invoke-Codes` resolves its mod (or
+sample) through `Get-ExmodMods`/`Get-ExmodSamples`, runs `dotnet test <tests> --filter "exmod=codes"`
+with that variable set between the two builds, and says so when the target has no test project or no
+test carries the trait (every sample today). `infra/tools/BlockCodeEmitter/` is deleted and removed
+from `VintageStory.sln` via `dotnet sln remove`, which also pruned the now-empty `mods/exlib/src` etc.
+solution folders it alone occupied - the mod projects themselves and their real folders were
+untouched (`dotnet sln list` unchanged bar the emitter). `Invoke-Nuget` packs `Get-ExmodPackages`;
+`Get-ModManifests` and `Invoke-Release`'s shipped-history scan walk `Get-ExmodMods`; `Invoke-CakeTarget`
+passes `--repo $RepoRoot`. `infra/CakeBuild/Program.cs`'s `ProjectFolders` is gone - `BuildContext`
+resolves `--repo` (default: the nearest ancestor of the current directory holding `exmod.json`),
+reads `<repo>/exmod.json`'s `mods` in order, and resolves each one's project the same convention the
+dispatcher uses (`<path>/src` or `<path>`), giving each `ModProject` an `Id` (the manifest key), a
+`ModFolder` and `ProjectDir` relative to the repo root, and a `Folder` read from the resolved csproj's
+file name; every path built from those pieces goes through a new `Repo()` helper instead of
+`../../mods/...` literals, so the tool no longer assumes its own checkout is the one it builds.
+References to the deleted console tool were fixed in `docs/internal/testing.md` and the wiki
+(`Testing-Harness.md`, `Testing-API-Reference.md`); historical prose (worklog, changelog, other
+plans) was left alone, as always. Deleted: `infra/tools/BlockCodeEmitter/` (`BlockCodeEmitter.csproj`,
+`Program.cs`). Gate: `codes exlib`, `codes iiex`, `codes siex` each ran clean and left
+`git diff --stat -- '*.g.cs'` empty; `codes helloexpanded` built and rebuilt with `dotnet test`
+reporting "No test matches the given testcase filter" and no file written, proving the sample branch;
+`build latest` and `dotnet build VintageStory.sln -clp:ErrorsOnly` warning-free; `test latest` six
+lanes green at 11/1817/4/4/2461/348, matching Task 1's baseline exactly; `pack -All` and `nuget`
+compared via a throwaway `git worktree add <tmp> HEAD` baseline (symlinking `.game` and `.dotnet` in
+rather than reprovisioning) - the three current-version zips' `unzip`-equivalent file lists
+(`zipfile.namelist()`) are byte-identical before and after, and the same four NuGet packages come out
+both times; `release` (no `-Online`) reports the identical check list before and after, the only
+difference being the uncommitted-file count, which is this task's own diff; the `BlockCodeEmitter`
+grep finds only the harness class, its callers in the three test fixtures, and prose (comments, the
+generated files' own header line, docs, historical records) that names the class rather than the
+deleted tool.

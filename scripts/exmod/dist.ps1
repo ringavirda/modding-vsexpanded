@@ -13,7 +13,7 @@
 function Invoke-CakeTarget([string]$Target, [string]$Configuration) {
   Push-Location $RepoRoot
   try {
-    $cakeArgs = @('run', '--project', 'infra/CakeBuild', '--')
+    $cakeArgs = @('run', '--project', 'infra/CakeBuild', '--', '--repo', $RepoRoot)
     if ($Target) { $cakeArgs += "--target=$Target" }
     if ($Configuration) { $cakeArgs += "--configuration=$Configuration" }
     dotnet @cakeArgs
@@ -98,19 +98,14 @@ the current game version only; on 1.21 and 1.20 a consumer references it from so
 
 #region nuget
 
-# The four packable projects. Versions come from exlib's modinfo.json (see each csproj), so a
-# release bumps one number and all four follow.
+# The packable projects named by exmod.json's `packages`. Versions come from exlib's
+# modinfo.json (see each csproj), so a release bumps one number and all of them follow.
 function Invoke-Nuget([string[]]$Argv) {
   $configuration = Get-Opt $Argv '-Configuration' 'Release'
   $out = Get-Opt $Argv '-Out' 'dist/nuget'
   $outFull = if ([System.IO.Path]::IsPathRooted($out)) { $out } else { Join-Path $RepoRoot $out }
 
-  $projects = @(
-    'mods/exlib/src/ExpandedLib.csproj',
-    'mods/exlib/industry/ExpandedLib.Industry.csproj',
-    'mods/exlib/testing/ExpandedLib.Testing.csproj',
-    'infra/tools/ExlibVerify/ExlibVerify.csproj'
-  )
+  $projects = @(Get-ExmodPackages)
 
   Write-Step "NuGet packages ($configuration) -> $out"
   Push-Location $RepoRoot
@@ -158,19 +153,19 @@ function Get-ChangelogVersion([string]$Path) {
   return $null
 }
 
-# Every mod in the checkout as its modinfo record plus the paths a release cares about.
+# Every mod the manifest names as its modinfo record plus the paths a release cares about.
 function Get-ModManifests() {
   $out = @()
-  foreach ($modDir in Get-ChildItem (Join-Path $RepoRoot 'mods') -Directory | Sort-Object Name) {
-    $modinfoPath = Join-Path $modDir.FullName 'src/modinfo.json'
+  foreach ($mod in (Get-ExmodMods).GetEnumerator()) {
+    $modinfoPath = Join-Path (Split-Path $mod.Value.Project -Parent) 'modinfo.json'
     if (-not (Test-Path $modinfoPath)) { continue }
     $modinfo = Get-Content $modinfoPath -Raw | ConvertFrom-Json
     $out += [pscustomobject]@{
-      Folder    = $modDir.Name
+      Folder    = $mod.Key
       ModId     = $modinfo.modid
       Version   = $modinfo.version
       Depends   = $modinfo.dependencies
-      Changelog = Join-Path $modDir.FullName 'CHANGELOG.md'
+      Changelog = Join-Path $mod.Value.Path 'CHANGELOG.md'
     }
   }
   return $out
@@ -267,8 +262,8 @@ function Invoke-Release([string[]]$Argv) {
     # mod, so a release that is packed and never recorded loses its codes for good. Each mod's seed
     # records the last version that made it in, under the mod id that shipped it - iiex and siex
     # succeeded ppex and smex, so their history is filed under the old ids.
-    foreach ($modDir in Get-ChildItem (Join-Path $RepoRoot 'mods') -Directory | Sort-Object Name) {
-      $seed = Join-Path $modDir.FullName 'tests/ReleasedHistorySeed.cs'
+    foreach ($mod in (Get-ExmodMods).GetEnumerator()) {
+      $seed = Join-Path $mod.Value.Path 'tests/ReleasedHistorySeed.cs'
       if (-not (Test-Path $seed)) { continue }
       $text = Get-Content $seed -Raw
       foreach ($m in [regex]::Matches($text, '\["(?<id>[^"]+)"\]\s*=\s*"(?<ver>[^"]+)"')) {

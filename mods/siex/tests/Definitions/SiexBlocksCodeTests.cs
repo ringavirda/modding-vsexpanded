@@ -8,6 +8,7 @@ namespace SteelIndustryExpanded.Tests;
 /// The generated <c>SiexBlocks</c> table must stay in step with the definitions it was emitted from: a
 /// variant-group change that is not regenerated leaves the table wrong with no other signal.
 /// </summary>
+[Trait("exmod", "codes")]
 public class SiexBlocksCodeTests {
   private static readonly Assembly Mod =
     typeof(SteelIndustryExpanded.BlockStructures.SmokeStack.Blocks.BlockSmokeStackIntake).Assembly;

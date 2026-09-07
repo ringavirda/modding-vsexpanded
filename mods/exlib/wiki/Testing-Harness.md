@@ -587,17 +587,18 @@ instead of holding the rows themselves, so the harness carries no mod's shipping
 ### Regenerating a block-code table: `exmod codes`
 
 `{Mod}Blocks.g.cs` (`ExlibBlocks`, `IiexBlocks`, `SiexBlocks`) is generated from the mod's own
-code-first block definitions by the standalone `infra/tools/BlockCodeEmitter` console tool, not by
-running the tests:
+code-first block definitions by the mod's own `*BlocksCodeTests` fixture (`BlockCodeEmitter.CheckOrWrite`)
+- there is no separate emitter tool:
 
 ```
 exmod codes iiex
 ```
 
-builds the mod, runs the emitter, and rebuilds so a table change that no longer compiles is caught
-immediately. The mod's own `*BlocksCodeTests` fixture (`BlockCodeEmitter.CheckOrWrite`) stays
-read-only - it fails and names `exmod codes <mod>` when the table has drifted, rather than writing
-it. There is no environment-variable switch for this anymore.
+builds the mod, runs its test project with `EXLIB_WRITE_BLOCKCODES=1` in the environment and
+`--filter "exmod=codes"` (the trait every `*BlocksCodeTests` class carries), and rebuilds so a
+table change that no longer compiles is caught immediately. Run without that environment variable -
+as the normal test lane does - `CheckOrWrite` stays read-only: it fails and names `exmod codes
+<mod>` when the table has drifted, rather than writing it.
 
 ### Real assets: `TestWorld.LoadAssets`
 

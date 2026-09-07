@@ -160,10 +160,11 @@ scripts/exmod.ps1 codes <mod>      # regenerate {Mod}Blocks.g.cs from its defini
 scripts/exmod.ps1 smoke            # boot the real dedicated server with every built mod, then stop it
 ```
 
-`codes` builds the mod, runs the standalone `infra/tools/BlockCodeEmitter` console tool to write
+`codes` builds the mod, runs its test project with `EXLIB_WRITE_BLOCKCODES=1` in the environment and
+`--filter "exmod=codes"` (the trait every mod's `*BlocksCodeTests` class carries) to write
 `mods/<mod>/src/Generated/<Mod>Blocks.g.cs`, and rebuilds so a table change that no longer compiles
-is caught here. The mod's own `*BlocksCodeTests` fixture only compares against that file now - there
-is no env-var switch to write it from inside a test run.
+is caught here. There is no separate emitter tool - the mod's own `*BlocksCodeTests` fixture is the
+emitter, gated on that environment variable.
 
 `smoke` provisions a dedicated-server install if none is found (`scripts/exmod.ps1 provision game`),
 assembles a scratch mods folder (`mods/*/src/bin/Debug/Mods/mod` by default, keyed by each mod's own

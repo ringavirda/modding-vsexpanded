@@ -438,49 +438,65 @@ mods loaded together.
 
 #region codes
 
-# Regenerates one mod's `{Mod}Blocks.g.cs` code-code table from its code-first block definitions,
-# through the standalone infra/tools/BlockCodeEmitter console tool. Builds the mod first (so the
-# emitter reads today's definitions), writes the table, then rebuilds so a change that no longer
-# compiles is caught here rather than by the next `exmod test`.
+# Regenerates one mod's `{Mod}Blocks.g.cs` code-code table from its code-first block definitions.
+# There is no separate emitter tool: every mod's suite already carries the test that checks the
+# table against the definitions and, with EXLIB_WRITE_BLOCKCODES=1 in the environment, writes it
+# instead - [Trait("exmod", "codes")] on that test class is the one filter every mod's table
+# regenerates through. Builds the mod first (so the test reads today's definitions), runs that
+# test to write the table, then rebuilds so a change that no longer compiles is caught here rather
+# than by the next `exmod test`.
 function Invoke-Codes([string[]]$Argv) {
-  $projects = @{
-    exlib = 'mods/exlib/src/ExpandedLib.csproj'
-    iiex  = 'mods/iiex/src/IronIndustryExpanded.csproj'
-    siex  = 'mods/siex/src/SteelIndustryExpanded.csproj'
-  }
   $mod = if ($Argv.Count -gt 0) { $Argv[0] } else { $null }
-  if (-not $mod -or -not $projects.Contains($mod)) {
-    throw "codes needs a mod: one of $($projects.Keys -join ', ')."
+  $mods = Get-ExmodMods
+  $samples = Get-ExmodSamples
+  $entry = if ($mod -and $mods.Contains($mod)) { $mods[$mod] }
+  elseif ($mod -and $samples.Contains($mod)) { $samples[$mod] }
+  else { $null }
+  if (-not $mod -or -not $entry) {
+    $known = @($mods.Keys) + @($samples.Keys)
+    throw "codes needs a mod: one of $($known -join ', ')."
+  }
+  if (-not $entry.Tests) {
+    Write-Host "$mod has no test project - nothing to regenerate."
+    return
   }
 
   Push-Location $RepoRoot
   try {
     Write-Host "Building $mod..."
-    dotnet build $projects[$mod] -clp:ErrorsOnly
+    dotnet build $entry.Project -clp:ErrorsOnly
     if ($LASTEXITCODE -ne 0) { throw "Build of $mod failed." }
 
     Write-Host "Regenerating $mod's block-code table..."
-    dotnet run --project infra/tools/BlockCodeEmitter/BlockCodeEmitter.csproj -- $mod
-    if ($LASTEXITCODE -ne 0) { throw "BlockCodeEmitter failed for $mod." }
+    $env:EXLIB_WRITE_BLOCKCODES = '1'
+    try {
+      dotnet test $entry.Tests --filter 'exmod=codes'
+      if ($LASTEXITCODE -ne 0) { throw "Regeneration test run failed for $mod." }
+    } finally {
+      Remove-Item Env:\EXLIB_WRITE_BLOCKCODES -ErrorAction SilentlyContinue
+    }
 
     Write-Host "Rebuilding $mod against the regenerated table..."
-    dotnet build $projects[$mod] -clp:ErrorsOnly
+    dotnet build $entry.Project -clp:ErrorsOnly
     if ($LASTEXITCODE -ne 0) { throw "Rebuild of $mod failed after regenerating its block codes." }
   } finally {
     Pop-Location
   }
 }
 
-
 Add-ExmodCommand -Group source -Name codes -Summary "regenerate a mod's block-code table" -Action {
   param([string[]]$Argv) Invoke-Codes $Argv
 } -Detail @'
 exmod codes <exlib|iiex|siex>
 
-Regenerates one mod's {Mod}Blocks.g.cs from its code-first block definitions, through
-infra/tools/BlockCodeEmitter. Builds the mod so the emitter reads today's definitions, writes the
-table, then rebuilds - so a table that no longer compiles fails here rather than in the next test
-run.
+Regenerates one mod's {Mod}Blocks.g.cs from its code-first block definitions. There is no separate
+emitter tool: builds the mod, runs its test project with EXLIB_WRITE_BLOCKCODES=1 in the
+environment and --filter "exmod=codes" (the trait every mod's *BlocksCodeTests class carries, so
+one filter reaches whichever mod is asked for), then rebuilds - so a table that no longer compiles
+fails here rather than in the next test run.
+
+Takes a mod id from exmod.json's mods, or a sample id if its test project carries a test with that
+trait - none of the samples do today, so `codes <sample>` reports it has nothing to regenerate.
 '@
 
 #endregion

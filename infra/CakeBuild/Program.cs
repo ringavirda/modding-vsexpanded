@@ -24,11 +24,17 @@ public static class Program {
   }
 }
 
-/// <summary>One buildable mod project in the monorepo. <paramref name="ModFolder"/> is the mod's own
-/// folder under <c>mods/</c> (exlib/iiex/siex); <paramref name="Folder"/> is the project name the
-/// csproj/modinfo file inside <c>mods/&lt;ModFolder&gt;/src/</c> is stamped with.</summary>
+/// <summary>One buildable mod project, read from the repo's <c>exmod.json</c>. <paramref
+/// name="Id"/> is the manifest's own key for it (exlib/iiex/siex); <paramref name="ModFolder"/> is
+/// its own path relative to the repo root; <paramref name="ProjectDir"/> is the directory holding
+/// its csproj, relative to the repo root - the single <c>.csproj</c> under
+/// <c>&lt;ModFolder&gt;/src</c>, or under <c>&lt;ModFolder&gt;</c> itself when <c>src/</c> has
+/// none, the same convention <c>scripts/exmod.ps1</c> resolves a mod's project by. <paramref
+/// name="Folder"/> is that csproj's file name without extension.</summary>
 public record ModProject(
+  string Id,
   string ModFolder,
+  string ProjectDir,
   string Folder,
   string ModId,
   string Version
@@ -41,17 +47,6 @@ public record ModProject(
 public record GameTarget(string Tfm, string GameVersion, bool IsCurrent);
 
 public class BuildContext : FrostingContext {
-  // Build order matters: exlib first (the shared lib every mod references), then iiex (the iron
-  // tier, which owns the base pipe block, the networks and the steam plant), and finally siex (the
-  // steel tier and the high-pressure leaves, both built on iiex's bases). ModFolder is the mod's own
-  // folder under mods/; Folder is the project name the csproj/modinfo inside its src/ carries.
-  public static readonly (string ModFolder, string Folder)[] ProjectFolders =
-  [
-    ("exlib", "ExpandedLib"),
-    ("iiex", "IronIndustryExpanded"),
-    ("siex", "SteelIndustryExpanded"),
-  ];
-
   // Every supported game version. The legacy ones (IsCurrent=false) build with -p:Legacy=true and
   // land in a per-TFM output path; their packaged modinfo gets its game dependency rewritten.
   public static readonly GameTarget[] GameTargets =
@@ -66,29 +61,75 @@ public class BuildContext : FrostingContext {
 
   public string BuildConfiguration { get; }
   public bool SkipJsonValidation { get; }
+  public string RepoRoot { get; }
+  // Build order matters: exlib first (the shared lib every mod references), then iiex (the iron
+  // tier, which owns the base pipe block, the networks and the steam plant), and finally siex (the
+  // steel tier and the high-pressure leaves, both built on iiex's bases) - the order exmod.json's
+  // `mods` names them in.
   public List<ModProject> Projects { get; } = [];
 
   public BuildContext(ICakeContext context)
     : base(context) {
     BuildConfiguration = context.Argument("configuration", "Release");
     SkipJsonValidation = context.Argument("skipJsonValidation", false);
+    RepoRoot = ResolveRepoRoot(context);
 
-    foreach (var (modFolder, folder) in ProjectFolders) {
+    var manifest = JObject.Parse(File.ReadAllText(Path.Combine(RepoRoot, "exmod.json")));
+    foreach (var prop in ((JObject)manifest["mods"]!).Properties()) {
+      string id = prop.Name;
+      string modFolder = ((string)prop.Value["path"]!).Replace('\\', '/');
+      string modFolderAbs = Repo(modFolder);
+      string srcDir = Path.Combine(modFolderAbs, "src");
+      string projectDirAbs = Directory.Exists(srcDir) ? srcDir : modFolderAbs;
+
+      string[] csprojFiles = Directory.GetFiles(projectDirAbs, "*.csproj");
+      if (csprojFiles.Length != 1)
+        throw new InvalidOperationException(
+          $"exmod.json: mods.{id} resolves to {projectDirAbs}, which holds "
+            + $"{csprojFiles.Length} .csproj file(s) (want exactly one)."
+        );
+      string folder = Path.GetFileNameWithoutExtension(csprojFiles[0]);
+      string projectDir = Path.GetRelativePath(RepoRoot, projectDirAbs).Replace('\\', '/');
+
       var modInfo = context.DeserializeJsonFromFile<ModInfo>(
-        $"../../mods/{modFolder}/src/modinfo.json"
+        Path.Combine(projectDirAbs, "modinfo.json")
       );
       Projects.Add(
-        new ModProject(modFolder, folder, modInfo.ModID, modInfo.Version)
+        new ModProject(id, modFolder, projectDir, folder, modInfo.ModID, modInfo.Version)
       );
     }
   }
+
+  /// <summary>The nearest directory above the current one that holds <c>exmod.json</c> - the same
+  /// search <c>scripts/exmod.ps1</c> does - or the <c>--repo</c> argument when one is given.</summary>
+  private static string ResolveRepoRoot(ICakeContext context) {
+    string given = context.Argument<string>("repo", null);
+    if (!string.IsNullOrWhiteSpace(given))
+      return Path.GetFullPath(given);
+
+    for (
+      var dir = new DirectoryInfo(Directory.GetCurrentDirectory());
+      dir != null;
+      dir = dir.Parent
+    ) {
+      if (File.Exists(Path.Combine(dir.FullName, "exmod.json")))
+        return dir.FullName;
+    }
+    throw new InvalidOperationException(
+      "No exmod.json found above the current directory; pass --repo."
+    );
+  }
+
+  /// <summary>Resolves a repo-root-relative path (forward slashes) to an absolute one.</summary>
+  public string Repo(string relativePath) =>
+    Path.Combine(RepoRoot, relativePath.Replace('/', Path.DirectorySeparatorChar));
 
   /// <summary>The publish output for a project+target. The current version uses the flat
   /// Mods/mod path; legacy targets append their TFM (see the mod csproj OutputPath).</summary>
   public string PublishDir(ModProject project, GameTarget target) =>
     target.IsCurrent
-      ? $"../../mods/{project.ModFolder}/src/bin/{BuildConfiguration}/Mods/mod/publish"
-      : $"../../mods/{project.ModFolder}/src/bin/{BuildConfiguration}/{target.Tfm}/Mods/mod/publish";
+      ? Repo($"{project.ProjectDir}/bin/{BuildConfiguration}/Mods/mod/publish")
+      : Repo($"{project.ProjectDir}/bin/{BuildConfiguration}/{target.Tfm}/Mods/mod/publish");
 }
 
 [TaskName("ValidateJson")]
@@ -99,7 +140,7 @@ public sealed class ValidateJsonTask : FrostingTask<BuildContext> {
 
     foreach (var project in context.Projects) {
       var jsonFiles = context.GetFiles(
-        $"../../mods/{project.ModFolder}/assets/**/*.json"
+        context.Repo($"{project.ModFolder}/assets/**/*.json")
       );
       foreach (var file in jsonFiles) {
         try {
@@ -120,11 +161,9 @@ public sealed class ValidateJsonTask : FrostingTask<BuildContext> {
 public sealed class BuildTask : FrostingTask<BuildContext> {
   public override void Run(BuildContext context) {
     foreach (var project in context.Projects) {
-      string csproj =
-        $"../../mods/{project.ModFolder}/src/{project.Folder}.csproj";
+      string csproj = context.Repo($"{project.ProjectDir}/{project.Folder}.csproj");
       // Wipe the whole bin so stale per-version outputs can't leak into a package.
-      string binDir =
-        $"../../mods/{project.ModFolder}/src/bin/{context.BuildConfiguration}";
+      string binDir = context.Repo($"{project.ProjectDir}/bin/{context.BuildConfiguration}");
       context.EnsureDirectoryExists(binDir);
       context.CleanDirectory(binDir);
 
@@ -149,9 +188,9 @@ public sealed class BuildTask : FrostingTask<BuildContext> {
         // OutputPath mirrors ExpandedLib.csproj's exactly (same mod-output/publish folder per
         // target), so publishing it here lands exlib.industry.dll right beside exlib.dll with no
         // extra copy step.
-        if (project.ModFolder == "exlib") {
+        if (project.Id == "exlib") {
           context.DotNetPublish(
-            "../../mods/exlib/industry/ExpandedLib.Industry.csproj",
+            context.Repo($"{project.ModFolder}/industry/ExpandedLib.Industry.csproj"),
             new DotNetPublishSettings {
               Configuration = context.BuildConfiguration,
               Framework = target.Tfm,
@@ -171,8 +210,8 @@ public sealed class BuildTask : FrostingTask<BuildContext> {
 [IsDependentOn(typeof(BuildTask))]
 public sealed class PackageTask : FrostingTask<BuildContext> {
   public override void Run(BuildContext context) {
-    context.EnsureDirectoryExists("../../dist/Releases");
-    context.CleanDirectory("../../dist/Releases");
+    context.EnsureDirectoryExists(context.Repo("dist/Releases"));
+    context.CleanDirectory(context.Repo("dist/Releases"));
 
     // One archive per (game version, mod), grouped into a per-version folder. Legacy
     // targets get a trailing game-version suffix so the files are distinguishable; the
@@ -181,8 +220,7 @@ public sealed class PackageTask : FrostingTask<BuildContext> {
     //   dist/Releases/<gameVersion>/<modid>_<modVersion>_<gameVersion>.zip (legacy)
     foreach (var target in BuildContext.GameTargets) {
       foreach (var project in context.Projects) {
-        string stageDir =
-          $"../../dist/Releases/{target.GameVersion}/{project.ModId}";
+        string stageDir = context.Repo($"dist/Releases/{target.GameVersion}/{project.ModId}");
         context.EnsureDirectoryExists(stageDir);
 
         context.CopyFiles($"{context.PublishDir(project, target)}/*", stageDir);
@@ -200,28 +238,22 @@ public sealed class PackageTask : FrostingTask<BuildContext> {
             $"{context.PublishDir(project, target)}/assets",
             $"{stageDir}/assets"
           );
-        if (
-          context.FileExists($"../../mods/{project.ModFolder}/src/modicon.png")
-        )
-          context.CopyFile(
-            $"../../mods/{project.ModFolder}/src/modicon.png",
-            $"{stageDir}/modicon.png"
-          );
+        string modIcon = context.Repo($"{project.ProjectDir}/modicon.png");
+        if (context.FileExists(modIcon))
+          context.CopyFile(modIcon, $"{stageDir}/modicon.png");
         // The licence travels inside the zip. A download from ModDB carries no repository context of
         // its own, so this is the only copy the person holding the file has.
-        context.CopyFile("../../LICENSE", $"{stageDir}/LICENSE.txt");
+        context.CopyFile(context.Repo("LICENSE"), $"{stageDir}/LICENSE.txt");
 
         // Authoritative modinfo: the source declares the current game version, so point the game
         // dependency at this target's version (no-op for the current one). A source that declares any
         // other version leaves every legacy zip claiming the wrong floor, and a string replace that
         // matches nothing reports success - so the declaration is checked rather than assumed.
-        string source = File.ReadAllText(
-          $"../../mods/{project.ModFolder}/src/modinfo.json"
-        );
+        string source = File.ReadAllText(context.Repo($"{project.ProjectDir}/modinfo.json"));
         string declared = $"\"game\": \"{BuildContext.SourceGameVersion}\"";
         if (!source.Contains(declared))
           throw new InvalidOperationException(
-            $"mods/{project.ModFolder}/src/modinfo.json must declare {declared} - the packaged game "
+            $"{project.ProjectDir}/modinfo.json must declare {declared} - the packaged game "
               + $"dependency is rewritten from it per target. Found: "
               + $"{GameDependencyOf(source)}."
           );
@@ -235,7 +267,9 @@ public sealed class PackageTask : FrostingTask<BuildContext> {
         string versionSuffix = target.IsCurrent ? "" : $"_{target.GameVersion}";
         context.Zip(
           stageDir,
-          $"../../dist/Releases/{target.GameVersion}/{project.ModId}_{project.Version}{versionSuffix}.zip"
+          context.Repo(
+            $"dist/Releases/{target.GameVersion}/{project.ModId}_{project.Version}{versionSuffix}.zip"
+          )
         );
       }
     }
@@ -295,11 +329,11 @@ public sealed class PackageTestingTask : FrostingTask<BuildContext> {
 
   public override void Run(BuildContext context) {
     var current = Array.Find(BuildContext.GameTargets, t => t.IsCurrent)!;
-    var exlib = context.Projects.Find(p => p.Folder == "ExpandedLib")!;
+    var exlib = context.Projects.Find(p => p.Id == "exlib")!;
 
     // Build the harness for the current target (single-TFM => flat bin/<config> output).
     context.DotNetBuild(
-      "../../mods/exlib/testing/ExpandedLib.Testing.csproj",
+      context.Repo($"{exlib.ModFolder}/testing/ExpandedLib.Testing.csproj"),
       new DotNetBuildSettings {
         Configuration = context.BuildConfiguration,
         Framework = current.Tfm,
@@ -309,12 +343,11 @@ public sealed class PackageTestingTask : FrostingTask<BuildContext> {
     // Hyphen, not a dot, in the basename: GitHub's release-asset uploader sniffs content type from
     // the filename and rejects a dotted name segment (exlib.testing_x.zip) with "we can't process
     // this file". exlib-testing_<version>.zip keeps the _<version> convention and uploads cleanly.
-    string stageDir =
-      $"../../dist/Releases/{current.GameVersion}/exlib-testing";
+    string stageDir = context.Repo($"dist/Releases/{current.GameVersion}/exlib-testing");
     context.EnsureDirectoryExists(stageDir);
 
     context.CopyFile(
-      $"../../mods/exlib/testing/bin/{context.BuildConfiguration}/ExpandedLib.Testing.dll",
+      context.Repo($"{exlib.ModFolder}/testing/bin/{context.BuildConfiguration}/ExpandedLib.Testing.dll"),
       $"{stageDir}/ExpandedLib.Testing.dll"
     );
     // exlib.dll comes from exlib's own publish output (the harness references it Private=false, so
@@ -329,7 +362,7 @@ public sealed class PackageTestingTask : FrostingTask<BuildContext> {
     // here too. Copied best-effort: an older build tree may predate GenerateDocumentationFile.
     CopyDocsIfPresent(
       context,
-      $"../../mods/exlib/testing/bin/{context.BuildConfiguration}/ExpandedLib.Testing.xml",
+      context.Repo($"{exlib.ModFolder}/testing/bin/{context.BuildConfiguration}/ExpandedLib.Testing.xml"),
       $"{stageDir}/ExpandedLib.Testing.xml"
     );
     CopyDocsIfPresent(
@@ -343,21 +376,23 @@ public sealed class PackageTestingTask : FrostingTask<BuildContext> {
     // would exist. IncludeBuildOutput=false keeps the generator out of the mods' own packages, so it is
     // named here rather than picked up from a publish directory.
     context.DotNetBuild(
-      "../../mods/exlib/generators/ExpandedLib.Generators.csproj",
+      context.Repo($"{exlib.ModFolder}/generators/ExpandedLib.Generators.csproj"),
       new DotNetBuildSettings { Configuration = context.BuildConfiguration }
     );
     context.EnsureDirectoryExists($"{stageDir}/analyzers");
     context.CopyFile(
-      $"../../mods/exlib/generators/bin/{context.BuildConfiguration}/netstandard2.0/ExpandedLib.Generators.dll",
+      context.Repo(
+        $"{exlib.ModFolder}/generators/bin/{context.BuildConfiguration}/netstandard2.0/ExpandedLib.Generators.dll"
+      ),
       $"{stageDir}/analyzers/ExpandedLib.Generators.dll"
     );
 
     File.WriteAllText($"{stageDir}/README.txt", BundleReadme);
-    context.CopyFile("../../LICENSE", $"{stageDir}/LICENSE.txt");
+    context.CopyFile(context.Repo("LICENSE"), $"{stageDir}/LICENSE.txt");
 
     context.Zip(
       stageDir,
-      $"../../dist/Releases/{current.GameVersion}/exlib-testing_{exlib.Version}.zip"
+      context.Repo($"dist/Releases/{current.GameVersion}/exlib-testing_{exlib.Version}.zip")
     );
   }
 

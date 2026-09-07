@@ -638,9 +638,10 @@ public static class BlockCodeEmitter
 ```
 
 Emits a mod's `{Mod}Blocks` table from its code-first definitions, so a layout author can name a
-block code with a chosen variant instead of hand-writing the string. `exmod codes <mod>` is the
-console entry point (`infra/tools/BlockCodeEmitter`) - `CheckOrWrite` is what the mod's own
-`*BlocksCodeTests` fixture calls to fail and name that command when the table has drifted.
+block code with a chosen variant instead of hand-writing the string. There is no console entry
+point - `CheckOrWrite` is what the mod's own `*BlocksCodeTests` fixture calls: read-only by
+default, it fails and names `exmod codes <mod>` when the table has drifted; with
+`EXLIB_WRITE_BLOCKCODES=1` set, which is what that command does, it writes the table instead.
 
 ## `ReleasedCodes` / `ReleasedVersions` / `ReleasedCodeDebt`
 

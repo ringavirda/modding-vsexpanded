@@ -8,6 +8,7 @@ namespace ExpandedLib.Tests;
 /// The generated <c>ExlibBlocks</c> table must stay in step with the definitions it was emitted from:
 /// a variant-group change that has not been regenerated fails here.
 /// </summary>
+[Trait("exmod", "codes")]
 public class ExlibBlocksCodeTests {
   private static readonly Assembly Mod =
     typeof(ExpandedLib.Structures.StructureFillers).Assembly;

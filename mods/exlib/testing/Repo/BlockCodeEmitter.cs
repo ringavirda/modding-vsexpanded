@@ -20,9 +20,9 @@ namespace ExpandedLib.Testing;
 public static class BlockCodeEmitter {
   /// <summary>
   /// Emits <paramref name="domain"/>'s table and compares it to the file at
-  /// <paramref name="repoRelativePath"/>. Read-only: the table is written by
-  /// <c>scripts/exmod.ps1 codes &lt;mod&gt;</c>, through the standalone
-  /// <c>infra/tools/BlockCodeEmitter</c> console tool, not by running the tests.
+  /// <paramref name="repoRelativePath"/>, or writes over it when the
+  /// <c>EXLIB_WRITE_BLOCKCODES</c> environment variable is set - the switch
+  /// <c>scripts/exmod.ps1 codes &lt;mod&gt;</c> sets before running this test.
   /// </summary>
   public static (bool ok, string message) CheckOrWrite(
     string domain,
@@ -33,6 +33,11 @@ public static class BlockCodeEmitter {
   ) {
     string expected = Emit(domain, asm, className, namespaceName);
     string path = DefinitionGoldens.SolutionRelative(repoRelativePath);
+
+    if (Environment.GetEnvironmentVariable("EXLIB_WRITE_BLOCKCODES") == "1") {
+      System.IO.File.WriteAllText(path, expected);
+      return (true, $"wrote {repoRelativePath}");
+    }
 
     if (!System.IO.File.Exists(path))
       return (
