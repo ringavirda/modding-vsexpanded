@@ -56,6 +56,16 @@ for folder (`Config/`, `Registries/` with `Recipes/` merged in, `Catalogues/` wi
 `Industry.Metals` content it exercises, `Generators/`, `Localization/`, `Harness/`) - it has no
 machine families to put under `Blocks/`.
 
+`Localization/` is not exlib-only: every mod's suite (and the sample's, and the template's) keeps a
+thin `Invariants/ShippedAssetJsonTests.cs`/`LoopingAnimationTests.cs` and a thin
+`Localization/LangKeyResolutionTests.cs`/`LangParityTests.cs` calling the harness's four repo-wide
+guards - `ShippedJson`, `LoopingAnimations`, `LangKeys`, `LangParity` - over its own tree, the shape
+that used to live only in `ExpandedLib.Tests` scanning everyone's. `RepoPaths` and `RepoManifest`
+resolve which tree belongs to which mod (and which mod ships an overlay domain, like iiex's `game`
+lang overlay) from `exmod.json` at the repo root, falling back to the `mods/<id>` convention when
+that file is absent; see [Testing Harness](../../mods/exlib/wiki/Testing-Harness.md) "Repo-wide
+guards, per mod".
+
 ### Fixture suffixes
 
 | Suffix | Means | Example |

@@ -467,3 +467,67 @@ link check in `exmod check` clean.
   folders cleared and a plain `dotnet restore` re-run to leave them in source mode, `build latest`
   and `test latest` re-confirmed green afterward at the same counts, `git status` shows only the
   nine files listed above modified (`dist/nuget/` stays untracked/ignored, no stray `nuget.config`).
+
+- **Task 4** (2026-09-07): `RepoManifest` (`Repo/`) reads `exmod.json` fresh on every access (no
+  cache - `DefinitionGoldens.RepoRootOverride` can move the root mid-process, the same reason
+  `RepoPaths.Root` itself is never cached) and falls back to the default `mods/<id>` layout when the
+  file is absent; `RepoPaths.Mod`/`.Assets`/`.AllAssetTrees` now resolve through it (`DomainToMod`
+  built once from `RepoManifest.Mods` + `.Overlays` instead of a hand-written literal), `Src(id)` is
+  new, and `AllAssetTrees()` now also walks every sample's `assets/` (harmless for
+  `DefinitionGoldens`/`HandbookSync`, which both filter to folders no sample ships). `iiex`'s
+  `exmod.json` entry gained `"overlays": { "game": "iiex" }`. The four cores
+  (`Checks/ShippedJson.cs`, `LoopingAnimations.cs`, `LangKeys.cs`, `LangParity.cs`) moved every rule,
+  threshold and message off the four exlib tests they replace, parameterised on the tree(s)/source
+  roots a caller passes; thin tests now exist for exlib (own tree only), iiex (own tree + the `game`
+  overlay tree, for `ShippedJson`/`LoopingAnimations`/`LangParity`), siex (own tree), the sample
+  (`ShippedAssetJsonTests`/`LangParityTests` only, per the task's file list) and the template
+  (`ShippedAssetJsonTests.cs` rewritten to call the core, `Localization/LangParityTests.cs` new).
+  exlib's `ShippedAssetJsonTests.cs` keeps three facts that stayed whole-repo on inspection - they
+  compare one domain's assets against another's (`The_corpus_covers_every_shipped_domain`,
+  `Every_texture_our_domains_name_resolves_to_a_file`, `No_shipped_asset_carries_an_authoring_path`)
+  - which the design section's table never listed as moving into a core; only the
+  parse/control-character/patch-side rule did.
+
+  Count reconciliation. Baseline (before, `test latest`): ExpandedLib.Tests 2439, IronIndustryExpanded
+  2453, SteelIndustryExpanded 340, HelloExpanded.Tests 2, HelloModule.Tests 4, ExlibVerify.Tests 11.
+  The four tests being replaced (`ShippedAssetJsonTests`+`LoopingAnimationTests`+
+  `LangKeyResolutionTests`+`LangParityTests`, filtered and run standalone) held exactly 640 cases in
+  `ExpandedLib.Tests` - 2 theories x 182 JSON files + 5 facts (`ShippedJson`'s share: 369) + 2 theories
+  x 126 shape files + 1 fact (`LoopingAnimations`'s share: 253) + 2 facts (`LangKeys`: 2) + 2 theories
+  x 8 locale files (`LangParity`: 16). After the split the same four guards contribute 10 facts to
+  exlib (own tree: `ShippedJson` 1 fact - exlib ships no `patches/`, so no premise -,
+  `LoopingAnimations` 2, `LangKeys` 2, `LangParity` 2, plus the 3 facts that stayed whole-repo above),
+  8 to iiex (`ShippedJson` 2 - the `Check`+`PatchFiles` premise, `LoopingAnimations` 2,
+  `LangKeys` 2, `LangParity` 2, each `Check` looping both the iiex tree and the `game` overlay tree)
+  and 8 to siex (same shape as iiex, minus the overlay tree). Net: exlib lane 2439 -> 1814 (-625: the
+  640 old cases replaced by 10 thin facts, plus +5 from `HarnessSurfaceTests`' own theory over the
+  five new public types - `ShippedJson`, `LoopingAnimations`, `LangKeys`, `LangParity`,
+  `RepoManifest`); iiex 2453 -> 2461 (+8, its own share of the four guards, newly run per-mod rather
+  than folded into exlib's whole-repo scan); siex 340 -> 348 (+8, same reason); HelloExpanded.Tests
+  2 -> 4 (+2, the two thin facts the task's file list names for the sample); HelloModule.Tests and
+  ExlibVerify.Tests unchanged. The file set scanned did not shrink - see the deliberate-error check
+  below - only the number of xUnit cases reporting on it did, exactly the "a thin Fact replaces N
+  theory cases" trade the task names.
+
+  One factual correction to the task's own premise list: it names `shapes: iiex and siex` for the
+  `LoopingAnimations` premise, but `mods/exlib/assets/exlib/shapes/` also carries four shape JSON
+  files (`pipe/passthrough.json` and three more), so exlib's thin `LoopingAnimationTests.cs` keeps
+  `The_corpus_reaches_the_shipped_shapes` too rather than dropping it - ground truth over the
+  enumerated list, per the general Produces-section rule ("a premise... where the tree is known to
+  carry that kind of file").
+
+  Deliberate-error check: a throwaway `mods/iiex/assets/iiex/patches/zzz-throwaway-syntax-error.json`
+  holding `{ "bad": ` failed `IronIndustryExpanded.Tests`
+  (`ShippedAssetJsonTests.Iiexs_shipped_json_carries_no_defect`, 1 failed of 2) while
+  `ExpandedLib.Tests` stayed green (4/4) in the same run; the file was removed afterward and iiex's
+  two `ShippedAssetJsonTests` facts went back to green (2/2).
+
+  Wiki/docs: `Testing-API-Reference.md` gained `RepoManifest`, `RepoPaths.Src`, and the four checks in
+  the `Checks/` table and the "Where things are" row; `Testing-Harness.md` gained a "Repo-wide guards,
+  per mod" subsection under "3. Prove the content"; `docs/internal/testing.md` gained one paragraph
+  after the Folders table noting `Localization/` is no longer exlib-only and pointing at the manifest.
+
+  Gate green: `build latest` warning-free; `dotnet build mods/exlib/tests|mods/iiex/tests|mods/siex/tests
+  -v q` all zero warnings; `test latest` six lanes green at the counts above
+  (11/1814/4/4/2461/348); the deliberate-error check; `HarnessSurfaceTests` green (67/67, folded into
+  the exlib lane total).

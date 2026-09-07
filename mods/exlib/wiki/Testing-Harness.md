@@ -486,6 +486,31 @@ semantic JSON comparison both `DefinitionGoldens` and a migration's own before/a
 The full list, one row per type, is the [Testing API Reference](Testing-API-Reference)'s "Checks"
 table - this page doesn't repeat it.
 
+### Repo-wide guards, per mod
+
+`ShippedJson`, `LoopingAnimations`, `LangKeys` and `LangParity` are the four checks a mod's own
+suite runs over its own tree: every shipped JSON parses and carries no control character, and (under
+`patches/`) declares its side; no looping shape animation unwinds a whole turn across its wrap; every
+literal `Lang.Get("domain:key")` in the mod's source resolves in its lang tree's English file; every
+locale in that lang tree carries the same key set and placeholders as English. Each returns
+`IReadOnlyList<string>` findings (empty means clean) and pairs with a premise method
+(`PatchFiles`/`ShapeFiles`/`Literals`/`LocaleFiles`) a mod's suite asserts is non-empty wherever its
+tree is known to carry that kind of file - otherwise a renamed folder or a dead regex would make the
+rule above it pass trivially:
+
+```csharp
+[Fact]
+public void Iiexs_shipped_json_carries_no_defect() {
+  var offenders = ShippedJson.Check(RepoPaths.Assets("iiex"));
+  Assert.True(offenders.Count == 0, string.Join("\n", offenders));
+}
+```
+
+A mod whose tree carries another domain's overlay (iiex's `game` lang overlay) runs the same check
+over both trees. `RepoPaths` and `RepoManifest` resolve which tree is whose from `exmod.json` (see
+[Testing API Reference](Testing-API-Reference)): a mod, a sample and a plain `mods/<id>` fallback all
+resolve the same way, so these four checks read the same whether `exmod.json` exists or not.
+
 ### Reflection scans: `RegistryLawScanner` and `ResourceInvariant`
 
 A law that must hold for every concrete subclass of some base type - wherever it is declared, not

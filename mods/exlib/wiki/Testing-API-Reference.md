@@ -12,8 +12,8 @@ Full public surface of `ExpandedLib.Testing`. For setup and worked examples see 
 | `Scenes/` | `Scene`, `SceneDiagram`, `SceneGrid` |
 | `Rigs/` | `StructureRig`, `MachineRig`, `RegistryLawScanner`, `ResourceInvariant<TState>`, `StaticStateCollection`, `HarmonyFixture` |
 | `Doubles/` | stand-ins: `StubNetwork`, `TestNetworkBlock`, `CapturingNode`, `SeverableNode`, `OrientableNode`, `RccFake`, `TestMemberBlockEntity`, `MechPower`; supported doubles: `TestPlayer`, `TestInventory`, `TestModLoader`, `WorldConfigBag`, `ModConfigFiles`, `RecordingLogger`, `TestChannels` |
-| `Checks/` | the content validators: `CodeLiterals`, `CodePrefixCollision`, `CostSelectorOverlap`, `DefinitionAssets`, `DefinitionCatalogue`, `DefinitionCodes`, `DefinitionGoldens`, `DefinitionJson`, `DefinitionParity`, `HandbookSync`, `LangCallSites`, `LangCoverage`, `LayoutTable`, `MegablockFrames`, `MultiblockCodes`, `NetworkNodeContract`, `PinnedNetworkNodes`, `PressureVesselGate`, `RecipeCodes`, `ReferencedCodes`, `ShapeExtents`, `TreeKeys`, `VanillaToolTiers`, `WikiParity` |
-| `Repo/` | `RepoPaths`, `ReleasedHistory`, `ReleasedCodes`, `ReleasedVersions`, `ReleasedCodeDebt`, `BlockCodeEmitter`, `RepoCheckSource` |
+| `Checks/` | the content validators: `CodeLiterals`, `CodePrefixCollision`, `CostSelectorOverlap`, `DefinitionAssets`, `DefinitionCatalogue`, `DefinitionCodes`, `DefinitionGoldens`, `DefinitionJson`, `DefinitionParity`, `HandbookSync`, `LangCallSites`, `LangCoverage`, `LangKeys`, `LangParity`, `LayoutTable`, `LoopingAnimations`, `MegablockFrames`, `MultiblockCodes`, `NetworkNodeContract`, `PinnedNetworkNodes`, `PressureVesselGate`, `RecipeCodes`, `ReferencedCodes`, `ShapeExtents`, `ShippedJson`, `TreeKeys`, `VanillaToolTiers`, `WikiParity` |
+| `Repo/` | `RepoPaths`, `RepoManifest`, `ReleasedHistory`, `ReleasedCodes`, `ReleasedVersions`, `ReleasedCodeDebt`, `BlockCodeEmitter`, `RepoCheckSource` |
 | (root) | `ReflectionHelpers` |
 
 ## `TestWorld`
@@ -437,13 +437,38 @@ applies every uncategorised `[HarmonyPatch]` class in `patches`; a `category` ap
 public static class RepoPaths
 {
     public static string Root { get; }
-    public static string Mod(string id);
-    public static string Assets(string domain);   // unknown domain falls back to mods/<domain>
+    public static string Mod(string id);           // a sample id resolves to its sample path
+    public static string Assets(string domain);    // unknown domain falls back to mods/<domain>
     public static string Docs(string modId);
+    public static string Src(string id);            // <mod path>/src, else the mod path itself
     public static IReadOnlyList<string> AllAssetTrees();
     public static void Register(string domain, string modFolder);
 }
 ```
+
+`Mod`, `Assets` and `AllAssetTrees` all resolve through `RepoManifest` (below), so a mod or sample the
+manifest names is covered without editing this file; `Register` still covers a domain the manifest
+does not know about.
+
+## `RepoManifest`
+
+```csharp
+public static class RepoManifest
+{
+    public readonly record struct SampleEntry(string Path, string Tests);
+
+    public static IReadOnlyDictionary<string, string> Mods { get; }
+    public static IReadOnlyDictionary<string, SampleEntry> Samples { get; }
+    public static IReadOnlyList<string> Tests { get; }
+    public static IReadOnlyDictionary<string, string> Overlays { get; }
+}
+```
+
+Reads the repo manifest, `exmod.json`, at the repo root: every mod's id and path, every sample's id,
+path and test project, the test projects belonging to neither, and any overlay domain a mod's own
+entry declares (`"overlays": { "game": "iiex" }`). Absent the file, the default layout applies: every
+directory under `mods/` is a mod named after itself, no samples, no extra tests, and `game` overlaid
+onto `iiex` only when `mods/iiex/assets/game` exists.
 
 ## `ReleasedHistory`
 
@@ -538,7 +563,10 @@ pairs.
 | `HandbookSync` | The handbook authoring pipeline: `mods/{domain}/docs/handbook/NN-*.html` as the hand-edited source for a shipped handbook page's body. |
 | `LangCallSites` | Every lang key a mod's own source hands to `Lang.Get`/`ActionLangCode`/`SendIngameError` exists in every locale it ships. |
 | `LangCoverage` | Every block code a mod registers resolves to a name in every locale it ships (an unresolved key silently renders as the raw key). |
+| `LangKeys` | Every literal `Lang.Get("domain:key")` under a mod's source roots resolves in one lang tree's `en.json`. |
+| `LangParity` | Every locale in one lang tree carries exactly the English key set, with matching `{0}`-style placeholders. |
 | `LayoutTable` | Reads a code-first multiblock layout's emitted table back into a per-cell block code, so a test can pin against the drawing rather than the JSON. |
+| `LoopingAnimations` | No looping clip under one asset tree's `shapes/` unwinds a whole turn across its wrap, or poses an element at only one end. |
 | `MegablockFrames` | Relates a mega-block's drawn mesh to the volume it reserves - the art and the filler footprint must agree. |
 | `MultiblockCodes` | Every block code a `multiblockStructure` layout asks for is a block some mod defines (a dangling cell code throws nothing and passes the goldens). |
 | `NetworkNodeContract` | The two structural rules a definition must obey to end up on a network graph: a `BlockNetworkNode` def declares a `type` variant state, and its orientation states resolve. |
@@ -547,6 +575,7 @@ pairs.
 | `RecipeCodes` | Every grid recipe's block output names a block the mod registers (an output is exact, never a wildcard selector). |
 | `ReferencedCodes` | Every code a mod's recipes, construction stages and definition bodies point at (as opposed to register) that names nothing. |
 | `ShapeExtents` | The bounding box (in voxels) of everything a shape file draws. |
+| `ShippedJson` | Every JSON asset under one shipped tree parses, carries no control character, and (under `patches/`) declares the side each entry runs on. |
 | `TreeKeys` | Golden-file oracle for a block entity's save shape - the keys `ToTreeAttributes` writes, pinned against a committed golden the same way `DefinitionGoldens` pins a def's JSON; see [Testing Harness § Pinning a block entity's save shape](Testing-Harness#pinning-a-block-entitys-save-shape). |
 | `VanillaToolTiers` | Vanilla pickaxe tool tier constants (`Bronze`/`Iron`/`Steel`), for pinning a block's `requiredMiningTier`. |
 | `WikiParity` | Reflects the API the wiki teaches against the API the assembly actually has. |

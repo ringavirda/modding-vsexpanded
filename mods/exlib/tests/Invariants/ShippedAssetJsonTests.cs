@@ -2,64 +2,32 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text.Json;
 using System.Text.RegularExpressions;
+using ExpandedLib.Testing;
 using Xunit;
 
 namespace ExpandedLib.Tests;
 
 /// <summary>
-/// Parses every JSON asset the mods ship. The game reports a syntax error only to the server log and
-/// then carries on with the file's whole contents missing, so a corrupt recipe or shape file removes
-/// everything in it while the build and the rest of the suite stay green.
-/// <para>
-/// The corpus is derived from the asset trees the build actually packs - every domain folder under
-/// <c>mods/*/assets/</c> - so a new mod is covered on the day it is added and the source-only
-/// <c>workbench/</c> tree stays out.
-/// </para>
+/// The per-mod JSON-defect rule (<see cref="ShippedJson"/>) over exlib's own tree, plus the guards
+/// that stay whole-repo because they compare one domain's assets against another's: every shipped
+/// domain is covered by the corpus (<see cref="ShippedJson"/> runs per mod, so nothing here checks
+/// that on its own), every texture a domain names resolves somewhere in the repo, and no shipped
+/// asset carries an authoring-machine path. The corpus for the whole-repo guards is derived from the
+/// asset trees the build actually packs - every domain folder under <c>mods/*/assets/</c> and
+/// <c>samples/*/assets/</c> - so a new mod or sample is covered on the day it is added and the
+/// source-only <c>workbench/</c> tree stays out.
 /// </summary>
 public class ShippedAssetJsonTests {
-  public static TheoryData<string> EveryShippedJsonAsset() {
-    var data = new TheoryData<string>();
-    foreach (string path in AssetFiles())
-      data.Add(path);
-    return data;
-  }
-
-  [Theory]
-  [MemberData(nameof(EveryShippedJsonAsset))]
-  public void Every_shipped_json_asset_parses(string repoRelativePath) {
-    var ex = Record.Exception(() => Parse(repoRelativePath).Dispose());
-
-    Assert.True(
-      ex == null,
-      $"{repoRelativePath} is not valid JSON: {ex?.Message}"
+  // Exlib has no patches/ folder of its own, so only the JSON-parses-and-carries-no-control-character
+  // half of ShippedJson.Check applies here; the patch-side rule is exercised (with its premise) by
+  // the mods that actually ship a patches/ folder - see mods/iiex, mods/siex.
+  [Fact]
+  public void Exlibs_own_tree_carries_no_shipped_json_defect() {
+    IReadOnlyList<string> offenders = ShippedJson.Check(
+      ExpandedLib.Testing.RepoPaths.Assets("exlib")
     );
-  }
-
-  [Theory]
-  [MemberData(nameof(EveryShippedJsonAsset))]
-  public void No_shipped_json_asset_carries_a_control_character(
-    string repoRelativePath
-  ) {
-    // Tab, LF and CR are the only control characters legal in JSON text. Anything else is invisible
-    // in an editor, survives copy/paste, and breaks the parse at a column the error message cannot
-    // show - so name the offending offsets explicitly.
-    byte[] bytes = File.ReadAllBytes(
-      Path.Combine(RepoRoot(), repoRelativePath)
-    );
-    var bad = new List<string>();
-    for (int i = 0; i < bytes.Length; i++) {
-      byte b = bytes[i];
-      if (b < 0x20 && b != 0x09 && b != 0x0a && b != 0x0d)
-        bad.Add($"0x{b:x2} at offset {i}");
-    }
-
-    Assert.True(
-      bad.Count == 0,
-      $"{repoRelativePath} contains {bad.Count} control character(s): "
-        + string.Join(", ", bad.Take(8))
-    );
+    Assert.True(offenders.Count == 0, string.Join("\n", offenders));
   }
 
   [Fact]
@@ -73,75 +41,6 @@ public class ShippedAssetJsonTests {
 
     Assert.Equal(ShippedDomains().OrderBy(d => d), covered.OrderBy(d => d));
   }
-
-  #region Patch declarations
-
-  [Fact]
-  public void Every_patch_entry_declares_the_side_it_runs_on() {
-    // JsonPatch.Side defaults to Universal, not to the target file's category, so an entry with no
-    // "side" is evaluated on the client too - where blocktypes, itemtypes and recipes do not exist.
-    // The patch is then counted as not-found and logs a miss per entry on every client start. The
-    // engine's own loader comments on exactly this case as the reason it does not warn about it.
-    // Never write "side": null either: that takes the branch which skips the patch on BOTH sides,
-    // silently and with no log line at all.
-    var offenders = new List<string>();
-
-    foreach (string path in PatchFiles()) {
-      using JsonDocument doc = Parse(path);
-      int index = 0;
-      foreach (JsonElement entry in doc.RootElement.EnumerateArray()) {
-        if (
-          !entry.TryGetProperty("side", out JsonElement side)
-          || side.ValueKind != JsonValueKind.String
-        )
-          offenders.Add($"{path} [{index}] declares no side");
-        else if (ServerOnlyCategory(entry) && side.GetString() != "Server")
-          offenders.Add(
-            $"{path} [{index}] targets a server-only category but declares "
-              + $"\"{side.GetString()}\""
-          );
-        index++;
-      }
-    }
-
-    Assert.True(
-      offenders.Count == 0,
-      "Patch entries must declare their side:\n  "
-        + string.Join("\n  ", offenders)
-    );
-  }
-
-  [Fact]
-  public void The_patch_corpus_is_not_empty() {
-    // The rule above passes trivially if the path filter stops matching - a patches folder renamed or
-    // moved would read as "every entry is correct".
-    Assert.NotEmpty(PatchFiles());
-  }
-
-  // blocktypes, itemtypes and recipes are all EnumAppSide.Server asset categories. Anything else
-  // (shapes, textures, lang) is legitimately client-side or universal, so only the side's presence is
-  // required there.
-  private static readonly string[] ServerOnlyCategories =
-  [
-    "blocktypes",
-    "itemtypes",
-    "recipes",
-  ];
-
-  private static bool ServerOnlyCategory(JsonElement entry) =>
-    entry.TryGetProperty("file", out JsonElement file)
-    && file.GetString() is { } target
-    && ServerOnlyCategories.Contains(
-      target.Split(':').Last().Split('/').First()
-    );
-
-  private static IReadOnlyList<string> PatchFiles() =>
-    [
-      .. AssetFiles()
-        .Where(p => p.Contains("/patches/", StringComparison.Ordinal)),
-    ];
-
-  #endregion
 
   #region Corpus
 
@@ -264,17 +163,6 @@ public class ShippedAssetJsonTests {
     @"""(?<domain>[a-z]+):(?<path>block/[A-Za-z0-9_./-]+|item/[A-Za-z0-9_./-]+)""",
     RegexOptions.Compiled
   );
-
-  private static JsonDocument Parse(string repoRelativePath) =>
-    JsonDocument.Parse(
-      File.ReadAllText(Path.Combine(RepoRoot(), repoRelativePath)),
-      new JsonDocumentOptions {
-        // The game's loader tolerates both, so the guard must too - otherwise it would fail files
-        // that ship and work.
-        CommentHandling = JsonCommentHandling.Skip,
-        AllowTrailingCommas = true,
-      }
-    );
 
   private static string RepoRoot() {
     DirectoryInfo? dir = new(AppContext.BaseDirectory);

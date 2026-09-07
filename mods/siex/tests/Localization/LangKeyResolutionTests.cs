@@ -2,24 +2,19 @@ using System.IO;
 using ExpandedLib.Testing;
 using Xunit;
 
-namespace ExpandedLib.Tests;
+namespace SteelIndustryExpanded.Tests;
 
 /// <summary>
-/// The literal lang-key rule (<see cref="LangKeys"/>) over exlib's own source: <c>src/</c> plus the
-/// source generators, the same non-test C# surface the old single <c>src/</c> tree held.
+/// The literal lang-key rule (<see cref="LangKeys"/>) over siex's own source.
 /// </summary>
 public class LangKeyResolutionTests {
-  private static readonly string[] SourceRoots =
-  [
-    RepoPaths.Src("exlib"),
-    Path.Combine(RepoPaths.Mod("exlib"), "generators"),
-  ];
+  private static readonly string[] SourceRoots = [RepoPaths.Src("siex")];
 
   [Fact]
   public void Every_literal_lang_key_resolves_in_english() {
     var missing = LangKeys.Check(
       SourceRoots,
-      Path.Combine(RepoPaths.Assets("exlib"), "lang")
+      Path.Combine(RepoPaths.Assets("siex"), "lang")
     );
 
     Assert.True(
