@@ -26,9 +26,10 @@ function Get-RunModDirs([string]$Version, [string]$Configuration, [switch]$NoBui
   $tfm = $GameTfms[$Version]
   $isLegacy = $tfm -ne 'net10.0'
   $targets = Get-ExmodBuildTargets
-  # The samples only ever target the current series (see samples/*/*.csproj) - a legacy series
-  # buys them nothing, so they drop out here the same way `exmod build` skips them.
-  $mods = @($targets.Keys | Where-Object { -not ($isLegacy -and $_ -in 'helloexpanded', 'hellomodule') })
+  $sampleIds = @((Get-ExmodSamples).Keys)
+  # A sample only ever targets the current series (see samples/*/*.csproj) - a legacy series buys
+  # it nothing, so it drops out here the same way `exmod build` skips it.
+  $mods = @($targets.Keys | Where-Object { -not ($isLegacy -and $_ -in $sampleIds) })
 
   $outputDir = {
     param([string]$mod)

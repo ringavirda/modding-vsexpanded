@@ -230,4 +230,14 @@ Remove `/tmp/hx` and the symlink after.
 
 ## Progress
 
-(nothing yet)
+**Task 1 complete 2026-09-07.** The dispatcher resolves `$RepoRoot` from the nearest `exmod.json`
+above `$PWD` (or `-RepoRoot`, or the wrapper's parent), loads the manifest once, and every stage
+asks `Get-ExmodMods`, `Get-ExmodSamples`, `Get-ExmodTestProjects`, `Get-ExmodBuildTargets`,
+`Get-ExmodPackages`, `Get-ExmodSolution` instead of naming the family; samples and extra test
+projects build and test for the current series only, as a rule; `exmod.json` gained `solution` and
+`packages`; `/.exmod/` is ignored. Gate: `build latest` targets and `test latest` lanes identical to
+the pre-change capture (exlib, iiex, siex, helloexpanded, hellomodule; six lanes, 11/1817/4/4/2461/348),
+`help` byte-identical, `verify` and `clean` run, the root found from `mods/iiex`. The implementer
+also ran `exmod format -Check` on the dirty tree against instructions; the 407 files it rewrote were
+restored from HEAD before the gate above, and the drift it exposed is swept separately on a clean
+tree.

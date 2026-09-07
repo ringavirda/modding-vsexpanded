@@ -10,53 +10,17 @@
 
 #region build
 
-# The test project set, in dependency order: exlib -> iiex -> siex -> helloexpanded -> exlibverify.
-# One suite per mod; a test lives with the top mod it touches, so there is no shared cross-mod
-# project. Keyed by mod folder, since each test project sits at mods/<mod>/tests/ - except
-# helloexpanded (a sample at samples/HelloExpanded.Tests/) and exlibverify (a standalone tool at
-# infra/tools/ExlibVerify.Tests/), which carry an explicit path. Shared between `test` and
-# `build -Tests` so the two commands cannot drift on what "every test project" means.
-function Get-ExmodTestProjects {
-  $names = [ordered]@{
-    exlib         = 'ExpandedLib.Tests'
-    iiex          = 'IronIndustryExpanded.Tests'
-    siex          = 'SteelIndustryExpanded.Tests'
-    helloexpanded = 'HelloExpanded.Tests'
-    hellomodule   = 'HelloModule.Tests'
-    exlibverify   = 'ExlibVerify.Tests'
-  }
-  $paths = @{
-    helloexpanded = 'samples/HelloExpanded.Tests/HelloExpanded.Tests.csproj'
-    hellomodule   = 'samples/HelloModule.Tests/HelloModule.Tests.csproj'
-    exlibverify   = 'infra/tools/ExlibVerify.Tests/ExlibVerify.Tests.csproj'
-  }
-  $out = [ordered]@{}
-  foreach ($mod in $names.Keys) {
-    $relPath = if ($paths.ContainsKey($mod)) { $paths[$mod] } else { "mods/$mod/tests/$($names[$mod]).csproj" }
-    $out[$mod] = [pscustomobject]@{ Project = $names[$mod]; Proj = (Join-Path $RepoRoot $relPath) }
-  }
-  return $out
-}
+# Get-ExmodTestProjects and Get-ExmodBuildTargets live in exmod.ps1: they read the manifest, so
+# every stage that needs "every test project" or "every mod/sample" shares the one resolver.
 
-# Every mod/sample this repo builds as its own mod, in dependency order, as folder-name key ->
-# csproj path. exlib -> iiex -> siex is a real ProjectReference chain, so that order is
-# hand-written rather than discovered; the csproj file itself is still found by globbing, so a
-# rename under src/ doesn't need an edit here. The sample is discovered and appended last, since it
-# only references exlib.
-function Get-ExmodBuildTargets {
-  $out = [ordered]@{}
-  foreach ($mod in @('exlib', 'iiex', 'siex')) {
-    $srcDir = Join-Path $RepoRoot "mods/$mod/src"
-    $csproj = Get-ChildItem $srcDir -Filter '*.csproj' -File | Select-Object -First 1
-    if (-not $csproj) { throw "No .csproj under $srcDir." }
-    $out[$mod] = $csproj.FullName
-  }
-  foreach ($sampleDir in Get-ChildItem (Join-Path $RepoRoot 'samples') -Directory) {
-    if (-not (Test-Path (Join-Path $sampleDir.FullName 'modinfo.json'))) { continue }
-    $csproj = Get-ChildItem $sampleDir.FullName -Filter '*.csproj' -File | Select-Object -First 1
-    if ($csproj) { $out[$sampleDir.Name.ToLowerInvariant()] = $csproj.FullName }
-  }
-  return $out
+# The directories holding the manifest's mods and samples - what format, clean and check treat as
+# this repo's own source, as opposed to infra/ and templates/, which stay literal: they are tool
+# conventions, true of every repo this CLI runs in, not something exmod.json names. A mod or sample's
+# own parent (mods/, samples/) is walked whole rather than just its own path, so a test project
+# sitting beside it (mods/<mod>/tests, samples/<Sample>.Tests) is covered too.
+function Get-ExmodSourceRoots {
+  $paths = @((Get-ExmodMods).Values.Path) + @((Get-ExmodSamples).Values.Path)
+  return @($paths | ForEach-Object { Split-Path $_ -Parent } | Select-Object -Unique)
 }
 
 # Compiles the mod projects (and, with -Tests, the test projects) for one or more game series.
@@ -77,6 +41,7 @@ function Invoke-Build([string[]]$Argv) {
 
   $targets = Get-ExmodBuildTargets
   $testTargets = Get-ExmodTestProjects
+  $sampleIds = @((Get-ExmodSamples).Keys)
   if ($modFilter) {
     $key = $modFilter.ToLowerInvariant()
     if (-not $targets.Contains($key)) { throw "Unknown mod '$modFilter'. Known: $($targets.Keys -join ', ')." }
@@ -88,10 +53,10 @@ function Invoke-Build([string[]]$Argv) {
     $tfm = $GameTfms[$v]
     Write-Step "Building $v ($tfm, $configuration)"
     foreach ($mod in $targets.Keys) {
-      # The samples target $(CurrentGameTfm) only (see samples/*/*.csproj) - the legacy series
-      # buys a sample nothing, so they are skipped the same way `exmod test` skips them.
-      if ($mod -in 'helloexpanded', 'hellomodule' -and $v -ne '1.22') {
-        Write-Host "-- $mod ($v) skipped, targets $($GameTfms['1.22']) only --"
+      # A sample targets $(CurrentGameTfm) only (see samples/*/*.csproj) - the legacy series buys
+      # it nothing, so it is skipped the same way `exmod test` skips it.
+      if ($mod -in $sampleIds -and $v -ne $CurrentGameVersion) {
+        Write-Host "-- $mod ($v) skipped, targets $($GameTfms[$CurrentGameVersion]) only --"
         continue
       }
       $buildArgs = @('build', $targets[$mod], '-f', $tfm, '-c', $configuration)
@@ -103,8 +68,8 @@ function Invoke-Build([string[]]$Argv) {
 
     if ($withTests) {
       foreach ($mod in $testTargets.Keys) {
-        if ($mod -in 'helloexpanded', 'hellomodule', 'exlibverify' -and $v -ne '1.22') {
-          Write-Host "-- $($testTargets[$mod].Project) ($v) skipped, targets $($GameTfms['1.22']) only --"
+        if ($v -notin $testTargets[$mod].Series) {
+          Write-Host "-- $($testTargets[$mod].Project) ($v) skipped, targets $($GameTfms[$CurrentGameVersion]) only --"
           continue
         }
         $buildArgs = @('build', $testTargets[$mod].Proj, '-f', $tfm, '-c', $configuration)
@@ -132,7 +97,7 @@ share intermediate assemblies, and building two of them at once races on the sam
 
   latest          1.22 only (the default)
   all             every supported series
-  -Mod <name>     build just one mod or sample (exlib, iiex, siex, helloexpanded)
+  -Mod <name>     build just one mod or sample (see exmod.json's mods and samples)
   -Configuration  Debug (the default) or Release
   -Tests          also build the test projects `exmod test` would build, for the same series(es)
 '@
@@ -171,7 +136,7 @@ function Invoke-Test([string[]]$Argv) {
     $dc = Join-Path $toolsDir "dotnet-coverage$ExeSuffix"
     $cov = Join-Path $RepoRoot 'coverage.xml'
     Write-Host "Collecting coverage over the latest suite..."
-    & $dc collect -f cobertura -o $cov "$dotnet test `"$(Join-Path $RepoRoot 'VintageStory.sln')`" -c Debug --nologo"
+    & $dc collect -f cobertura -o $cov "$dotnet test `"$(Get-ExmodSolution)`" -c Debug --nologo"
     if ($LASTEXITCODE -ne 0) { throw "Coverage collection failed." }
     $py = (Get-Command python -ErrorAction SilentlyContinue) ?? (Get-Command python3 -ErrorAction SilentlyContinue)
     if (-not $py) { throw "Python is required for the coverage gate but was not found (coverage.xml was still written)." }
@@ -183,10 +148,10 @@ function Invoke-Test([string[]]$Argv) {
 
   $work = foreach ($v in $wanted) {
     foreach ($mod in $projects.Keys) {
-      # The sample and the standalone tool only target $(CurrentGameTfm) (see
-      # samples/HelloExpanded.csproj, infra/tools/ExlibVerify.Tests.csproj) - a legacy matrix buys
-      # neither anything, so both are skipped rather than failed on '-f net8.0'/'net7.0'.
-      if ($mod -in 'helloexpanded', 'hellomodule', 'exlibverify' -and $v -ne '1.22') { continue }
+      # A sample or an extra project (samples/HelloExpanded.csproj, infra/tools/ExlibVerify.Tests.csproj)
+      # only targets $(CurrentGameTfm) - a legacy matrix buys it nothing, so it is skipped rather
+      # than failed on '-f net8.0'/'net7.0'.
+      if ($v -notin $projects[$mod].Series) { continue }
       [pscustomobject]@{
         Version = $v
         Tfm     = $GameTfms[$v]
@@ -310,25 +275,26 @@ function Resolve-CSharpier() {
 
 function Invoke-Format([string[]]$Argv) {
   $check = Get-Flag $Argv '-Check'
+  $dirs = @(Get-ExmodSourceRoots) + @('infra')
   Push-Location $RepoRoot
   try {
-    if ($check -and (git status --porcelain -- mods infra)) {
-      Write-Host "mods/ or infra/ has uncommitted changes - -Check needs a clean tree." -ForegroundColor Red
+    if ($check -and (git status --porcelain -- @dirs)) {
+      Write-Host "the mod/sample directories or infra/ have uncommitted changes - -Check needs a clean tree." -ForegroundColor Red
       exit 1
     }
 
-    & (Resolve-CSharpier) format mods infra
+    & (Resolve-CSharpier) format @dirs
     if ($LASTEXITCODE -ne 0) { throw "csharpier exited $LASTEXITCODE" }
 
-    foreach ($dir in @('mods', 'infra')) {
+    foreach ($dir in $dirs) {
       dotnet format whitespace $dir --folder
       if ($LASTEXITCODE -ne 0) { throw "dotnet format exited $LASTEXITCODE on $dir" }
     }
 
     if ($check) {
-      if (git status --porcelain -- mods infra) {
+      if (git status --porcelain -- @dirs) {
         Write-Host "`nThese files are not formatted:" -ForegroundColor Red
-        git diff --name-only -- mods infra | ForEach-Object { Write-Host "  $_" }
+        git diff --name-only -- @dirs | ForEach-Object { Write-Host "  $_" }
         Write-Host "`nRun scripts/exmod format and commit the result." -ForegroundColor Yellow
         exit 1
       }
@@ -345,10 +311,10 @@ Add-ExmodCommand -Group source -Name format -Summary 'rewrite with CSharpier, th
 } -Detail @'
 exmod format [-Check]
 
-Formats every C# file under mods/ and infra/ in two passes, and the order is load-bearing:
-CSharpier wraps lines but always emits Allman braces and cannot be configured out of it, then
-dotnet format applies .editorconfig and puts the braces back. The pair is idempotent; CSharpier
-alone afterwards would undo the brace style.
+Formats every C# file under every mod and sample directory the manifest names, and under infra/, in
+two passes, and the order is load-bearing: CSharpier wraps lines but always emits Allman braces and
+cannot be configured out of it, then dotnet format applies .editorconfig and puts the braces back.
+The pair is idempotent; CSharpier alone afterwards would undo the brace style.
 
   -Check   format, then fail if git sees a change. It needs a clean tree and refuses on a dirty
            one, where every finding would be an edit of your own.
@@ -366,13 +332,8 @@ POSIX launcher bootstraps pwsh.
 # from. Keyed by folder name, which is also every mod's own modid here.
 function Get-ExmodVerifySources {
   $out = [ordered]@{}
-  foreach ($modDir in Get-ChildItem (Join-Path $RepoRoot 'mods') -Directory) {
-    $out[$modDir.Name] = Join-Path $modDir.FullName 'src'
-  }
-  foreach ($sampleDir in Get-ChildItem (Join-Path $RepoRoot 'samples') -Directory) {
-    if (Test-Path (Join-Path $sampleDir.FullName 'modinfo.json')) {
-      $out[$sampleDir.Name.ToLowerInvariant()] = $sampleDir.FullName
-    }
+  foreach ($target in (Get-ExmodBuildTargets).GetEnumerator()) {
+    $out[$target.Key] = Split-Path $target.Value -Parent
   }
   return $out
 }
@@ -538,9 +499,9 @@ function Invoke-Check([string[]]$Argv) {
     Write-Host "Skipped: -NoFormat was given."
     $results.format = 'SKIPPED'
   }
-  elseif (git -C $RepoRoot status --porcelain -- mods infra) {
-    Write-Host ("Skipped: mods/ or infra/ has uncommitted changes - the format gate compares " +
-      "against git, so on a dirty tree every finding would be one of this run's own edits.")
+  elseif (git -C $RepoRoot status --porcelain -- @(Get-ExmodSourceRoots) infra) {
+    Write-Host ("Skipped: the mod/sample directories or infra/ have uncommitted changes - the format " +
+      "gate compares against git, so on a dirty tree every finding would be one of this run's own edits.")
     $results.format = 'SKIPPED'
   }
   else {
@@ -599,13 +560,14 @@ step and exits nonzero if any of them did.
 
 #region clean
 
-# Every directory literally named bin or obj under $Roots, at any depth, collected before any
-# deletion happens and sorted shallowest-first - so removing a parent (mods/exlib/src/obj) doesn't
-# leave a later Remove-Item call finding nothing left where one of its own children used to be.
+# Every directory literally named bin or obj under $Roots (each absolute or repo-relative), at any
+# depth, collected before any deletion happens and sorted shallowest-first - so removing a parent
+# (mods/exlib/src/obj) doesn't leave a later Remove-Item call finding nothing left where one of its
+# own children used to be.
 function Get-ExmodCleanTargets([string[]]$Roots) {
   $found = @()
   foreach ($root in $Roots) {
-    $base = Join-Path $RepoRoot $root
+    $base = if ([System.IO.Path]::IsPathRooted($root)) { $root } else { Join-Path $RepoRoot $root }
     if (-not (Test-Path $base)) { continue }
     $found += Get-ChildItem $base -Recurse -Directory -Force |
       Where-Object { $_.Name -in @('bin', 'obj') }
@@ -620,7 +582,7 @@ function Invoke-Clean([string[]]$Argv) {
   $deep = Get-Flag $Argv '-Deep'
   $removed = 0
 
-  foreach ($dir in Get-ExmodCleanTargets @('mods', 'samples', 'infra', 'templates')) {
+  foreach ($dir in Get-ExmodCleanTargets (@(Get-ExmodSourceRoots) + @('infra', 'templates'))) {
     if (-not (Test-Path $dir.FullName)) { continue }   # a parent already removed this one
     Write-Host "Removing $($dir.FullName)"
     Remove-Item -Recurse -Force $dir.FullName

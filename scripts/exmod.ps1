@@ -11,16 +11,37 @@
 #
 #   exmod                   the command list, grouped
 #   exmod help <command>    one command in detail
+#   exmod -RepoRoot <path> <command>   act on a checkout other than the one containing this script
 
 [CmdletBinding()]
 param(
+  [Parameter()][string]$RepoRoot,
   [Parameter(Position = 0)][string]$Command,
   [Parameter(Position = 1, ValueFromRemainingArguments = $true)][string[]]$Arguments = @()
 )
 
 $ErrorActionPreference = 'Stop'
 
-$RepoRoot = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
+# The nearest directory above $PWD that holds exmod.json, so exmod works run from any subdirectory
+# of a checkout - not only its root - the way git finds .git. Falls back to the wrapper's own parent
+# when nothing above $PWD has one (e.g. this script run against a bare template). -RepoRoot skips
+# the search and overrides both.
+function Get-ExmodRepoRoot([string]$Override) {
+  if ($Override) {
+    if (-not (Test-Path $Override)) { throw "-RepoRoot path not found: $Override" }
+    return (Resolve-Path $Override).Path
+  }
+  $dir = (Get-Location).Path
+  while ($true) {
+    if (Test-Path (Join-Path $dir 'exmod.json')) { return $dir }
+    $parent = Split-Path $dir -Parent
+    if (-not $parent -or $parent -eq $dir) { break }
+    $dir = $parent
+  }
+  return (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
+}
+
+$RepoRoot = Get-ExmodRepoRoot $RepoRoot
 $OnWindows = [System.OperatingSystem]::IsWindows()
 $ExeSuffix = if ($OnWindows) { '.exe' } else { '' }
 
@@ -83,17 +104,180 @@ function Write-Step([string]$Text) {
 
 #region Shared resolvers
 
-# The three supported game series and what each one builds against. Every version-taking command
-# resolves through here, so a new series is added in one place.
+# The three supported game series and what each one builds against - vendor knowledge, true in
+# every repo that builds against this engine, so it stays here rather than in the manifest. Every
+# version-taking command resolves through here, so a new series is added in one place.
 $GameTfms = [ordered]@{ '1.22' = 'net10.0'; '1.21' = 'net8.0'; '1.20' = 'net7.0' }
 $GameRuntimeMajors = @{ '1.22' = '10'; '1.21' = '8'; '1.20' = '7' }
-$CurrentGameVersion = '1.22'
+
+#region Manifest
+
+# Resolves a manifest-relative path to an absolute one. Fails naming the field and the path it
+# named, rather than the missing-file error a downstream Get-ChildItem would give - the manifest
+# naming a path that isn't there is a manifest bug, not a build that hasn't happened yet.
+function Resolve-ManifestPath([string]$Field, [string]$RelPath) {
+  if (-not $RelPath) { throw "exmod.json: '$Field' is required." }
+  $full = if ([System.IO.Path]::IsPathRooted($RelPath)) { $RelPath } else { Join-Path $RepoRoot $RelPath }
+  if (-not (Test-Path $full)) { throw "exmod.json: '$Field' names a path that does not exist: $RelPath" }
+  return (Resolve-Path $full).Path
+}
+
+# The single .csproj directly under $Dir, or a naming error when there is none or more than one -
+# the convention every mod, sample, test and package entry in the manifest relies on.
+function Find-SingleCsproj([string]$Dir, [string]$Field) {
+  $found = @(Get-ChildItem $Dir -Filter '*.csproj' -File)
+  if ($found.Count -ne 1) {
+    throw "exmod.json: '$Field' names $Dir, which holds $($found.Count) .csproj file(s) (want exactly one)."
+  }
+  return $found[0].FullName
+}
+
+# Reads exmod.json once and applies its defaults - this is the only place they're written down.
+# ConvertFrom-Json keeps a PSCustomObject's property order as the file's order, so `mods` and
+# `samples` are read through .PSObject.Properties everywhere, never Keys/Values, to keep that order.
+function Get-ExmodManifest {
+  if ($Script:ExmodManifestCache) { return $Script:ExmodManifestCache }
+
+  $path = Join-Path $RepoRoot 'exmod.json'
+  if (-not (Test-Path $path)) { throw "No exmod.json under $RepoRoot." }
+  $m = Get-Content $path -Raw | ConvertFrom-Json
+
+  if (-not $m.PSObject.Properties['solution']) {
+    $sln = @(Get-ChildItem $RepoRoot -Filter '*.sln' -File)
+    if ($sln.Count -ne 1) { throw "exmod.json has no 'solution' and $RepoRoot does not hold exactly one .sln." }
+    $m | Add-Member -NotePropertyName solution -NotePropertyValue $sln[0].Name
+  }
+  if (-not $m.PSObject.Properties['series'] -or -not $m.series) {
+    # No series named at all: the first entry of the vendor table above is "the current series".
+    $m | Add-Member -NotePropertyName series -NotePropertyValue @(@($GameTfms.Keys)[0]) -Force
+  }
+  foreach ($p in @('mods', 'samples')) {
+    if (-not $m.PSObject.Properties[$p]) { $m | Add-Member -NotePropertyName $p -NotePropertyValue ([pscustomobject]@{}) }
+  }
+  foreach ($p in @('tests', 'packages')) {
+    if (-not $m.PSObject.Properties[$p]) { $m | Add-Member -NotePropertyName $p -NotePropertyValue @() }
+  }
+
+  $Script:ExmodManifestCache = $m
+  return $m
+}
+
+# Every mod this repo builds as its own, in manifest order (the build order: exlib before iiex
+# before siex is a real ProjectReference chain, not a discovery accident), id -> @{ Path; Project;
+# Tests; Overlays } (all absolute except Overlays). A mod's project is the single .csproj under
+# <path>/src, or under <path> itself when src/ has none; its test project is the single .csproj
+# under <path>/tests when that folder exists.
+function Get-ExmodMods {
+  $manifest = Get-ExmodManifest
+  $out = [ordered]@{}
+  foreach ($prop in $manifest.mods.PSObject.Properties) {
+    $id = $prop.Name
+    $entry = $prop.Value
+    $path = Resolve-ManifestPath "mods.$id.path" $entry.path
+    $srcDir = Join-Path $path 'src'
+    $projectDir = if (Test-Path $srcDir) { $srcDir } else { $path }
+    $project = Find-SingleCsproj $projectDir "mods.$id"
+    $testsDir = Join-Path $path 'tests'
+    $tests = if (Test-Path $testsDir) { Find-SingleCsproj $testsDir "mods.$id.tests" } else { $null }
+    $out[$id] = [pscustomobject]@{ Path = $path; Project = $project; Tests = $tests; Overlays = $entry.overlays }
+  }
+  return $out
+}
+
+# Every sample this repo builds as its own mod, in manifest order, id -> @{ Path; Project; Tests }.
+# A sample's project sits at its own path; its test project, when the manifest names one, is the
+# single .csproj under that named folder.
+function Get-ExmodSamples {
+  $manifest = Get-ExmodManifest
+  $out = [ordered]@{}
+  foreach ($prop in $manifest.samples.PSObject.Properties) {
+    $id = $prop.Name
+    $entry = $prop.Value
+    $path = Resolve-ManifestPath "samples.$id.path" $entry.path
+    $project = Find-SingleCsproj $path "samples.$id"
+    $tests = if ($entry.PSObject.Properties['tests'] -and $entry.tests) {
+      Find-SingleCsproj (Resolve-ManifestPath "samples.$id.tests" $entry.tests) "samples.$id.tests"
+    } else { $null }
+    $out[$id] = [pscustomobject]@{ Path = $path; Project = $project; Tests = $tests }
+  }
+  return $out
+}
+
+# Every mod/sample this repo builds as its own mod, in manifest order (mods, then samples), as
+# folder-name key -> its project path. Shared by build, run and verify so none of them can drift on
+# what "every mod" means.
+function Get-ExmodBuildTargets {
+  $out = [ordered]@{}
+  foreach ($mod in (Get-ExmodMods).GetEnumerator()) { $out[$mod.Key] = $mod.Value.Project }
+  foreach ($sample in (Get-ExmodSamples).GetEnumerator()) { $out[$sample.Key] = $sample.Value.Project }
+  return $out
+}
+
+# Every test project this repo runs: each mod's, in mod order, then each sample's, then
+# $Manifest.tests, each carrying the series it runs for - every series in the manifest for a mod,
+# the current series only for a sample or an extra project (it buys a legacy lane nothing). Shared
+# by `test` and `build -Tests` so the two commands cannot drift on what "every test project" means.
+function Get-ExmodTestProjects {
+  $manifest = Get-ExmodManifest
+  $series = @($manifest.series)
+  $current = @($series[0])
+
+  $out = [ordered]@{}
+  foreach ($mod in (Get-ExmodMods).GetEnumerator()) {
+    if (-not $mod.Value.Tests) { continue }
+    $out[$mod.Key] = [pscustomobject]@{
+      Project = [IO.Path]::GetFileNameWithoutExtension($mod.Value.Tests)
+      Proj    = $mod.Value.Tests
+      Series  = $series
+    }
+  }
+  foreach ($sample in (Get-ExmodSamples).GetEnumerator()) {
+    if (-not $sample.Value.Tests) { continue }
+    $out[$sample.Key] = [pscustomobject]@{
+      Project = [IO.Path]::GetFileNameWithoutExtension($sample.Value.Tests)
+      Proj    = $sample.Value.Tests
+      Series  = $current
+    }
+  }
+  $i = 0
+  foreach ($rel in @($manifest.tests)) {
+    $proj = Find-SingleCsproj (Resolve-ManifestPath "tests[$i]" $rel) "tests[$i]"
+    $name = [IO.Path]::GetFileNameWithoutExtension($proj)
+    $id = ($name -replace '\.Tests$', '').ToLowerInvariant()
+    $out[$id] = [pscustomobject]@{ Project = $name; Proj = $proj; Series = $current }
+    $i++
+  }
+  return $out
+}
+
+# The packable project paths named by $Manifest.packages, each a folder holding exactly one
+# .csproj.
+function Get-ExmodPackages {
+  $manifest = Get-ExmodManifest
+  $i = 0
+  $out = @()
+  foreach ($rel in @($manifest.packages)) {
+    $out += Find-SingleCsproj (Resolve-ManifestPath "packages[$i]" $rel) "packages[$i]"
+    $i++
+  }
+  return $out
+}
+
+# The solution: $Manifest.solution, or the single .sln at the repo root when the manifest names none.
+function Get-ExmodSolution {
+  return Resolve-ManifestPath 'solution' (Get-ExmodManifest).solution
+}
+
+#endregion
+
+$Manifest = Get-ExmodManifest
+$CurrentGameVersion = @($Manifest.series)[0]
 
 # 'latest', 'all' or one series, as the list of series to act on.
 function Resolve-GameVersions([string]$Spec) {
   switch ($Spec) {
     'latest' { return @($CurrentGameVersion) }
-    'all' { return @($GameTfms.Keys) }
+    'all' { return @($Manifest.series) }
     default {
       if (-not $GameTfms.Contains($Spec)) {
         throw "Unknown version '$Spec'. Use latest, all, or one of: $($GameTfms.Keys -join ', ')."
@@ -163,28 +347,17 @@ function Resolve-GameInstall([string]$Version = $CurrentGameVersion, [string]$Ki
   return $hit
 }
 
-# Every mod folder in the checkout that produces a loadable mod, as built output directories
-# (the folder holding modinfo.json and the dll). A mod that has not been built yet is built first,
-# so a fresh clone still works. mods/<mod>/src/ holds the three real mods; samples/<sample>/ holds
-# its csproj at its own root, so its output sits one level higher.
+# Every mod/sample the manifest names, as built output directories (the folder holding modinfo.json
+# and the dll). A mod that has not been built yet is built first, so a fresh clone still works.
 function Get-BuiltModDirs([string]$Configuration = 'Debug') {
   $out = @()
-  $sources = @()
-  foreach ($modDir in Get-ChildItem (Join-Path $RepoRoot 'mods') -Directory) {
-    $sources += (Join-Path $modDir.FullName 'src')
-  }
-  foreach ($sampleDir in Get-ChildItem (Join-Path $RepoRoot 'samples') -Directory) {
-    $sources += $sampleDir.FullName
-  }
-  foreach ($srcDir in $sources) {
-    if (-not (Test-Path (Join-Path $srcDir 'modinfo.json'))) { continue }
+  foreach ($target in (Get-ExmodBuildTargets).GetEnumerator()) {
+    $srcDir = Split-Path $target.Value -Parent
     $built = Join-Path $srcDir "bin/$Configuration/Mods/mod"
     if (-not (Test-Path (Join-Path $built 'modinfo.json'))) {
-      $csproj = Get-ChildItem $srcDir -Filter '*.csproj' -File | Select-Object -First 1
-      if (-not $csproj) { throw "No .csproj under $srcDir to build." }
-      Write-Host "Building $(Split-Path $srcDir -Leaf) (not yet built) ..."
-      dotnet build $csproj.FullName -c $Configuration -clp:ErrorsOnly
-      if ($LASTEXITCODE -ne 0) { throw "Build of $csproj failed." }
+      Write-Host "Building $($target.Key) (not yet built) ..."
+      dotnet build $target.Value -c $Configuration -clp:ErrorsOnly
+      if ($LASTEXITCODE -ne 0) { throw "Build of $($target.Value) failed." }
     }
     $out += $built
   }

@@ -365,7 +365,7 @@ function Invoke-Setup([string[]]$Argv) {
   Write-Step 'Restore'
   Push-Location $RepoRoot
   try {
-    & $dotnet restore VintageStory.sln
+    & $dotnet restore (Get-ExmodSolution)
     if ($LASTEXITCODE -ne 0) { throw 'Restore failed.' }
   } finally {
     Pop-Location
