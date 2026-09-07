@@ -1,7 +1,8 @@
 # exlib-verify
 
 Checks a Vintage Story mod's shipped assets the way the game would load them, with no game running
-and no test project.
+and no test project. It depends on nothing in this repository beyond the game install it is
+pointed at.
 
 ```sh
 dotnet tool install --global ExpandedLib.Verify

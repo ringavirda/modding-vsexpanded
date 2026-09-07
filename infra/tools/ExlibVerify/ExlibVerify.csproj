@@ -37,12 +37,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- Only the checks and CheckResult/ICheckSource shapes - never iiex/siex, and never a code-first
-         registry: a JSON-only mod ships no compiled assembly for this tool to reflect over. -->
-    <ProjectReference Include="..\..\..\mods\exlib\src\ExpandedLib.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
     <!-- AssetLocation, WildcardUtil - the same asset-addressing types the game itself uses, so a
          patch target or a recipe code resolves exactly the way it would in game. -->
     <Reference Include="VintagestoryAPI">

@@ -276,3 +276,25 @@ difference being the uncommitted-file count, which is this task's own diff; the 
 grep finds only the harness class, its callers in the three test fixtures, and prose (comments, the
 generated files' own header line, docs, historical records) that names the class rather than the
 deleted tool.
+
+**Task 3 complete 2026-09-07.** The `ProjectReference` to `ExpandedLib.csproj` and the comment that
+justified it are gone from `ExlibVerify.csproj`; the `ExpandedLib.` grep across both projects turned
+up only the tool's own `ExpandedLib.Verify` namespace and prose (`<c>` doc-comment citations and one
+plain comment naming exlib types for comparison), none of it a real reference, so `Finding.cs` and
+the rest keep the tool's own model unchanged. `ExlibVerify.Tests.csproj` references only
+`ExlibVerify.csproj` itself - the tool under test - and never exlib or the harness directly, so
+nothing there needed dropping. `$(GamePath)`-based `HintPath`s still resolve: the csproj imports
+`mods/Directory.Build.props` (for `$(ExlibRoot)`, which gates that file's own conditional import of
+`exlib/build/ExpandedLib.props`) and imports `mods/exlib/build/ExpandedLib.targets` explicitly after
+the project body, exactly as the two comments already on the file said - both imports were left as
+found. `README.md` now states the tool depends on nothing in this repository beyond the game install
+it is pointed at. Gate: `dotnet build infra/tools/ExlibVerify -clp:ErrorsOnly` and
+`dotnet build infra/tools/ExlibVerify.Tests -v q` both zero warnings/errors; `test latest` six lanes
+at 11/1817/4/4/2461/348, matching Task 1/2's baseline exactly; `bash scripts/exmod.sh verify` before
+and after captured and diffed byte-identical (66 informational findings, 0 errors, all 5 mods pass);
+`dotnet pack infra/tools/ExlibVerify -c Release -o /tmp/verify-pack` produced
+`ExpandedLib.Verify.0.7.3.nupkg`; `dotnet tool install --tool-path /tmp/verify-tool --add-source
+/tmp/verify-pack ExpandedLib.Verify` installed `exlib-verify` cleanly; `/tmp/verify-tool/exlib-verify
+mods/iiex/src/bin/Debug/Mods/mod --game .game/1.22-server` ran standalone and reported
+`0 error(s), 147 informational finding(s)`; `/tmp/verify-pack` and `/tmp/verify-tool` removed after,
+`git status` showing only the two edited files.
