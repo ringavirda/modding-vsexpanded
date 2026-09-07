@@ -47,7 +47,11 @@ function Get-RunModDirs([string]$Version, [string]$Configuration, [switch]$NoBui
     Invoke-Build @($Version, '-Configuration', $Configuration)
   }
 
-  return @($mods | ForEach-Object { & $outputDir $_ })
+  $ownDirs = @($mods | ForEach-Object { & $outputDir $_ })
+  # Runtime dependencies this repo does not build itself (see Resolve-DependencyMods, exmod.ps1) -
+  # appended after the repo's own mods, the same order `provision mods` prints them in.
+  $depDirs = @((Resolve-DependencyMods $Configuration) | ForEach-Object { $_.Path })
+  return @($ownDirs + $depDirs)
 }
 
 # Copies mod directories into $Dest, one subfolder per mod named for its own modid (read from
@@ -160,9 +164,13 @@ client on its own - the archive is about a gigabyte - unless -Provision is given
 prints the exact `exmod provision game` command to run and exits 1.
 
   -Mods       mod folder(s), or folder(s) of mod folders, instead of every built mod in the checkout
+              and its resolved dependencies
   -NoBuild    skip the build step; the mods must already be built
   -DataPath   client data path (default: .gamedata)
   -Provision  fetch a client install for this series here, if none is usable yet
+
+Without -Mods, this repo's runtime dependency mods (see `exmod provision mods`) are staged after
+its own, built or fetched first if needed.
 '@
 
 #endregion
@@ -207,8 +215,12 @@ not a throwaway boot.
 
   -Port       port to listen on (default: 42420, the game's own default)
   -Mods       mod folder(s), or folder(s) of mod folders, instead of every built mod in the checkout
+              and its resolved dependencies
   -NoBuild    skip the build step; the mods must already be built
   -DataPath   persistent server data path (default: .gamedata/server)
+
+Without -Mods, this repo's runtime dependency mods (see `exmod provision mods`) are staged after
+its own, built or fetched first if needed.
 '@
 
 #endregion
@@ -254,7 +266,8 @@ function Invoke-Smoke([string[]]$Argv) {
 
   $serverDir = Resolve-SmokeServer $version
 
-  $modDirs = if ($modsOpt) { Resolve-ModDirs @($modsOpt -split ',') } else { Get-BuiltModDirs }
+  $modDirs = if ($modsOpt) { Resolve-ModDirs @($modsOpt -split ',') }
+  else { @(Get-BuiltModDirs) + @((Resolve-DependencyMods) | ForEach-Object { $_.Path }) }
   if (-not $modDirs) { throw "No mods found to smoke-test (nothing under mods/*/src/bin/Debug/Mods/mod, and -Mods was not given)." }
 
   $scratch = Join-Path $RepoRoot ".game/.smoke-$([guid]::NewGuid().ToString('N').Substring(0, 8))"
@@ -368,9 +381,13 @@ stops it. No test code is involved: the question is only whether a server loads 
 erroring, which is the one check that covers assets, patches and registration at once. It binds an
 unusual port so it can never collide with a game you are actually playing on this machine.
 
-  -Mods      mod folders, or folders of mod folders, instead of every built mod in the checkout
+  -Mods      mod folders, or folders of mod folders, instead of every built mod in the checkout and
+             its resolved dependencies
   -Timeout   seconds to wait for the server to report itself running (default 180)
   -KeepData  keep the scratch data path and the staged mods, to inspect a failure
+
+Without -Mods, this repo's runtime dependency mods (see `exmod provision mods`) are copied in after
+its own built mods, resolved or fetched first if needed.
 '@
 
 #endregion
@@ -420,8 +437,9 @@ Copies built mod output into one Mods folder, a subfolder per mod. This is what 
 `exmod server` use to lay out the mods they launch, and what the VS Code launch-prep tasks call.
 
 With no <name>=<src> pairs, every built mod and sample in the checkout is staged - built first if
-it isn't yet - under its own modid. With no -Dest, the destination is bin/Mods for the current
-series, or bin/Mods-<x.y> for a legacy one named with -Version.
+it isn't yet - under its own modid, followed by this repo's runtime dependency mods (see `exmod
+provision mods`). With no -Dest, the destination is bin/Mods for the current series, or
+bin/Mods-<x.y> for a legacy one named with -Version.
 
 Either can still be given explicitly: -Dest <path> <name>=<src> [<name>=<src> ...] copies exactly
 those sources under those names, unbuilt, into exactly that folder - the same as it always has.

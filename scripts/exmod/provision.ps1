@@ -310,20 +310,22 @@ function Invoke-ProvisionGame([string[]]$Argv) {
 }
 
 
-Add-ExmodCommand -Group start -Name provision -Summary 'fetch the toolchain or the game into the checkout' -Action {
+Add-ExmodCommand -Group start -Name provision -Summary 'fetch the toolchain, the game or dependency mods' -Action {
   param([string[]]$Argv)
   $what = if ($Argv.Count -gt 0) { $Argv[0] } else { '' }
   $rest = if ($Argv.Count -gt 1) { $Argv[1..($Argv.Count - 1)] } else { @() }
   switch ($what) {
     'game' { Invoke-ProvisionGame $rest }
     'dotnet' { Invoke-ProvisionDotnet $rest }
-    default { throw "provision needs 'game' or 'dotnet'." }
+    'mods' { Invoke-ProvisionMods $rest }
+    default { throw "provision needs 'game', 'dotnet' or 'mods'." }
   }
 } -Detail @'
 exmod provision dotnet [-Version latest|all|1.22|1.21|1.20] [-Force]
 exmod provision game -Version <x.y[.z]> [-Kind server|client] [-Dest <path>] [-Force]
+exmod provision mods [-Configuration Debug]
 
-Both fetch into the checkout, never onto the machine, and both are safe to re-run.
+All three fetch into the checkout, never onto the machine, and all three are safe to re-run.
 
   dotnet   a self-contained SDK plus every runtime major the requested series need (net10 for 1.22,
            net8 for 1.21, net7 for 1.20) under .dotnet/. Commands that need those runtimes drive
@@ -334,7 +336,33 @@ Both fetch into the checkout, never onto the machine, and both are safe to re-ru
            needs no game licence; -Kind client takes the full client, to play in. A server request
            never overwrites a client that can already serve - it lands in .game/<series>-server
            instead. -Version takes a full patch (1.22.3) or a series (1.22, its latest patch).
+
+  mods     every runtime dependency this repo does not build itself (game and this repo's own mods
+           and samples never count): a workspace sibling's build output, else a cached extraction
+           under .exmod/mods/<id>, else a fresh download into it - exmod.json's depends.<id>.url or
+           .github when named, else the ModDB API. Prints what it resolved and from where, or says
+           every dependency is built in this repository when there is nothing to resolve.
 '@
+
+#endregion
+
+#region provision mods
+
+# Resolves and prints every runtime dependency mod this checkout does not build itself - see
+# Resolve-DependencyMods (exmod.ps1) for the resolution order.
+function Invoke-ProvisionMods([string[]]$Argv) {
+  $configuration = Get-Opt $Argv '-Configuration' 'Debug'
+  $deps = Resolve-DependencyMods $configuration
+  if (-not $deps) {
+    Write-Host 'every dependency is built in this repository'
+    return
+  }
+  Write-Host ''
+  $width = ($deps | ForEach-Object { $_.Id.Length } | Measure-Object -Maximum).Maximum
+  foreach ($d in $deps) {
+    Write-Host ('{0}  {1,-10}  {2}' -f $d.Id.PadRight($width), $d.Version, $d.Path)
+  }
+}
 
 #endregion
 
@@ -371,6 +399,9 @@ function Invoke-Setup([string[]]$Argv) {
     Pop-Location
   }
 
+  Write-Step 'Dependency mods'
+  Invoke-ProvisionMods @()
+
   Write-Host ''
   Write-Host 'Ready.' -ForegroundColor Green
   Write-Host '  exmod build      compile the mods'
@@ -379,14 +410,14 @@ function Invoke-Setup([string[]]$Argv) {
   Write-Host '  exmod            everything else'
 }
 
-Add-ExmodCommand -Group start -Name setup -Summary 'provision .NET and the game, then restore' -Action {
+Add-ExmodCommand -Group start -Name setup -Summary 'provision .NET, the game and dependency mods, then restore' -Action {
   param([string[]]$Argv) Invoke-Setup $Argv
 } -Detail @'
 exmod setup [latest|all|1.22|1.21|1.20] [-Kind server|client] [-Force]
 
 The first run on a fresh clone. Provisions the .NET runtimes the requested series need (only the
-ones the machine does not already have), a Vintage Story install for each, and restores the
-solution.
+ones the machine does not already have), a Vintage Story install for each, this repo's runtime
+dependency mods (see `exmod provision mods`), and restores the solution.
 
 Defaults to the current series and the dedicated-server archive, which carries every assembly the
 build and the tests need and needs no game licence. Pass -Kind client to get something to play in,

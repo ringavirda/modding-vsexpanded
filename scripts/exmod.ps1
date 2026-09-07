@@ -383,6 +383,165 @@ function Resolve-ModDirs([string[]]$Dirs) {
   return $out
 }
 
+#region Dependency mods
+
+# A version string with any prerelease suffix (everything from the first '-' on) stripped, cast to
+# [version] so two versions compare numerically rather than lexically ("0.7.10" > "0.7.9").
+function Get-VersionCore([string]$Version) {
+  return [version](($Version -split '-', 2)[0])
+}
+
+# The workspace-sibling build output for a dependency id, or $null when no directory beside
+# $RepoRoot names it. A sibling is a directory next to this checkout holding its own exmod.json
+# whose `mods` names $Id; its manifest is read raw rather than through Get-ExmodManifest, which is
+# fixed to this checkout's $RepoRoot.
+function Get-ExmodDependencySiblingProject([string]$Id) {
+  $parent = Split-Path $RepoRoot -Parent
+  if (-not $parent -or -not (Test-Path $parent)) { return $null }
+  foreach ($dir in Get-ChildItem $parent -Directory -ErrorAction SilentlyContinue) {
+    if ($dir.FullName -eq $RepoRoot) { continue }
+    $manifestPath = Join-Path $dir.FullName 'exmod.json'
+    if (-not (Test-Path $manifestPath -ErrorAction SilentlyContinue)) { continue }
+    $sib = $null
+    try { $sib = Get-Content $manifestPath -Raw -ErrorAction Stop | ConvertFrom-Json } catch { continue }
+    if (-not $sib.PSObject.Properties['mods']) { continue }
+    $entry = $sib.mods.PSObject.Properties[$Id]
+    if (-not $entry) { continue }
+    $modPath = Join-Path $dir.FullName $entry.Value.path
+    if (-not (Test-Path $modPath)) { continue }
+    $srcDir = Join-Path $modPath 'src'
+    $projectDir = if (Test-Path $srcDir) { $srcDir } else { $modPath }
+    return Find-SingleCsproj $projectDir "sibling mods.$Id"
+  }
+  return $null
+}
+
+# The ModDB release to use for $Id at floor $Floor: the release whose modversion equals the floor
+# exactly, else the lowest modversion above it. A prerelease floor ModDB never carries (it only ever
+# publishes stable releases) fails naming the two branches that do carry one.
+function Resolve-ModDbRelease([string]$Id, [string]$Floor) {
+  $record = Invoke-RestMethod -Uri "https://mods.vintagestory.at/api/mod/$Id" -TimeoutSec 15
+  if (-not $record.mod.releases) { throw "ModDB has no releases for '$Id'." }
+  $exact = $record.mod.releases | Where-Object { $_.modversion -eq $Floor } | Select-Object -First 1
+  if ($exact) { return $exact }
+  $floorCore = Get-VersionCore $Floor
+  $above = @($record.mod.releases | Where-Object { (Get-VersionCore $_.modversion) -gt $floorCore }) |
+    Sort-Object { Get-VersionCore $_.modversion }
+  if ($above) { return $above[0] }
+  if ($Floor -match '-') {
+    throw "No ModDB release of '$Id' at or above prerelease floor $Floor - ModDB does not carry prereleases. Name 'url' or 'github' for it in exmod.json's depends.$Id."
+  }
+  throw "No ModDB release of '$Id' at or above $Floor."
+}
+
+# Extracts $Zip into $Dest (replaced if present), unwrapping one top-level folder when the archive
+# wraps its content that way (GitHub's "download zip" habit) - the same shape ExlibVerify's
+# ModSource.Load applies to a mod zip.
+function Expand-DependencyZip([string]$Zip, [string]$Dest) {
+  if (Test-Path $Dest) { Remove-Item -Recurse -Force $Dest }
+  New-Item -ItemType Directory -Force -Path $Dest | Out-Null
+  Expand-Archive -Path $Zip -DestinationPath $Dest -Force
+  if (Test-Path (Join-Path $Dest 'modinfo.json')) { return }
+  $inner = Get-ChildItem $Dest -Directory | Where-Object { Test-Path (Join-Path $_.FullName 'modinfo.json') } |
+    Select-Object -First 1
+  if (-not $inner) { throw "$Zip has no modinfo.json at its root or one level down." }
+  Get-ChildItem $inner.FullName -Force | Move-Item -Destination $Dest -Force
+  Remove-Item -Recurse -Force $inner.FullName
+}
+
+# One dependency, resolved: a workspace sibling's build output (built first if missing), else a
+# cached extraction reused when its version already matches the floor, else a fresh download - the
+# manifest's depends.<Id>.url (with {version}/{id} substituted), else depends.<Id>.github
+# (owner/repo, resolved against its v<version> release tag), else the ModDB API. Downloads land
+# under $RepoRoot/.exmod/cache and extract under $RepoRoot/.exmod/mods/<Id>.
+function Resolve-OneDependency([string]$Id, [string]$Floor, [string]$Configuration) {
+  $siblingProject = Get-ExmodDependencySiblingProject $Id
+  if ($siblingProject) {
+    $srcDir = Split-Path $siblingProject -Parent
+    $built = Join-Path $srcDir "bin/$Configuration/Mods/mod"
+    if (-not (Test-Path (Join-Path $built 'modinfo.json'))) {
+      Write-Host "Building $Id (workspace sibling, not yet built) ..."
+      dotnet build $siblingProject -c $Configuration -clp:ErrorsOnly
+      if ($LASTEXITCODE -ne 0) { throw "Build of $siblingProject failed." }
+    }
+    Write-Host "$Id : workspace sibling, built output at $built"
+    return [pscustomobject]@{ Id = $Id; Version = $Floor; Path = $built; Source = 'workspace sibling' }
+  }
+
+  $cacheDir = Join-Path $RepoRoot ".exmod/mods/$Id"
+  $cacheModinfo = Join-Path $cacheDir 'modinfo.json'
+  if (Test-Path $cacheModinfo) {
+    $cached = Get-Content $cacheModinfo -Raw | ConvertFrom-Json
+    if ($cached.version -eq $Floor) {
+      Write-Host "$Id : cached release $Floor at $cacheDir"
+      return [pscustomobject]@{ Id = $Id; Version = $Floor; Path = $cacheDir; Source = 'cache' }
+    }
+  }
+
+  $manifest = Get-ExmodManifest
+  $dependsEntry = $null
+  if ($manifest.PSObject.Properties['depends']) {
+    $prop = $manifest.depends.PSObject.Properties[$Id]
+    if ($prop) { $dependsEntry = $prop.Value }
+  }
+
+  $version = $Floor
+  if ($dependsEntry -and $dependsEntry.PSObject.Properties['url'] -and $dependsEntry.url) {
+    $url = $dependsEntry.url.Replace('{version}', $Floor).Replace('{id}', $Id)
+    $sourceLabel = "download: $url"
+  }
+  elseif ($dependsEntry -and $dependsEntry.PSObject.Properties['github'] -and $dependsEntry.github) {
+    $url = "https://github.com/$($dependsEntry.github)/releases/download/v$Floor/${Id}_$Floor.zip"
+    $sourceLabel = "GitHub release: $($dependsEntry.github) v$Floor"
+  }
+  else {
+    $release = Resolve-ModDbRelease $Id $Floor
+    $version = $release.modversion
+    $url = $release.mainfile
+    $sourceLabel = "ModDB release $version"
+  }
+
+  $cacheZipDir = Join-Path $RepoRoot '.exmod/cache'
+  New-Item -ItemType Directory -Force -Path $cacheZipDir | Out-Null
+  $zip = Join-Path $cacheZipDir "${Id}_$version.zip"
+  if (-not (Test-Path $zip)) {
+    Write-Host "Downloading $Id $version from $url"
+    Invoke-WebRequest -Uri $url -OutFile $zip -UseBasicParsing
+  }
+  Expand-DependencyZip $zip $cacheDir
+  Write-Host "$Id : $sourceLabel, extracted to $cacheDir"
+  return [pscustomobject]@{ Id = $Id; Version = $version; Path = $cacheDir; Source = $sourceLabel }
+}
+
+# Every runtime dependency this repo does not build itself: the `dependencies` of every mod and
+# sample the manifest names, minus 'game' and every id this repo's own mods/samples build, each
+# resolved at the highest floor version any of them names for it. Returns an ordered list of
+# @{ Id; Version; Path; Source }, in the order the ids were first seen.
+function Resolve-DependencyMods([string]$Configuration = 'Debug') {
+  $builtIds = @(@((Get-ExmodMods).Keys) + @((Get-ExmodSamples).Keys))
+
+  $floors = [ordered]@{}
+  foreach ($m in (@((Get-ExmodMods).Values) + @((Get-ExmodSamples).Values))) {
+    $modinfoPath = Join-Path (Split-Path $m.Project -Parent) 'modinfo.json'
+    if (-not (Test-Path $modinfoPath)) { continue }
+    $modinfo = Get-Content $modinfoPath -Raw | ConvertFrom-Json
+    if (-not $modinfo.dependencies) { continue }
+    foreach ($dep in $modinfo.dependencies.PSObject.Properties) {
+      if ($dep.Name -eq 'game') { continue }
+      if ($builtIds -contains $dep.Name) { continue }
+      if (-not $floors.Contains($dep.Name) -or (Get-VersionCore $dep.Value) -gt (Get-VersionCore $floors[$dep.Name])) {
+        $floors[$dep.Name] = $dep.Value
+      }
+    }
+  }
+
+  $out = @()
+  foreach ($id in $floors.Keys) {
+    $out += Resolve-OneDependency $id $floors[$id] $Configuration
+  }
+  return $out
+}
+
 #endregion
 
 #region Command registry

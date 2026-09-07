@@ -12,5 +12,6 @@
     "hellomodule":   { "path": "samples/HelloModule",   "tests": "samples/HelloModule.Tests" }
   },
   "tests": ["infra/tools/ExlibVerify.Tests"],
-  "packages": ["mods/exlib/src", "mods/exlib/industry", "mods/exlib/testing", "infra/tools/ExlibVerify"]
+  "packages": ["mods/exlib/src", "mods/exlib/industry", "mods/exlib/testing", "infra/tools/ExlibVerify"],
+  "depends": { "exlib": { "github": "ringavirda/exlib" } }
 }

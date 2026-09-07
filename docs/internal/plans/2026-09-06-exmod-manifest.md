@@ -298,3 +298,64 @@ and after captured and diffed byte-identical (66 informational findings, 0 error
 mods/iiex/src/bin/Debug/Mods/mod --game .game/1.22-server` ran standalone and reported
 `0 error(s), 147 informational finding(s)`; `/tmp/verify-pack` and `/tmp/verify-tool` removed after,
 `git status` showing only the two edited files.
+
+**Task 4 complete 2026-09-07.** `Resolve-DependencyMods` (exmod.ps1) reads the `dependencies` of
+every mod's and sample's modinfo.json, drops `game` and every id `Get-ExmodMods`/`Get-ExmodSamples`
+build, and resolves what is left at the highest floor version any of them names for it: a workspace
+sibling first (a directory beside `$RepoRoot` whose own `exmod.json` names the id under `mods`,
+built with `dotnet build` into `<project dir>/bin/<Configuration>/Mods/mod` if that folder has no
+modinfo.json yet), else `$RepoRoot/.exmod/mods/<id>/` reused as-is when its own modinfo version
+already equals the floor, else a fresh download - `depends.<id>.url` (`{version}`/`{id}` substituted)
+when the manifest names one, else `depends.<id>.github` resolved against its `v<version>` release
+tag, else the ModDB API's release list, picking the exact-floor release or the lowest one above it
+and failing by name when the floor is a prerelease ModDB does not carry. Downloads land in
+`.exmod/cache/<id>_<version>.zip` and extract into `.exmod/mods/<id>/`, unwrapped one level the way
+`ExlibVerify`'s `ModSource.Load` already does for a GitHub-habit zip. Every branch prints one line
+naming which it used. `exmod provision mods` runs the resolver and prints an id/version/path table,
+or says "every dependency is built in this repository" when there is nothing to resolve; `setup`
+calls it after the game and the restore. `Get-RunModDirs` (run.ps1, used by `stage`'s zero-argument
+rung and by `client`/`server` through `Publish-RunMods`) and `smoke`'s no-`-Mods` rung both append
+the resolved dependency paths after the repo's own built mods; all four commands' `-Detail` text and
+`provision`'s say so. `exmod.json` gained `"depends": { "exlib": { "github": "ringavirda/exlib" } }`,
+documenting the shape without resolving anything here, since exlib is built in this repo.
+
+One fix beyond the plan's own file list: the sibling scan's `Test-Path`/`Get-Content` on each
+directory beside `$RepoRoot` needed `-ErrorAction SilentlyContinue`/`Stop` - without it, a
+permission-denied sibling (a systemd private-tmp directory turned up during the gate, `/tmp` being
+the throwaway root's parent) crashed the whole resolution instead of being skipped.
+
+One deviation from the gate's literal wording, forced by consistency with its own two-branch
+result: HelloExpanded's real `modinfo.json` also depends on `hellomodule` (a sample, not a
+published mod), which the throwaway's manifest does not build, so unedited it would try to resolve
+`hellomodule` from GitHub or ModDB and fail before either exlib branch ran; the throwaway's
+`modinfo.json` drops that dependency, leaving only `exlib`, matching what the gate's two branches
+actually check. The gate's `"mods": {"helloexpanded": {"path": "."}}` also needed the project (and
+its modinfo.json, which the resolver reads beside the project, the same convention
+`Get-ModManifests` already uses) moved under `src/`, since `Get-ExmodMods`'s `<path>/src` convention
+requires a `.csproj` there once a `src/` folder exists at all - HelloExpanded's does (it holds the
+`.cs` files) - so the project and modinfo.json were moved from `/tmp/hx/` to `/tmp/hx/src/`, and
+`"solution"` in the throwaway manifest points at that `.csproj` directly rather than a real `.sln`,
+since eager manifest load needs a `solution` to resolve and the throwaway has no `.sln`. The csproj's
+`exlib`/`hellomodule` `ProjectReference`s and the `ExpandedLib.props`/`.targets` imports were left
+as found rather than edited out, taking the gate's stated alternative ("or simply do not build it")
+since the resolver never builds the throwaway's own project.
+
+Gate: `bash scripts/exmod.sh provision mods` printed "every dependency is built in this repository";
+`bash scripts/exmod.sh smoke` ran unchanged (six mods staged and verified clean, 0 errors, nothing to
+resolve - exlib's own dependents are all built in-repo). Branch (a), workspace sibling: with
+`/tmp/exmods` symlinked to this checkout, `bash <repo>/scripts/exmod.sh -RepoRoot /tmp/hx provision
+mods` printed `exlib : workspace sibling, built output at /tmp/exmods/mods/exlib/src/bin/Debug/Mods/mod`
+and the table row `exlib  0.7.0  /tmp/exmods/mods/exlib/src/bin/Debug/Mods/mod`. Branch (c) GitHub:
+with the symlink removed and `depends.exlib.url` set to the `0.9.4`-tag asset URL, the same command
+printed `Downloading exlib 0.7.0 from https://github.com/ringavirda/modding-vsexpanded/releases/download/0.9.4/exlib_0.7.0.zip`
+then `exlib : download: <that url>, extracted to /tmp/hx/.exmod/mods/exlib`, and
+`/tmp/hx/.exmod/mods/exlib/modinfo.json` read `"version": "0.7.0"`. Branch (c) ModDB: with
+`/tmp/hx/.exmod` deleted, `url` removed and the floor set to `0.7.2`, the same command printed
+`Downloading exlib 0.7.2 from https://moddbcdn.vintagestory.at/exlib_0.7.2_...zip?dl=exlib_0.7.2.zip`
+then `exlib : ModDB release 0.7.2, extracted to /tmp/hx/.exmod/mods/exlib`; a second run against the
+same manifest hit the cache branch instead (`exlib : cached release 0.7.2 at ...`), proving reuse.
+`/tmp/hx` and `/tmp/exmods` removed after, `git status` showing only this task's four files
+(`exmod.json`, `scripts/exmod.ps1`, `scripts/exmod/provision.ps1`, `scripts/exmod/run.ps1`).
+`bash scripts/exmod.sh test latest` unaffected as expected, six lanes at 11/1817/4/4/2461/348,
+matching every prior task's baseline; `exmod help`, `exmod help provision` and `exmod help smoke`
+show the new text.
