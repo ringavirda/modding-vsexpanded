@@ -760,10 +760,16 @@ public abstract class BlockEntityBoiler : BlockEntityMultiblockStructure
     if (before <= 0f)
       return false;
 
-    cont.TryTakeLiquid(slot.Itemstack, Math.Min(before, space));
-    float removed = before - cont.GetCurrentLitres(slot.Itemstack);
-    if (removed <= 0f)
+    WaterTightContainableProps? props = cont.GetContentProps(slot.Itemstack);
+    if(props == null)
       return false;
+
+    int removedStacks = cont.SplitStackAndPerformAction(byPlayer.Entity, slot, stack => cont.TryTakeLiquid(stack, Math.Min(before, space)).StackSize);
+    float removed = removedStacks / props.ItemsPerLitre;
+    if(removed <= 0f)
+    {
+      return false;
+    }
     slot.MarkDirty();
 
     _waterVolume += removed;
@@ -813,8 +819,12 @@ public abstract class BlockEntityBoiler : BlockEntityMultiblockStructure
     // up to its free space (a full 10 L bucket each time) - the transfer is then bounded only by
     // `want` (the bucket's free space, capped by the reachable boiler water).
     waterStack.StackSize = int.MaxValue;
-    cont.TryPutLiquid(slot.Itemstack, waterStack, want);
-    float added = cont.GetCurrentLitres(slot.Itemstack) - before;
+    WaterTightContainableProps? props = BlockLiquidContainerBase.GetContainableProps(waterStack);
+    if(props == null)
+      return false;
+
+    int addedStacks = cont.SplitStackAndPerformAction(byPlayer.Entity, slot, stack => cont.TryPutLiquid(stack, waterStack, want));
+    float added = addedStacks / props.ItemsPerLitre;
     if (added <= 0f)
       return false;
     slot.MarkDirty();
